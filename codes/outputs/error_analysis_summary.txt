@@ -1,0 +1,5 @@
+PPD_binary: 22 false negatives, 15 false positives on the test set (n=160).
+  Features significantly different between FN (missed) and TP (caught): ['Maternal_MentalHealth_Risk_Index_Weighted', 'Social_Support_Index_Weighted', 'Economic_Stability_Index_Weighted']
+  Features significantly different between FP (false alarm) and TN (correctly cleared): ['Maternal_MentalHealth_Risk_Index_Weighted', 'Social_Support_Index_Weighted']
+EPDS Result: 91.2% of test predictions are correct or only one severity band off (max possible distance = 2).
+PHQ9 Result: 84.4% of test predictions are correct or only one severity band off (max possible distance = 4).

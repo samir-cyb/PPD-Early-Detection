@@ -1,0 +1,131 @@
+{
+  "EPDS Result": {
+    "Random Forest": {
+      "n_estimators": 500,
+      "min_samples_split": 10,
+      "min_samples_leaf": 2,
+      "max_features": "log2",
+      "max_depth": 15
+    },
+    "XGBoost": {
+      "subsample": 0.7,
+      "n_estimators": 100,
+      "max_depth": 3,
+      "learning_rate": 0.1,
+      "colsample_bytree": 0.7
+    },
+    "LightGBM": {
+      "subsample": 0.7,
+      "num_leaves": 31,
+      "n_estimators": 100,
+      "learning_rate": 0.05
+    },
+    "CatBoost": {
+      "learning_rate": 0.05,
+      "iterations": 200,
+      "depth": 6
+    },
+    "MLP": {
+      "hidden_layer_sizes": [
+        64,
+        32
+      ],
+      "alpha": 0.01,
+      "max_iter_allowed": 1000,
+      "epochs_used_per_cv_fold": [
+        35,
+        31,
+        18,
+        18,
+        32
+      ],
+      "mean_epochs_used_cv": 26.8
+    }
+  },
+  "PHQ9 Result": {
+    "Random Forest": {
+      "n_estimators": 200,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "max_features": "log2",
+      "max_depth": 20
+    },
+    "XGBoost": {
+      "subsample": 0.8,
+      "n_estimators": 100,
+      "max_depth": 9,
+      "learning_rate": 0.2,
+      "colsample_bytree": 0.8
+    },
+    "LightGBM": {
+      "subsample": 0.8,
+      "num_leaves": 63,
+      "n_estimators": 100,
+      "learning_rate": 0.1
+    },
+    "CatBoost": {
+      "learning_rate": 0.1,
+      "iterations": 200,
+      "depth": 4
+    },
+    "MLP": {
+      "hidden_layer_sizes": [
+        32
+      ],
+      "alpha": 0.0001,
+      "max_iter_allowed": 1000,
+      "epochs_used_per_cv_fold": [
+        23,
+        31,
+        37,
+        31,
+        36
+      ],
+      "mean_epochs_used_cv": 31.6
+    }
+  },
+  "PPD_binary": {
+    "Random Forest": {
+      "n_estimators": 300,
+      "min_samples_split": 10,
+      "min_samples_leaf": 2,
+      "max_features": null,
+      "max_depth": 20
+    },
+    "XGBoost": {
+      "subsample": 0.7,
+      "n_estimators": 100,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "colsample_bytree": 0.8
+    },
+    "LightGBM": {
+      "subsample": 0.8,
+      "num_leaves": 63,
+      "n_estimators": 200,
+      "learning_rate": 0.1
+    },
+    "CatBoost": {
+      "learning_rate": 0.05,
+      "iterations": 100,
+      "depth": 4
+    },
+    "MLP": {
+      "hidden_layer_sizes": [
+        100,
+        50,
+        25
+      ],
+      "alpha": 0.0001,
+      "max_iter_allowed": 1000,
+      "epochs_used_per_cv_fold": [
+        21,
+        21,
+        23,
+        40,
+        30
+      ],
+      "mean_epochs_used_cv": 27.0
+    }
+  }
+}

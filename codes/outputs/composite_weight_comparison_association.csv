@@ -1,0 +1,25 @@
+target,composite_index,variant,anova_p,kruskal_p,significant_at_0.05
+EPDS Result,Economic_Stability_Index_LR,LR-learned,8.143097320516623e-10,1.3595322885618096e-09,True
+EPDS Result,Social_Support_Index_LR,LR-learned,1.0651556558380428e-35,1.740282367210403e-29,True
+EPDS Result,Maternal_MentalHealth_Risk_Index_LR,LR-learned,1.4869944622052206e-39,1.5980310883454242e-35,True
+EPDS Result,Neonatal_Delivery_Stress_Index_LR,LR-learned,5.239562517638441e-07,4.236733570493202e-07,True
+EPDS Result,Economic_Stability_Index_Weighted,Chi-square-weighted,1.864934976756059e-08,9.954632169448166e-08,True
+EPDS Result,Social_Support_Index_Weighted,Chi-square-weighted,1.3922288536050423e-35,2.9844301134486995e-29,True
+EPDS Result,Maternal_MentalHealth_Risk_Index_Weighted,Chi-square-weighted,1.364192908449164e-35,7.511508248577927e-34,True
+EPDS Result,Neonatal_Delivery_Stress_Index_Weighted,Chi-square-weighted,8.473997476295309e-07,1.68384165864508e-06,True
+PHQ9 Result,Economic_Stability_Index_LR,LR-learned,5.893313317115204e-10,5.7867316430352505e-09,True
+PHQ9 Result,Social_Support_Index_LR,LR-learned,5.638286389049275e-35,4.016517852049981e-27,True
+PHQ9 Result,Maternal_MentalHealth_Risk_Index_LR,LR-learned,2.7531631946459524e-38,4.4996375748990535e-33,True
+PHQ9 Result,Neonatal_Delivery_Stress_Index_LR,LR-learned,4.330434085443084e-07,4.681257641072751e-07,True
+PHQ9 Result,Economic_Stability_Index_Weighted,Chi-square-weighted,2.1885876845585203e-07,1.3347650923020974e-06,True
+PHQ9 Result,Social_Support_Index_Weighted,Chi-square-weighted,2.5551378260437877e-35,2.6995660365682072e-27,True
+PHQ9 Result,Maternal_MentalHealth_Risk_Index_Weighted,Chi-square-weighted,1.619990498196566e-34,5.103168427985711e-32,True
+PHQ9 Result,Neonatal_Delivery_Stress_Index_Weighted,Chi-square-weighted,9.239697451632839e-07,1.3059357291400027e-06,True
+PPD_binary,Economic_Stability_Index_LR,LR-learned,1.0749148234624552e-10,1.8966835774578953e-10,True
+PPD_binary,Social_Support_Index_LR,LR-learned,6.09599400797213e-36,8.88601200229342e-30,True
+PPD_binary,Maternal_MentalHealth_Risk_Index_LR,LR-learned,1.9629278834353027e-36,3.8344735691975805e-32,True
+PPD_binary,Neonatal_Delivery_Stress_Index_LR,LR-learned,1.7955920987317762e-07,1.4095853673761826e-07,True
+PPD_binary,Economic_Stability_Index_Weighted,Chi-square-weighted,2.431835605652571e-09,1.6829157168827174e-08,True
+PPD_binary,Social_Support_Index_Weighted,Chi-square-weighted,1.1742176729016627e-35,2.3850859919673215e-29,True
+PPD_binary,Maternal_MentalHealth_Risk_Index_Weighted,Chi-square-weighted,6.880576874370614e-34,4.136836300968958e-31,True
+PPD_binary,Neonatal_Delivery_Stress_Index_Weighted,Chi-square-weighted,2.648117635692288e-07,4.511491963320709e-07,True

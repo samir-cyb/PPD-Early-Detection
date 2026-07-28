@@ -1,0 +1,5 @@
+LR-learned composites: 12/12 association tests significant.
+Chi-square-weighted composites: 12/12 association tests significant.
+EPDS Result: best composite variant by CV F1-macro = LR-learned composites (0.590)
+PHQ9 Result: best composite variant by CV F1-macro = LR-learned composites (0.371)
+PPD_binary: best composite variant by CV F1-macro = Chi-square-weighted composites (current) (0.753)

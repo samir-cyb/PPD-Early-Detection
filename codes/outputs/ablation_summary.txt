@@ -1,0 +1,12 @@
+
+EPDS Result: Raw=0.552, Raw+Composite=0.554 (+0.002), Selected+Composite=0.561 (+0.009) [avg CV F1-macro across all models]
+  -> Composite features HELPED for this target.
+  -> Feature selection (30 features) matched/beat the full Raw+Composite set.
+
+PHQ9 Result: Raw=0.339, Raw+Composite=0.352 (+0.013), Selected+Composite=0.346 (+0.007) [avg CV F1-macro across all models]
+  -> Composite features HELPED for this target.
+  -> Feature selection (30 features) matched/beat the full Raw+Composite set.
+
+PPD_binary: Raw=0.740, Raw+Composite=0.741 (+0.001), Selected+Composite=0.745 (+0.005) [avg CV F1-macro across all models]
+  -> Composite features HELPED for this target.
+  -> Feature selection (30 features) matched/beat the full Raw+Composite set.

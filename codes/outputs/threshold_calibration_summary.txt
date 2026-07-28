@@ -1,0 +1,7 @@
+PPD_binary threshold tuning + calibration summary
+============================================================
+Default threshold (0.5): precision=0.766, recall=0.700, f1=0.731
+Max-F1 threshold (0.407): precision=0.724, recall=0.786, f1=0.753
+Screening threshold (0.303, recall>=85%): precision=0.600, recall=0.857, f1=0.706
+
+Calibration: Brier score 0.1677 -> 0.1667 (improved); ROC-AUC essentially unchanged (0.829 -> 0.828), as expected since calibration reshapes probability values, not rank ordering.

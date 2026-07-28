@@ -1,0 +1,9 @@
+EPDS Result:
+  Direct Classifier -- accuracy=0.588, F1-macro=0.540, QWK=0.557
+  Best overall (by QWK) -- Direct Classifier (Random Forest): accuracy=0.588, F1-macro=0.540, QWK=0.557
+  -> Direct classifier remained the best approach even on QWK.
+
+PHQ9 Result:
+  Direct Classifier -- accuracy=0.344, F1-macro=0.329, QWK=0.548
+  Best overall (by QWK) -- Regression + Threshold (Linear Regression): accuracy=0.463, F1-macro=0.426, QWK=0.602
+  -> Regression-then-threshold BEAT the direct classifier on QWK.

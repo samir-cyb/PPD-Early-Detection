@@ -1,0 +1,4 @@
+Cluster,PPD_binary_rate,cluster_label,n_mothers
+0,0.664,"Lower support, higher mental-health risk, lower economic stability",336
+1,0.186,"Higher support, lower mental-health risk, higher economic stability",113
+2,0.299,"Higher support, lower mental-health risk, lower economic stability",351

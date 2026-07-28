@@ -1,0 +1,191 @@
+feature_1,feature_2,mean_abs_interaction
+Angry after latest child birth_Yes,Social_Support_Index_Weighted,0.01371719758335457
+Angry after latest child birth_Yes,Maternal_MentalHealth_Risk_Index_Weighted,0.01352851587152214
+Angry after latest child birth_Yes,Economic_Stability_Index_Weighted,0.012111011519533406
+Maternal_MentalHealth_Risk_Index_Weighted,Social_Support_Index_Weighted,0.011628191727807284
+Maternal_MentalHealth_Risk_Index_Weighted,Economic_Stability_Index_Weighted,0.010579267990907689
+Angry after latest child birth_Yes,Abuse_Yes,0.010467294078846567
+Angry after latest child birth_Yes,Neonatal_Delivery_Stress_Index_Weighted,0.010049594629904077
+Maternal_MentalHealth_Risk_Index_Weighted,Abuse_Yes,0.010023774625861825
+Economic_Stability_Index_Weighted,Major changes or losses during pregnancy_Yes,0.009254045234575835
+Abuse_Yes,Social_Support_Index_Weighted,0.009214113799366442
+Social_Support_Index_Weighted,Gender of newborn_Girl,0.00918623663690465
+Angry after latest child birth_Yes,Relationship with the in-laws_Good,0.008994436794000636
+Social_Support_Index_Weighted,Economic_Stability_Index_Weighted,0.008843839374514616
+Angry after latest child birth_Yes,Gender of newborn_Girl,0.008320917989798927
+Abuse_Yes,Economic_Stability_Index_Weighted,0.0081555470503941
+Angry after latest child birth_Yes,Trust and share feelings_Yes,0.007774763520811918
+Angry after latest child birth_Yes,Need for Support_Not Reported,0.007196202021227001
+Social_Support_Index_Weighted,Feeling for regular activities_Not Reported,0.006837443747627789
+Major changes or losses during pregnancy_Yes,Gender of newborn_Girl,0.006609572743131384
+Maternal_MentalHealth_Risk_Index_Weighted,Relationship with husband_Good,0.00657109286528879
+Social_Support_Index_Weighted,Relationship with the in-laws_Good,0.006198272100733558
+Social_Support_Index_Weighted,Major changes or losses during pregnancy_Yes,0.006056925094279973
+Angry after latest child birth_Yes,Fear of pregnancy_Yes,0.005859506892605544
+Maternal_MentalHealth_Risk_Index_Weighted,Neonatal_Delivery_Stress_Index_Weighted,0.0057480858167752455
+Economic_Stability_Index_Weighted,Neonatal_Delivery_Stress_Index_Weighted,0.005733789319828582
+Social_Support_Index_Weighted,Neonatal_Delivery_Stress_Index_Weighted,0.005729580124255149
+Social_Support_Index_Weighted,Relax/sleep when the newborn is asleep_Yes,0.0057110236673394285
+Maternal_MentalHealth_Risk_Index_Weighted,Major changes or losses during pregnancy_Yes,0.005590178990692921
+Neonatal_Delivery_Stress_Index_Weighted,Relax/sleep when the newborn is asleep_Yes,0.005487302753042233
+Angry after latest child birth_Yes,Feeling for regular activities_Not Reported,0.005313475013311233
+Social_Support_Index_Weighted,Fear of pregnancy_Yes,0.005162275502696453
+Social_Support_Index_Weighted,Family type_Nuclear,0.005135627345553131
+Abuse_Yes,Relationship with husband_Good,0.005099077724643556
+Feeling for regular activities_Not Reported,Neonatal_Delivery_Stress_Index_Weighted,0.005037751806381414
+Economic_Stability_Index_Weighted,Fear of pregnancy_Yes,0.004985165132570644
+Economic_Stability_Index_Weighted,Relationship with husband_Good,0.004782144426771289
+Neonatal_Delivery_Stress_Index_Weighted,Gender of newborn_Girl,0.004566572845625507
+Maternal_MentalHealth_Risk_Index_Weighted,Depression during pregnancy (PHQ2)_Positive,0.004556577649142381
+Angry after latest child birth_Yes,Major changes or losses during pregnancy_Yes,0.004545336571299215
+Maternal_MentalHealth_Risk_Index_Weighted,Relationship with the in-laws_Good,0.004545276509401201
+Maternal_MentalHealth_Risk_Index_Weighted,Gender of newborn_Girl,0.004438678741220616
+Economic_Stability_Index_Weighted,Trust and share feelings_Yes,0.004262517573061182
+Feeling for regular activities_Not Reported,Relationship with husband_Good,0.004147795949886763
+Abuse_Yes,Fear of pregnancy_Yes,0.004139330582929765
+Social_Support_Index_Weighted,Need for Support_Not Reported,0.0041331161557716925
+Neonatal_Delivery_Stress_Index_Weighted,Fear of pregnancy_Yes,0.004102552462021696
+Angry after latest child birth_Yes,Depression before pregnancy (PHQ2)_Positive,0.00408126231749139
+Neonatal_Delivery_Stress_Index_Weighted,Major changes or losses during pregnancy_Yes,0.004035516067441143
+Maternal_MentalHealth_Risk_Index_Weighted,Family type_Nuclear,0.004024128843083489
+Abuse_Yes,Neonatal_Delivery_Stress_Index_Weighted,0.003974139022466617
+Economic_Stability_Index_Weighted,Feeling for regular activities_Not Reported,0.003956052538887197
+Angry after latest child birth_Yes,Education Level_University,0.0038539044207735046
+Relationship with husband_Good,Gender of newborn_Girl,0.0038370140328171445
+Neonatal_Delivery_Stress_Index_Weighted,Relationship with husband_Good,0.0038333676477044893
+Angry after latest child birth_Yes,Family type_Nuclear,0.0036987703053717935
+Angry after latest child birth_Yes,Relax/sleep when the newborn is asleep_Yes,0.003691130282936189
+Maternal_MentalHealth_Risk_Index_Weighted,Fear of pregnancy_Yes,0.0036451448463859864
+Feeling for regular activities_Not Reported,Need for Support_Not Reported,0.003544533964196835
+Major changes or losses during pregnancy_Yes,Family type_Nuclear,0.0035019272552004044
+Maternal_MentalHealth_Risk_Index_Weighted,Trust and share feelings_Yes,0.003476158539532314
+Maternal_MentalHealth_Risk_Index_Weighted,Relax/sleep when the newborn is asleep_Yes,0.0034701592023164496
+Maternal_MentalHealth_Risk_Index_Weighted,Need for Support_Not Reported,0.0034218581900549313
+Social_Support_Index_Weighted,Relationship with husband_Good,0.0034145457193050866
+Neonatal_Delivery_Stress_Index_Weighted,Relationship with the in-laws_Good,0.003368743828633195
+Angry after latest child birth_Yes,Relationship with husband_Good,0.0033414066255713568
+Maternal_MentalHealth_Risk_Index_Weighted,Feeling for regular activities_Not Reported,0.0033375967244910166
+Social_Support_Index_Weighted,Trust and share feelings_Yes,0.003281976863221675
+Abuse_Yes,Need for Support_Not Reported,0.00319073373269734
+Angry after latest child birth_Yes,Worry about newborn_Yes,0.003166476365380393
+Relax/sleep when the newborn is asleep_Yes,Gender of newborn_Girl,0.0031635312261114766
+Economic_Stability_Index_Weighted,Worry about newborn_Yes,0.003129279495247529
+Economic_Stability_Index_Weighted,Education Level_University,0.003093643338879282
+Fear of pregnancy_Yes,Gender of newborn_Girl,0.0030769204903832127
+Economic_Stability_Index_Weighted,Relax/sleep when the newborn is asleep_Yes,0.002945472648503607
+Economic_Stability_Index_Weighted,Family type_Nuclear,0.0029364776956909678
+Major changes or losses during pregnancy_Yes,Relax/sleep when the newborn is asleep_Yes,0.002927992128673166
+Abuse_Yes,Major changes or losses during pregnancy_Yes,0.002893979906684202
+Economic_Stability_Index_Weighted,Relationship with the in-laws_Good,0.0028730778679489925
+Abuse_Yes,Relationship with the in-laws_Good,0.0028577103408302545
+Neonatal_Delivery_Stress_Index_Weighted,Trust and share feelings_Yes,0.002840382596112756
+Economic_Stability_Index_Weighted,Need for Support_Not Reported,0.0027836750912389927
+Social_Support_Index_Weighted,Worry about newborn_Yes,0.0027700992306491715
+Abuse_Yes,Gender of newborn_Girl,0.0027438090251094465
+Relationship with husband_Good,Fear of pregnancy_Yes,0.002704943010806033
+Economic_Stability_Index_Weighted,Gender of newborn_Girl,0.002700420118559417
+Feeling for regular activities_Not Reported,Relax/sleep when the newborn is asleep_Yes,0.0027003455166536923
+Maternal_MentalHealth_Risk_Index_Weighted,Worry about newborn_Yes,0.0026800235978152115
+Major changes or losses during pregnancy_Yes,Education Level_University,0.0026165649227712544
+Maternal_MentalHealth_Risk_Index_Weighted,Education Level_University,0.0026103009860449127
+Feeling for regular activities_Not Reported,Relationship with the in-laws_Good,0.002593820613613167
+Trust and share feelings_Yes,Worry about newborn_Yes,0.0025821804124505706
+Major changes or losses during pregnancy_Yes,Relationship with husband_Good,0.0025279297034619085
+Abuse_Yes,Depression during pregnancy (PHQ2)_Positive,0.002527825925965489
+Feeling for regular activities_Not Reported,Family type_Nuclear,0.002475042367147171
+Major changes or losses during pregnancy_Yes,Relationship with the in-laws_Good,0.0024471221760110377
+Major changes or losses during pregnancy_Yes,Worry about newborn_Yes,0.002446100181933532
+Abuse_Yes,Relax/sleep when the newborn is asleep_Yes,0.0024407245144013523
+Social_Support_Index_Weighted,Depression during pregnancy (PHQ2)_Positive,0.0024389385939056324
+Fear of pregnancy_Yes,Trust and share feelings_Yes,0.0023915527137634064
+Relax/sleep when the newborn is asleep_Yes,Depression during pregnancy (PHQ2)_Positive,0.0023726597585456842
+Feeling for regular activities_Not Reported,Gender of newborn_Girl,0.002325138187503644
+Social_Support_Index_Weighted,Depression before pregnancy (PHQ2)_Positive,0.0022937484167243572
+Feeling for regular activities_Not Reported,Fear of pregnancy_Yes,0.0022827213820667165
+Relax/sleep when the newborn is asleep_Yes,Worry about newborn_Yes,0.0022804794109708257
+Major changes or losses during pregnancy_Yes,Fear of pregnancy_Yes,0.00220071580978175
+Relax/sleep when the newborn is asleep_Yes,Fear of pregnancy_Yes,0.0022003694777919577
+Relax/sleep when the newborn is asleep_Yes,Relationship with the in-laws_Good,0.002141875025494015
+Neonatal_Delivery_Stress_Index_Weighted,Family type_Nuclear,0.00214006473429896
+Need for Support_Not Reported,Family type_Nuclear,0.0020873183922080762
+Neonatal_Delivery_Stress_Index_Weighted,Education Level_University,0.0020863859515744933
+Relationship with the in-laws_Good,Gender of newborn_Girl,0.0020704592075987084
+Gender of newborn_Girl,Family type_Nuclear,0.002067860451308562
+Relationship with husband_Good,Relationship with the in-laws_Good,0.002065468764000452
+Relationship with the in-laws_Good,Family type_Nuclear,0.0020555494407211395
+Major changes or losses during pregnancy_Yes,Trust and share feelings_Yes,0.002046415391464234
+Fear of pregnancy_Yes,Worry about newborn_Yes,0.002034109091272683
+Abuse_Yes,Trust and share feelings_Yes,0.002024701881598344
+Relationship with the in-laws_Good,Depression during pregnancy (PHQ2)_Positive,0.0020177584804047795
+Feeling for regular activities_Not Reported,Trust and share feelings_Yes,0.001987663769285407
+Neonatal_Delivery_Stress_Index_Weighted,Worry about newborn_Yes,0.0019608446967266115
+Neonatal_Delivery_Stress_Index_Weighted,Need for Support_Not Reported,0.0019602745089746312
+Relax/sleep when the newborn is asleep_Yes,Trust and share feelings_Yes,0.0019239480214902082
+Abuse_Yes,Feeling for regular activities_Not Reported,0.001894781203050778
+Need for Support_Not Reported,Relationship with the in-laws_Good,0.0018606587110230552
+Depression during pregnancy (PHQ2)_Positive,Family type_Nuclear,0.0018562969365319645
+Trust and share feelings_Yes,Gender of newborn_Girl,0.0018508093783382788
+Abuse_Yes,Worry about newborn_Yes,0.0018367644290586567
+Relationship with husband_Good,Trust and share feelings_Yes,0.0018146957658864548
+Neonatal_Delivery_Stress_Index_Weighted,Depression during pregnancy (PHQ2)_Positive,0.001813558727254879
+Need for Support_Not Reported,Trust and share feelings_Yes,0.0018127061217412907
+Gender of newborn_Girl,Worry about newborn_Yes,0.001802615385988358
+Abuse_Yes,Education Level_University,0.001796874522022169
+Economic_Stability_Index_Weighted,Depression during pregnancy (PHQ2)_Positive,0.0017801702699175807
+Social_Support_Index_Weighted,Education Level_University,0.001764912846779316
+Angry after latest child birth_Yes,Depression during pregnancy (PHQ2)_Positive,0.00173879934318629
+Abuse_Yes,Family type_Nuclear,0.001726653450661075
+Feeling for regular activities_Not Reported,Worry about newborn_Yes,0.0017181647191852624
+Feeling for regular activities_Not Reported,Major changes or losses during pregnancy_Yes,0.0017034634177705795
+Feeling for regular activities_Not Reported,Depression during pregnancy (PHQ2)_Positive,0.0017004741939180943
+Need for Support_Not Reported,Fear of pregnancy_Yes,0.001697365493121153
+Fear of pregnancy_Yes,Family type_Nuclear,0.001692833970610367
+Economic_Stability_Index_Weighted,Depression before pregnancy (PHQ2)_Positive,0.0016710533713701753
+Need for Support_Not Reported,Gender of newborn_Girl,0.001641385198631767
+Relationship with the in-laws_Good,Worry about newborn_Yes,0.0016296145388496493
+Relationship with husband_Good,Worry about newborn_Yes,0.0016237416254530567
+Maternal_MentalHealth_Risk_Index_Weighted,Depression before pregnancy (PHQ2)_Positive,0.0016095485994519411
+Education Level_University,Worry about newborn_Yes,0.0015977004361028794
+Relationship with the in-laws_Good,Fear of pregnancy_Yes,0.0015632433007071963
+Relationship with husband_Good,Family type_Nuclear,0.0015388508965266238
+Feeling for regular activities_Not Reported,Education Level_University,0.0014972883489445207
+Trust and share feelings_Yes,Family type_Nuclear,0.001423737073460564
+Major changes or losses during pregnancy_Yes,Need for Support_Not Reported,0.0014198873573911719
+Depression during pregnancy (PHQ2)_Positive,Gender of newborn_Girl,0.0014145949478723916
+Relationship with the in-laws_Good,Trust and share feelings_Yes,0.0014105215491701617
+Relax/sleep when the newborn is asleep_Yes,Family type_Nuclear,0.0013660900510055036
+Relationship with husband_Good,Education Level_University,0.0013603145308734672
+Relax/sleep when the newborn is asleep_Yes,Relationship with husband_Good,0.001342743265932108
+Relax/sleep when the newborn is asleep_Yes,Need for Support_Not Reported,0.001281227178549348
+Major changes or losses during pregnancy_Yes,Depression before pregnancy (PHQ2)_Positive,0.0012592905715538088
+Trust and share feelings_Yes,Education Level_University,0.0012422552822781467
+Relationship with husband_Good,Depression during pregnancy (PHQ2)_Positive,0.0012377368357840868
+Relationship with husband_Good,Need for Support_Not Reported,0.0012033472077657447
+Need for Support_Not Reported,Depression during pregnancy (PHQ2)_Positive,0.0011896065234818461
+Neonatal_Delivery_Stress_Index_Weighted,Depression before pregnancy (PHQ2)_Positive,0.0011569788669889979
+Worry about newborn_Yes,Family type_Nuclear,0.0011460307182324693
+Major changes or losses during pregnancy_Yes,Depression during pregnancy (PHQ2)_Positive,0.0011359984242626246
+Depression before pregnancy (PHQ2)_Positive,Family type_Nuclear,0.0011277775164114869
+Trust and share feelings_Yes,Depression before pregnancy (PHQ2)_Positive,0.0010590423909861866
+Need for Support_Not Reported,Worry about newborn_Yes,0.0010221740448780165
+Fear of pregnancy_Yes,Depression during pregnancy (PHQ2)_Positive,0.0009348760686203088
+Relax/sleep when the newborn is asleep_Yes,Education Level_University,0.0008938065097236663
+Need for Support_Not Reported,Education Level_University,0.0008759589255683553
+Relationship with the in-laws_Good,Education Level_University,0.0008730447068461498
+Trust and share feelings_Yes,Depression during pregnancy (PHQ2)_Positive,0.0008636135278564675
+Abuse_Yes,Depression before pregnancy (PHQ2)_Positive,0.0008489481468467515
+Fear of pregnancy_Yes,Education Level_University,0.000845295597476927
+Depression before pregnancy (PHQ2)_Positive,Gender of newborn_Girl,0.0008422401964127502
+Education Level_University,Family type_Nuclear,0.0007850372954297625
+Depression during pregnancy (PHQ2)_Positive,Worry about newborn_Yes,0.0007825349820045288
+Relationship with husband_Good,Depression before pregnancy (PHQ2)_Positive,0.0007808597705210236
+Education Level_University,Gender of newborn_Girl,0.0007655255060162677
+Depression during pregnancy (PHQ2)_Positive,Education Level_University,0.0006856955233841309
+Feeling for regular activities_Not Reported,Depression before pregnancy (PHQ2)_Positive,0.0006791034363204993
+Relax/sleep when the newborn is asleep_Yes,Depression before pregnancy (PHQ2)_Positive,0.0006206685792987997
+Relationship with the in-laws_Good,Depression before pregnancy (PHQ2)_Positive,0.0004483933301570418
+Need for Support_Not Reported,Depression before pregnancy (PHQ2)_Positive,0.00044364912135534196
+Depression before pregnancy (PHQ2)_Positive,Worry about newborn_Yes,0.0004415766916290361
+Fear of pregnancy_Yes,Depression before pregnancy (PHQ2)_Positive,0.00040904874104258246
+Depression during pregnancy (PHQ2)_Positive,Depression before pregnancy (PHQ2)_Positive,0.0003909339855144323
+Education Level_University,Depression before pregnancy (PHQ2)_Positive,0.00033927453876359394

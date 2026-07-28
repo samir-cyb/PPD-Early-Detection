@@ -1,0 +1,70 @@
+column,dtype,role,n_unique,missing_count,missing_pct,sample_values
+Age,int64,SAFE_INPUT,25,0,0.0,24 | 31 | 32 | 27 | 29 | 30
+Residence,str,SAFE_INPUT,2,0,0.0,City | Village
+Education Level,str,SAFE_INPUT,6,6,0.75,University | College | Primary School | High School | High school | Primary school
+Marital status,str,SAFE_INPUT,2,0,0.0,Married | Divorced
+Occupation before latest pregnancy,str,SAFE_INPUT,8,0,0.0,Student | Doctor | Service | Housewife | Teacher | Other
+Monthly income before latest pregnancy,str,SAFE_INPUT,5,437,54.62,10000 to 20000 | More than 30000 | Less than 5000 | 5000 to 10000 | 20000 to 30000
+Occupation After Your Latest Childbirth,str,SAFE_INPUT,8,0,0.0,Student | Doctor | Service | Housewife | Teacher | Business
+Current monthly income,str,SAFE_INPUT,5,525,65.62,10000 to 20000 | More than 30000 | Less than 5000 | 5000 to 10000 | 20000 to 30000
+Husband's education level,str,SAFE_INPUT,6,9,1.12,University | College | Primary School | High School | High school | Primary school
+Husband's monthly income,str,SAFE_INPUT,5,28,3.5,More than 30000 | 10000 to 20000 | 5000 to 10000 | 20000 to 30000 | Less than 5000
+Addiction,str,SAFE_INPUT,3,789,98.62,Smoking | Drinking | Drugs
+Total children,str,SAFE_INPUT,4,0,0.0,One | Two | More than two | More than Two
+Disease before pregnancy,str,SAFE_INPUT,3,588,73.5,Non-Chronic Disease | Chronic Disease | 1.2
+History of pregnancy loss,str,SAFE_INPUT,3,613,76.62,Miscarriage | Still-born Delivery | Still-born delivery
+Family type,str,SAFE_INPUT,2,0,0.0,Nuclear | Joint
+Number of household members,str,SAFE_INPUT,3,0,0.0,6 to 8 | 2 to 5 | 9 or more
+Relationship with the in-laws,str,SAFE_INPUT,5,0,0.0,Neutral | Good | Bad | Friendly | Poor
+Relationship with husband,str,SAFE_INPUT,5,0,0.0,Good | Neutral | Bad | Friendly | Poor
+Relationship with the newborn,str,SAFE_INPUT,4,0,0.0,Good | Neutral | Bad | Very good
+Relationship between father and newborn,str,SAFE_INPUT,4,0,0.0,Good | Neutral | Bad | Very good
+Feeling about motherhood,str,SAFE_INPUT,3,0,0.0,Neutral | Happy | Sad
+Received Support,str,SAFE_INPUT,3,0,0.0,High | Medium | Low
+Need for Support,str,SAFE_INPUT,3,167,20.88,Medium | Low | High
+Major changes or losses during pregnancy,str,SAFE_INPUT,2,0,0.0,Yes | No
+Abuse,str,SAFE_INPUT,2,38,4.75,Yes | No
+Trust and share feelings,str,SAFE_INPUT,2,1,0.12,Yes | No
+Number of the latest pregnancy,int64,SAFE_INPUT,7,0,0.0,1 | 2 | 3 | 4 | 5 | 7
+Pregnancy length,str,SAFE_INPUT,6,0,0.0,10 months | 9 months | 8 months | Less than 5 months | 7 months | 6 months
+Pregnancy plan,str,SAFE_INPUT,2,0,0.0,No | Yes
+Regular checkups,str,SAFE_INPUT,2,0,0.0,Yes | No
+Fear of pregnancy,str,SAFE_INPUT,2,0,0.0,Yes | No
+Diseases during pregnancy,str,SAFE_INPUT,4,371,46.38,Chronic Disease | Non-Chronic Disease | Non-chronic disease | Chronic disease
+Age of newborn,str,SAFE_INPUT,4,0,0.0,6 months to 1 year | Older than 1.5 year | 0 to 6 months | 1 year to 1.5 year
+Age of immediate older children,str,SAFE_INPUT,4,517,64.62,13yr or more | 1yr to 3yr | 7yr to 12yr | 4yr to 6yr
+Mode of delivery,str,SAFE_INPUT,2,0,0.0,Normal Delivery | Caesarean Section
+Gender of newborn,str,SAFE_INPUT,2,0,0.0,Boy | Girl
+Birth complications,str,SAFE_INPUT,2,0,0.0,No | Yes
+Breastfeed,str,SAFE_INPUT,2,0,0.0,Yes | No
+Newborn illness,str,SAFE_INPUT,2,0,0.0,No | Yes
+Worry about newborn,str,SAFE_INPUT,2,0,0.0,Yes | No
+Relax/sleep when newborn is tended,str,SAFE_INPUT,2,0,0.0,Yes | No
+Relax/sleep when the newborn is asleep,str,SAFE_INPUT,2,0,0.0,Yes | No
+Angry after latest child birth,str,SAFE_INPUT,2,0,0.0,No | Yes
+Feeling for regular activities,str,SAFE_INPUT,3,223,27.88,Worried | Tired | Afraid
+Depression before pregnancy (PHQ2),str,SAFE_INPUT (psychiatric history),2,0,0.0,Negative | Positive
+Depression during pregnancy (PHQ2),str,SAFE_INPUT (psychiatric history),2,0,0.0,Negative | Positive
+Little interest or pleasure in doing things,str,LEAKAGE_ITEM (exclude from input),3,0,0.0,Nearly every day | Around half the days | Not at all
+"Feeling down, depressed, or hopeless",str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Nearly every day | Not at all | Around half the days | Several days | মাঝে মধ্যে (Several days) | Several Days
+"Trouble falling or staying asleep, or sleeping too much",str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Not at all | Several days | Nearly every day | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+Feeling tired or having little energy,str,LEAKAGE_ITEM (exclude from input),5,0,0.0,Nearly every day | Several days | Not at all | Around half the days | Several Days
+Poor appetite or overeating,str,LEAKAGE_ITEM (exclude from input),5,0,0.0,Nearly every day | Several Days | Around half the days | Not at all | Several days
+Feeling bad about yourself or that you are a failure or have let yourself or your family down,str,LEAKAGE_ITEM (exclude from input),5,0,0.0,Not at all | Around half the days | Several Days | Nearly every day | Several days
+Trouble concentrating on things,str,LEAKAGE_ITEM (exclude from input),5,0,0.0,Several Days | Nearly every day | Not at all | Around half the days | Several days
+Moving or speaking or restlessness,str,LEAKAGE_ITEM (exclude from input),5,0,0.0,Several Days | Nearly every day | Not at all | Around half the days | Several days
+"Thoughts that you would be better off dead, or of hurting yourself",str,LEAKAGE_ITEM (exclude from input),5,0,0.0,Not at all | Nearly every day | Around half the days | Several Days | Several days
+PHQ9 Score,int64,TARGET_CANDIDATE,28,0,0.0,14 | 16 | 5 | 11 | 13 | 27
+PHQ9 Result,str,TARGET_CANDIDATE,6,0,0.0,Moderate | Moderately Severe | Mild | Severe | Minimal | Normal
+You have been able to laugh and see the funny side of things,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Not at all | Several days | Nearly every day | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+You have looked forward with enjoyment to things,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Not at all | Several days | Nearly every day | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+You have blamed myself unnecessarily when things went wrong,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Not at all | Around half the days | Several days | Nearly every day | মাঝে মধ্যে (Several days) | Several Days
+You have been anxious or worried for no good reason,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Nearly every day | Not at all | Around half the days | Several days | মাঝে মধ্যে (Several days) | Several Days
+You have felt scared or panicky for no good reason,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Not at all | Around half the days | Several days | Nearly every day | মাঝে মধ্যে (Several days) | Several Days
+Things have been getting to you,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Several days | Nearly every day | Not at all | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+You have been so unhappy that you have had difficulty sleeping,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Not at all | Several days | Nearly every day | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+You have felt sad or miserable,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Nearly every day | Not at all | Around half the days | Several days | মাঝে মধ্যে (Several days) | Several Days
+You have been so unhappy that you have been crying,str,LEAKAGE_ITEM (exclude from input),6,0,0.0,Not at all | Around half the days | Several days | Nearly every day | মাঝে মধ্যে (Several days) | Several Days
+The thought of harming yourself has occurred,str,LEAKAGE_ITEM (exclude from input),5,0,0.0,Not at all | Nearly every day | Around half the days | Several days | Several Days
+EPDS Score,int64,TARGET_CANDIDATE,31,0,0.0,13 | 20 | 16 | 5 | 7 | 23
+EPDS Result,str,TARGET_CANDIDATE,3,0,0.0,High | Low | Medium

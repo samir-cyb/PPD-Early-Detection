@@ -1,0 +1,161 @@
+true,predicted,band_distance
+Mild,Moderate,1
+Severe,Severe,0
+Moderate,Severe,2
+Mild,Minimal,1
+Mild,Moderate,1
+Minimal,Minimal,0
+Moderate,Moderately Severe,1
+Mild,Minimal,1
+Severe,Severe,0
+Moderate,Moderate,0
+Mild,Mild,0
+Moderate,Moderately Severe,1
+Moderate,Moderate,0
+Mild,Moderately Severe,2
+Severe,Mild,3
+Mild,Moderate,1
+Mild,Moderate,1
+Mild,Mild,0
+Mild,Moderately Severe,2
+Moderate,Moderate,0
+Mild,Mild,0
+Moderate,Moderate,0
+Moderate,Mild,1
+Minimal,Mild,1
+Minimal,Mild,1
+Moderate,Mild,1
+Moderate,Moderate,0
+Moderately Severe,Mild,2
+Minimal,Mild,1
+Moderate,Mild,1
+Moderately Severe,Moderate,1
+Mild,Mild,0
+Mild,Moderately Severe,2
+Moderately Severe,Moderate,1
+Moderate,Moderately Severe,1
+Mild,Moderate,1
+Moderate,Mild,1
+Mild,Mild,0
+Mild,Mild,0
+Mild,Minimal,1
+Severe,Moderately Severe,1
+Moderate,Mild,1
+Mild,Minimal,1
+Moderate,Moderately Severe,1
+Mild,Severe,3
+Severe,Severe,0
+Minimal,Mild,1
+Moderate,Mild,1
+Moderate,Moderate,0
+Moderately Severe,Mild,2
+Moderate,Moderately Severe,1
+Mild,Minimal,1
+Severe,Moderately Severe,1
+Minimal,Mild,1
+Moderate,Mild,1
+Mild,Moderate,1
+Mild,Moderate,1
+Moderately Severe,Moderate,1
+Mild,Moderately Severe,2
+Severe,Moderately Severe,1
+Moderately Severe,Severe,1
+Moderate,Moderate,0
+Moderate,Severe,2
+Moderate,Mild,1
+Mild,Minimal,1
+Moderate,Mild,1
+Minimal,Mild,1
+Moderately Severe,Moderately Severe,0
+Moderate,Moderate,0
+Mild,Minimal,1
+Minimal,Moderate,2
+Moderate,Mild,1
+Severe,Severe,0
+Mild,Mild,0
+Moderately Severe,Severe,1
+Moderate,Moderate,0
+Severe,Moderately Severe,1
+Moderate,Moderate,0
+Mild,Moderately Severe,2
+Moderate,Moderate,0
+Mild,Mild,0
+Moderate,Moderate,0
+Moderately Severe,Moderately Severe,0
+Moderate,Severe,2
+Moderate,Mild,1
+Minimal,Mild,1
+Moderately Severe,Moderately Severe,0
+Moderately Severe,Moderate,1
+Severe,Severe,0
+Mild,Mild,0
+Mild,Mild,0
+Minimal,Minimal,0
+Mild,Moderate,1
+Moderate,Moderately Severe,1
+Moderately Severe,Moderately Severe,0
+Moderate,Moderately Severe,1
+Severe,Moderate,2
+Minimal,Mild,1
+Moderately Severe,Minimal,3
+Minimal,Moderate,2
+Moderately Severe,Moderately Severe,0
+Moderately Severe,Moderate,1
+Minimal,Mild,1
+Mild,Minimal,1
+Mild,Moderate,1
+Moderately Severe,Moderate,1
+Moderately Severe,Severe,1
+Moderate,Mild,1
+Severe,Severe,0
+Mild,Minimal,1
+Moderate,Moderate,0
+Moderately Severe,Moderately Severe,0
+Mild,Moderate,1
+Mild,Mild,0
+Moderately Severe,Severe,1
+Moderate,Severe,2
+Minimal,Minimal,0
+Minimal,Minimal,0
+Moderately Severe,Moderately Severe,0
+Mild,Minimal,1
+Moderate,Moderate,0
+Severe,Moderately Severe,1
+Mild,Mild,0
+Severe,Mild,3
+Mild,Mild,0
+Mild,Minimal,1
+Severe,Severe,0
+Moderate,Moderate,0
+Mild,Mild,0
+Moderately Severe,Severe,1
+Mild,Moderate,1
+Mild,Moderate,1
+Moderately Severe,Mild,2
+Mild,Minimal,1
+Moderately Severe,Severe,1
+Moderate,Moderate,0
+Mild,Moderate,1
+Moderate,Mild,1
+Severe,Moderate,2
+Mild,Mild,0
+Moderate,Severe,2
+Moderate,Moderately Severe,1
+Moderate,Moderately Severe,1
+Minimal,Minimal,0
+Moderate,Mild,1
+Moderate,Moderately Severe,1
+Moderately Severe,Mild,2
+Mild,Minimal,1
+Moderately Severe,Minimal,3
+Moderate,Moderate,0
+Mild,Mild,0
+Moderately Severe,Severe,1
+Moderate,Severe,2
+Mild,Mild,0
+Severe,Moderate,2
+Severe,Moderately Severe,1
+Mild,Minimal,1
+Mild,Moderate,1
+Mild,Mild,0
+Mild,Mild,0

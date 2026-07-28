@@ -1,0 +1,107 @@
+original_column,encoded_column
+Residence,Residence_Village
+Education Level,Education Level_was_missing
+Education Level,Education Level_High School
+Education Level,Education Level_Primary School
+Education Level,Education Level_University
+Marital status,Marital status_Married
+Occupation before latest pregnancy,Occupation before latest pregnancy_Doctor
+Occupation before latest pregnancy,Occupation before latest pregnancy_Housewife
+Occupation before latest pregnancy,Occupation before latest pregnancy_Other
+Occupation before latest pregnancy,Occupation before latest pregnancy_Service
+Occupation before latest pregnancy,Occupation before latest pregnancy_Student
+Occupation before latest pregnancy,Occupation before latest pregnancy_Teacher
+Monthly income before latest pregnancy,Monthly income before latest pregnancy_20000 to 30000
+Monthly income before latest pregnancy,Monthly income before latest pregnancy_5000 to 10000
+Monthly income before latest pregnancy,Monthly income before latest pregnancy_Less than 5000
+Monthly income before latest pregnancy,Monthly income before latest pregnancy_More than 30000
+Monthly income before latest pregnancy,Monthly income before latest pregnancy_No Personal Income
+Occupation After Your Latest Childbirth,Occupation After Your Latest Childbirth_Doctor
+Occupation After Your Latest Childbirth,Occupation After Your Latest Childbirth_Housewife
+Occupation After Your Latest Childbirth,Occupation After Your Latest Childbirth_Other
+Occupation After Your Latest Childbirth,Occupation After Your Latest Childbirth_Service
+Occupation After Your Latest Childbirth,Occupation After Your Latest Childbirth_Student
+Occupation After Your Latest Childbirth,Occupation After Your Latest Childbirth_Teacher
+Current monthly income,Current monthly income_20000 to 30000
+Current monthly income,Current monthly income_5000 to 10000
+Current monthly income,Current monthly income_Less than 5000
+Current monthly income,Current monthly income_More than 30000
+Current monthly income,Current monthly income_No Personal Income
+Husband's education level,Husband's education level_was_missing
+Husband's education level,Husband's education level_High School
+Husband's education level,Husband's education level_Primary School
+Husband's education level,Husband's education level_University
+Husband's monthly income,Husband's monthly income_was_missing
+Husband's monthly income,Husband's monthly income_20000 to 30000
+Husband's monthly income,Husband's monthly income_5000 to 10000
+Husband's monthly income,Husband's monthly income_Less than 5000
+Husband's monthly income,Husband's monthly income_More than 30000
+Addiction,Addiction_Drugs
+Addiction,Addiction_No Addiction
+Addiction,Addiction_Smoking
+Total children,Total children_One
+Total children,Total children_Two
+Disease before pregnancy,Disease before pregnancy_No Disease
+Disease before pregnancy,Disease before pregnancy_Non-Chronic Disease
+History of pregnancy loss,History of pregnancy loss_No Pregnancy Loss
+History of pregnancy loss,History of pregnancy loss_Still-born Delivery
+Family type,Family type_Nuclear
+Number of household members,Number of household members_6 to 8
+Number of household members,Number of household members_9 or more
+Relationship with the in-laws,Relationship with the in-laws_Friendly
+Relationship with the in-laws,Relationship with the in-laws_Good
+Relationship with the in-laws,Relationship with the in-laws_Neutral
+Relationship with the in-laws,Relationship with the in-laws_Poor
+Relationship with husband,Relationship with husband_Friendly
+Relationship with husband,Relationship with husband_Good
+Relationship with husband,Relationship with husband_Neutral
+Relationship with husband,Relationship with husband_Poor
+Relationship with the newborn,Relationship with the newborn_Good
+Relationship with the newborn,Relationship with the newborn_Neutral
+Relationship with the newborn,Relationship with the newborn_Very good
+Relationship between father and newborn,Relationship between father and newborn_Good
+Relationship between father and newborn,Relationship between father and newborn_Neutral
+Relationship between father and newborn,Relationship between father and newborn_Very good
+Feeling about motherhood,Feeling about motherhood_Neutral
+Feeling about motherhood,Feeling about motherhood_Sad
+Received Support,Received Support_Low
+Received Support,Received Support_Medium
+Need for Support,Need for Support_Low
+Need for Support,Need for Support_Medium
+Need for Support,Need for Support_Not Reported
+Major changes or losses during pregnancy,Major changes or losses during pregnancy_Yes
+Abuse,Abuse_was_missing
+Abuse,Abuse_Yes
+Trust and share feelings,Trust and share feelings_was_missing
+Trust and share feelings,Trust and share feelings_Yes
+Pregnancy length,Pregnancy length_6 months
+Pregnancy length,Pregnancy length_7 months
+Pregnancy length,Pregnancy length_8 months
+Pregnancy length,Pregnancy length_9 months
+Pregnancy length,Pregnancy length_Less than 5 months
+Pregnancy plan,Pregnancy plan_Yes
+Regular checkups,Regular checkups_Yes
+Fear of pregnancy,Fear of pregnancy_Yes
+Diseases during pregnancy,Diseases during pregnancy_No Disease
+Diseases during pregnancy,Diseases during pregnancy_Non-Chronic Disease
+Age of newborn,Age of newborn_1 year to 1.5 year
+Age of newborn,Age of newborn_6 months to 1 year
+Age of newborn,Age of newborn_Older than 1.5 year
+Age of immediate older children,Age of immediate older children_1yr to 3yr
+Age of immediate older children,Age of immediate older children_4yr to 6yr
+Age of immediate older children,Age of immediate older children_7yr to 12yr
+Age of immediate older children,Age of immediate older children_Not Applicable (Only One Child)
+Mode of delivery,Mode of delivery_Normal Delivery
+Gender of newborn,Gender of newborn_Girl
+Birth complications,Birth complications_Yes
+Breastfeed,Breastfeed_Yes
+Newborn illness,Newborn illness_Yes
+Worry about newborn,Worry about newborn_Yes
+Relax/sleep when newborn is tended,Relax/sleep when newborn is tended_Yes
+Relax/sleep when the newborn is asleep,Relax/sleep when the newborn is asleep_Yes
+Angry after latest child birth,Angry after latest child birth_Yes
+Feeling for regular activities,Feeling for regular activities_Not Reported
+Feeling for regular activities,Feeling for regular activities_Tired
+Feeling for regular activities,Feeling for regular activities_Worried
+Depression before pregnancy (PHQ2),Depression before pregnancy (PHQ2)_Positive
+Depression during pregnancy (PHQ2),Depression during pregnancy (PHQ2)_Positive

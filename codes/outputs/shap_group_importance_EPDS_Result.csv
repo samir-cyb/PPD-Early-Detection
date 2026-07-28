@@ -1,0 +1,51 @@
+group,n_columns_in_group,mean_abs_grouped_shap
+Angry after latest child birth,1,0.05518426179897499
+Maternal_MentalHealth_Risk_Index_Weighted,1,0.04729164794432376
+Social_Support_Index_Weighted,1,0.037579449013105656
+Abuse,2,0.03316828926703823
+Feeling for regular activities,3,0.02758729398659776
+Need for Support,3,0.02347967787940354
+Economic_Stability_Index_Weighted,1,0.020650817522200028
+Neonatal_Delivery_Stress_Index_Weighted,1,0.01617835365286969
+Relax/sleep when the newborn is asleep,1,0.014427475860690962
+Major changes or losses during pregnancy,1,0.014170153911079463
+Relationship with the in-laws,4,0.012789299234792384
+Relationship with husband,4,0.01078785542874147
+Feeling about motherhood,2,0.010443044725326032
+Diseases during pregnancy,2,0.009845875986637415
+Trust and share feelings,2,0.009466930717444987
+Worry about newborn,1,0.009294088859277471
+Education Level,4,0.009234188164104762
+Depression before pregnancy (PHQ2),1,0.008954555276470887
+Family type,1,0.008126355910196134
+Fear of pregnancy,1,0.008032512560900438
+Age of immediate older children,4,0.007382621364435282
+Received Support,2,0.007229499664311731
+Depression during pregnancy (PHQ2),1,0.006353542430679135
+Occupation before latest pregnancy,6,0.005888704280655503
+Current monthly income,5,0.005441465803679829
+Pregnancy plan,1,0.0052836023946316365
+Relationship between father and newborn,3,0.00507203609081005
+Number of household members,2,0.005046649897732415
+Husband's education level,4,0.004394500181623447
+Age,1,0.004116416382736614
+Birth complications,1,0.00410242282418378
+Occupation After Your Latest Childbirth,6,0.004045067265473469
+Gender of newborn,1,0.00397401811834173
+Pregnancy length,5,0.0039004719905925737
+Monthly income before latest pregnancy,5,0.0038452540737247505
+Age of newborn,3,0.0037785624423978307
+Husband's monthly income,5,0.0037301174804738623
+Disease before pregnancy,2,0.0033123866149635723
+Number of the latest pregnancy,1,0.0028388254923874825
+Mode of delivery,1,0.0025810251779427086
+Total children,2,0.002452226570894478
+Relationship with the newborn,3,0.0021578931090721885
+Relax/sleep when newborn is tended,1,0.0019781562554381923
+History of pregnancy loss,2,0.001420516148056732
+Newborn illness,1,0.0010157829373722304
+Residence,1,0.0009177535299984739
+Breastfeed,1,0.0007427292288755417
+Regular checkups,1,0.0005622949137277558
+Addiction,3,0.00017457274462954147
+Marital status,1,6.474674920386374e-05

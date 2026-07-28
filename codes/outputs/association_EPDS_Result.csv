@@ -1,0 +1,54 @@
+feature,feature_type,test,statistic,dof,p_value,significant_at_0.05
+Angry after latest child birth,categorical,chi-square,176.90539471091213,2.0,3.850185278054343e-39,True
+Abuse,categorical,chi-square,116.4429739720852,2.0,5.184769739890845e-26,True
+Relationship with the in-laws,categorical,chi-square,104.74107144700172,8.0,4.570688565361326e-19,True
+Relationship with husband,categorical,chi-square,97.90316435651738,8.0,1.1445197369503227e-17,True
+Need for Support,categorical,chi-square,86.86198002853702,6.0,1.357446172345968e-16,True
+Feeling for regular activities,categorical,chi-square,82.89825003723288,6.0,8.991293289877495e-16,True
+Received Support,categorical,chi-square,72.17190000963853,4.0,7.893696913062571e-15,True
+Feeling about motherhood,categorical,chi-square,71.28155470087462,4.0,1.2172274699770057e-14,True
+Major changes or losses during pregnancy,categorical,chi-square,47.53540983420074,2.0,4.7623017192561975e-11,True
+Relax/sleep when the newborn is asleep,categorical,chi-square,46.227458181400344,2.0,9.158724591302479e-11,True
+Depression during pregnancy (PHQ2),categorical,chi-square,36.033697407481945,2.0,1.4975523972495432e-08,True
+Fear of pregnancy,categorical,chi-square,35.30217527042088,2.0,2.1588876425385034e-08,True
+Relationship between father and newborn,categorical,chi-square,46.3391033274737,6.0,2.5342039529613255e-08,True
+Abuse_was_missing,categorical,chi-square,32.842778502239696,2.0,7.38382275387379e-08,True
+Trust and share feelings,categorical,chi-square,29.91445125033212,2.0,3.1927098079940257e-07,True
+Depression before pregnancy (PHQ2),categorical,chi-square,27.035621692329467,2.0,1.3467573118232756e-06,True
+Relationship with the newborn,categorical,chi-square,30.959346075073732,6.0,2.5806363462314258e-05,True
+Education Level,categorical,chi-square,30.32448344886042,6.0,3.410002411046036e-05,True
+Disease before pregnancy,categorical,chi-square,24.370980817531223,4.0,6.729844714492737e-05,True
+Worry about newborn,categorical,chi-square,19.03549073856401,2.0,7.353527247194567e-05,True
+Diseases during pregnancy,categorical,chi-square,23.352201729348792,4.0,0.00010767614795989303,True
+Pregnancy plan,categorical,chi-square,14.264836883303179,2.0,0.00079878523413557,True
+Family type,categorical,chi-square,12.407340798475689,2.0,0.0020219954689983154,True
+Age of immediate older children,categorical,chi-square,23.127197315462393,8.0,0.003204721009095239,True
+Birth complications,categorical,chi-square,11.178607906340817,2.0,0.0037376285239770473,True
+Husband's education level,categorical,chi-square,18.11280352367014,6.0,0.0059563909858175446,True
+Relax/sleep when newborn is tended,categorical,chi-square,8.641051465576806,2.0,0.013292893195271929,True
+Number of household members,categorical,chi-square,11.513296846964222,4.0,0.0213624311877205,True
+Total children,categorical,chi-square,8.799955748038562,4.0,0.06629883073880577,False
+Breastfeed,categorical,chi-square,4.1992787184943055,2.0,0.12250059899586425,False
+Number of the latest pregnancy,numeric,ANOVA,2.05919664481406,,0.1282345093029663,False
+Regular checkups,categorical,chi-square,3.5381291127002523,2.0,0.17049240028676535,False
+Pregnancy length,categorical,chi-square,13.92619219383748,10.0,0.1763849110613969,False
+Age of newborn,categorical,chi-square,8.820544156962917,6.0,0.1839249199814459,False
+Marital status,categorical,chi-square,3.1391771355962685,2.0,0.208130796455476,False
+Current monthly income,categorical,chi-square,12.872343764826264,10.0,0.23089707837969223,False
+Trust and share feelings_was_missing,categorical,chi-square,2.9252251588996048,2.0,0.2316303308937673,False
+Mode of delivery,categorical,chi-square,2.8102857830873313,2.0,0.24533199808029724,False
+Monthly income before latest pregnancy,categorical,chi-square,12.204971598206278,10.0,0.27157275721557084,False
+Husband's monthly income,categorical,chi-square,9.616115242576024,8.0,0.2930094967652659,False
+Husband's education level_was_missing,categorical,chi-square,2.2546930806379137,2.0,0.3238915503643973,False
+Husband's monthly income_was_missing,categorical,chi-square,2.242603446051954,2.0,0.32585534501931407,False
+Occupation before latest pregnancy,categorical,chi-square,13.19138347975759,12.0,0.35528500401052804,False
+Age,numeric,ANOVA,0.978370402867282,,0.37637422533446313,False
+Number of the latest pregnancy,numeric,Kruskal-Wallis,1.7132473178483876,,0.42459323651078784,False
+Age,numeric,Kruskal-Wallis,1.237929789006505,,0.5385015551269403,False
+Residence,categorical,chi-square,1.175025025529759,2.0,0.5557078831779839,False
+Education Level_was_missing,categorical,chi-square,1.0479295784318938,2.0,0.5921680659422939,False
+Occupation After Your Latest Childbirth,categorical,chi-square,9.55964764725156,12.0,0.6545306437843632,False
+Addiction,categorical,chi-square,3.7497486210713804,6.0,0.710498689212369,False
+Gender of newborn,categorical,chi-square,0.5953883055316229,2.0,0.7425284052813834,False
+Newborn illness,categorical,chi-square,0.5109200180578322,2.0,0.7745601113521763,False
+History of pregnancy loss,categorical,chi-square,1.250355665772604,4.0,0.8697403262421878,False

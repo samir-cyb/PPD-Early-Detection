@@ -1,0 +1,15 @@
+SHAP explainability summary -- EPDS Result (focus class: 'High')
+======================================================================
+Model: Random Forest (class_weight=balanced, n_estimators=300)
+Feature set: Raw + Composite (Arm B, 112 features)
+Train accuracy: 1.000 | Held-out test accuracy: 0.588
+SHAP values computed on the held-out 20% test set (unseen data).
+
+Top 5 features driving predictions toward 'High':
+    1. Angry after latest child birth_Yes (mean |SHAP| = 0.0552)
+    2. Maternal_MentalHealth_Risk_Index_Weighted [COMPOSITE INDEX] (mean |SHAP| = 0.0473)
+    3. Social_Support_Index_Weighted [COMPOSITE INDEX] (mean |SHAP| = 0.0376)
+    4. Abuse_Yes (mean |SHAP| = 0.0321)
+    5. Feeling for regular activities_Not Reported (mean |SHAP| = 0.0251)
+
+4/4 composite indices rank in the global top 10 most important features (out of 112 total).

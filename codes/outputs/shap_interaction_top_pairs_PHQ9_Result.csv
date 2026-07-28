@@ -1,0 +1,191 @@
+feature_1,feature_2,mean_abs_interaction
+Social_Support_Index_Weighted,Angry after latest child birth_Yes,0.011368725787209584
+Social_Support_Index_Weighted,Maternal_MentalHealth_Risk_Index_Weighted,0.010862285834388273
+Social_Support_Index_Weighted,Neonatal_Delivery_Stress_Index_Weighted,0.009185901831857402
+Abuse_Yes,Feeling for regular activities_Not Reported,0.008734722959580074
+Angry after latest child birth_Yes,Maternal_MentalHealth_Risk_Index_Weighted,0.008489975596254643
+Maternal_MentalHealth_Risk_Index_Weighted,Feeling for regular activities_Not Reported,0.007491354759510714
+Social_Support_Index_Weighted,Abuse_Yes,0.007198812272262334
+Social_Support_Index_Weighted,Economic_Stability_Index_Weighted,0.006859713660826773
+Social_Support_Index_Weighted,Age of immediate older children_Not Applicable (Only One Child),0.006020670350056813
+Maternal_MentalHealth_Risk_Index_Weighted,Abuse_Yes,0.005709225685239856
+Social_Support_Index_Weighted,Relationship with the in-laws_Neutral,0.005592126192867008
+Maternal_MentalHealth_Risk_Index_Weighted,Economic_Stability_Index_Weighted,0.005295348744946874
+Maternal_MentalHealth_Risk_Index_Weighted,Neonatal_Delivery_Stress_Index_Weighted,0.005169977491669101
+Angry after latest child birth_Yes,Abuse_Yes,0.005017224247678369
+Major changes or losses during pregnancy_Yes,Age,0.004945448172281772
+Social_Support_Index_Weighted,Relationship with the in-laws_Good,0.004818636308786231
+Social_Support_Index_Weighted,Age,0.004710503333520498
+Abuse_Yes,Relationship with the in-laws_Neutral,0.0046822886308172385
+Maternal_MentalHealth_Risk_Index_Weighted,Major changes or losses during pregnancy_Yes,0.004666479684709348
+Angry after latest child birth_Yes,Relationship with the in-laws_Good,0.004554854179341185
+Maternal_MentalHealth_Risk_Index_Weighted,Age,0.004245094485188746
+Maternal_MentalHealth_Risk_Index_Weighted,Relax/sleep when the newborn is asleep_Yes,0.0041691972599040405
+Neonatal_Delivery_Stress_Index_Weighted,Depression during pregnancy (PHQ2)_Positive,0.004110971682607397
+Social_Support_Index_Weighted,Relax/sleep when the newborn is asleep_Yes,0.004095520516301246
+Economic_Stability_Index_Weighted,Age,0.004043359448081471
+Relationship with the in-laws_Good,Economic_Stability_Index_Weighted,0.004025690206560127
+Neonatal_Delivery_Stress_Index_Weighted,Trust and share feelings_Yes,0.003940534880459591
+Angry after latest child birth_Yes,Economic_Stability_Index_Weighted,0.003928847409130774
+Abuse_Yes,Age of immediate older children_Not Applicable (Only One Child),0.003922207216038199
+Angry after latest child birth_Yes,Age of immediate older children_Not Applicable (Only One Child),0.0038321712703037547
+Angry after latest child birth_Yes,Age,0.0037893623922939613
+Social_Support_Index_Weighted,Major changes or losses during pregnancy_Yes,0.0037720727827034797
+Angry after latest child birth_Yes,Neonatal_Delivery_Stress_Index_Weighted,0.003728918693145349
+Relax/sleep when the newborn is asleep_Yes,Economic_Stability_Index_Weighted,0.0037245844188675465
+Major changes or losses during pregnancy_Yes,Neonatal_Delivery_Stress_Index_Weighted,0.003623268416973709
+Major changes or losses during pregnancy_Yes,Economic_Stability_Index_Weighted,0.0036062644447547912
+Social_Support_Index_Weighted,Feeling for regular activities_Not Reported,0.003575337628548807
+Maternal_MentalHealth_Risk_Index_Weighted,Birth complications_Yes,0.003574791162514488
+Maternal_MentalHealth_Risk_Index_Weighted,Depression during pregnancy (PHQ2)_Positive,0.003488235072222579
+Angry after latest child birth_Yes,Feeling for regular activities_Not Reported,0.0033888629411530174
+Social_Support_Index_Weighted,Trust and share feelings_Yes,0.0033542993490254364
+Maternal_MentalHealth_Risk_Index_Weighted,Relationship with the in-laws_Good,0.0032992111798417025
+Relationship with the in-laws_Good,Neonatal_Delivery_Stress_Index_Weighted,0.0032852848201983427
+Abuse_Yes,Neonatal_Delivery_Stress_Index_Weighted,0.003221100051427596
+Angry after latest child birth_Yes,Trust and share feelings_Yes,0.0032200264252099592
+Angry after latest child birth_Yes,Relationship with the in-laws_Neutral,0.0032103861159441657
+Neonatal_Delivery_Stress_Index_Weighted,Economic_Stability_Index_Weighted,0.0031540021080477126
+Relax/sleep when the newborn is asleep_Yes,Birth complications_Yes,0.003139286919464239
+Angry after latest child birth_Yes,Relax/sleep when the newborn is asleep_Yes,0.003135907949359589
+Abuse_Yes,Economic_Stability_Index_Weighted,0.003094341473903747
+Depression during pregnancy (PHQ2)_Positive,Age,0.00299332132814643
+Relationship with the in-laws_Good,Relax/sleep when the newborn is asleep_Yes,0.0029816872361451787
+Relax/sleep when the newborn is asleep_Yes,Relationship with the in-laws_Neutral,0.002971955338242821
+Relax/sleep when the newborn is asleep_Yes,Trust and share feelings_Yes,0.0029658519059751207
+Feeling for regular activities_Not Reported,Need for Support_Not Reported,0.002944714062581862
+Maternal_MentalHealth_Risk_Index_Weighted,Feeling for regular activities_Worried,0.002940366650048097
+Relax/sleep when the newborn is asleep_Yes,Neonatal_Delivery_Stress_Index_Weighted,0.002884636962911182
+Neonatal_Delivery_Stress_Index_Weighted,Feeling for regular activities_Not Reported,0.0028803325813700886
+Maternal_MentalHealth_Risk_Index_Weighted,Relationship with the in-laws_Neutral,0.002801852439199867
+Angry after latest child birth_Yes,Feeling for regular activities_Worried,0.002795169065265435
+Trust and share feelings_Yes,Feeling for regular activities_Not Reported,0.002787425404309778
+Maternal_MentalHealth_Risk_Index_Weighted,Feeling about motherhood_Neutral,0.0027828648272103206
+Abuse_Yes,Age,0.0027755569825565923
+Maternal_MentalHealth_Risk_Index_Weighted,Trust and share feelings_Yes,0.00273681821099901
+Maternal_MentalHealth_Risk_Index_Weighted,Need for Support_Not Reported,0.0026817137004575297
+Relationship with the in-laws_Good,Depression during pregnancy (PHQ2)_Positive,0.0026629948582479732
+Trust and share feelings_Yes,Feeling about motherhood_Neutral,0.0026497506405814756
+Depression during pregnancy (PHQ2)_Positive,Feeling for regular activities_Not Reported,0.002630236714905553
+Feeling about motherhood_Neutral,Birth complications_Yes,0.002626280507458343
+Feeling for regular activities_Not Reported,Age,0.002607163730911881
+Angry after latest child birth_Yes,Major changes or losses during pregnancy_Yes,0.0025992101180530996
+Social_Support_Index_Weighted,Birth complications_Yes,0.002593348462133522
+Depression during pregnancy (PHQ2)_Positive,Relationship with the in-laws_Neutral,0.002569313149857017
+Major changes or losses during pregnancy_Yes,Feeling about motherhood_Neutral,0.0025540632863934208
+Neonatal_Delivery_Stress_Index_Weighted,Feeling about motherhood_Neutral,0.002553025798742476
+Relationship with the in-laws_Good,Feeling about motherhood_Neutral,0.002546680347953216
+Feeling for regular activities_Not Reported,Feeling for regular activities_Worried,0.0025316154534354963
+Feeling for regular activities_Not Reported,Economic_Stability_Index_Weighted,0.002514106664597408
+Feeling for regular activities_Not Reported,Relationship with the in-laws_Neutral,0.002495552795845573
+Neonatal_Delivery_Stress_Index_Weighted,Age,0.0024797978056533337
+Feeling about motherhood_Neutral,Relationship with the in-laws_Neutral,0.0024776501533078235
+Maternal_MentalHealth_Risk_Index_Weighted,Age of immediate older children_Not Applicable (Only One Child),0.0024578266973489587
+Social_Support_Index_Weighted,Depression during pregnancy (PHQ2)_Positive,0.002457736714080576
+Trust and share feelings_Yes,Age,0.002455324570123216
+Relationship with the in-laws_Good,Trust and share feelings_Yes,0.0023730864245757465
+Feeling about motherhood_Neutral,Age,0.0023688095030326073
+Relationship with the in-laws_Good,Relationship with the in-laws_Neutral,0.002358498401469563
+Social_Support_Index_Weighted,Need for Support_Not Reported,0.002285928553793216
+Abuse_Yes,Major changes or losses during pregnancy_Yes,0.002255438982193174
+Angry after latest child birth_Yes,Need for Support_Not Reported,0.0022538983487217397
+Social_Support_Index_Weighted,Feeling about motherhood_Neutral,0.0022478820105970255
+Trust and share feelings_Yes,Economic_Stability_Index_Weighted,0.0021732917794709053
+Economic_Stability_Index_Weighted,Relationship with the in-laws_Neutral,0.002167132548005031
+Abuse_Yes,Feeling about motherhood_Neutral,0.002150152067104481
+Social_Support_Index_Weighted,Feeling for regular activities_Worried,0.0021497574881552224
+Relationship with the in-laws_Good,Feeling for regular activities_Not Reported,0.002127269039268956
+Abuse_Yes,Depression during pregnancy (PHQ2)_Positive,0.0021243394316327506
+Angry after latest child birth_Yes,Feeling about motherhood_Sad,0.0020480208048242474
+Major changes or losses during pregnancy_Yes,Depression during pregnancy (PHQ2)_Positive,0.0020446111151907653
+Abuse_Yes,Relax/sleep when the newborn is asleep_Yes,0.0020215843311740408
+Relax/sleep when the newborn is asleep_Yes,Age,0.001994824133243038
+Neonatal_Delivery_Stress_Index_Weighted,Relationship with the in-laws_Neutral,0.001915617264778572
+Economic_Stability_Index_Weighted,Age of immediate older children_Not Applicable (Only One Child),0.0019019410314919851
+Abuse_Yes,Relationship with the in-laws_Good,0.0018887615927262059
+Relationship with the in-laws_Neutral,Age of immediate older children_Not Applicable (Only One Child),0.0018864069741636766
+Abuse_Yes,Feeling for regular activities_Worried,0.0018557190942347559
+Relax/sleep when the newborn is asleep_Yes,Feeling about motherhood_Sad,0.001824761264769287
+Depression during pregnancy (PHQ2)_Positive,Economic_Stability_Index_Weighted,0.0018115299043846202
+Abuse_Yes,Need for Support_Not Reported,0.0018063971172117567
+Major changes or losses during pregnancy_Yes,Feeling for regular activities_Not Reported,0.001804279957234097
+Abuse_Yes,Trust and share feelings_Yes,0.0017743872108707925
+Neonatal_Delivery_Stress_Index_Weighted,Age of immediate older children_Not Applicable (Only One Child),0.0017737934562942256
+Birth complications_Yes,Feeling for regular activities_Worried,0.0017714792340052868
+Trust and share feelings_Yes,Relationship with the in-laws_Neutral,0.001758965513961821
+Angry after latest child birth_Yes,Depression during pregnancy (PHQ2)_Positive,0.0017381254158297314
+Economic_Stability_Index_Weighted,Birth complications_Yes,0.001692304447086015
+Birth complications_Yes,Age,0.0016824375916628428
+Social_Support_Index_Weighted,Feeling about motherhood_Sad,0.0016786739827493013
+Birth complications_Yes,Relationship with the in-laws_Neutral,0.0016576545629550046
+Major changes or losses during pregnancy_Yes,Trust and share feelings_Yes,0.0016510204293210898
+Feeling for regular activities_Not Reported,Age of immediate older children_Not Applicable (Only One Child),0.0016495618507439617
+Relationship with the in-laws_Good,Age,0.0016300178790736718
+Age,Age of immediate older children_Not Applicable (Only One Child),0.0016262220721201446
+Relax/sleep when the newborn is asleep_Yes,Feeling for regular activities_Not Reported,0.0016197388701520738
+Economic_Stability_Index_Weighted,Feeling about motherhood_Neutral,0.0016061954594509618
+Neonatal_Delivery_Stress_Index_Weighted,Need for Support_Not Reported,0.0015804888443705267
+Major changes or losses during pregnancy_Yes,Birth complications_Yes,0.0015660465907813322
+Abuse_Yes,Birth complications_Yes,0.0015640355329070072
+Neonatal_Delivery_Stress_Index_Weighted,Feeling for regular activities_Worried,0.0015556904850276897
+Abuse_Yes,Feeling about motherhood_Sad,0.0015257395518000262
+Neonatal_Delivery_Stress_Index_Weighted,Birth complications_Yes,0.0015008878723716075
+Feeling for regular activities_Not Reported,Birth complications_Yes,0.0014754287442161032
+Relationship with the in-laws_Good,Major changes or losses during pregnancy_Yes,0.0014711542138986845
+Relationship with the in-laws_Neutral,Age,0.0014702489978826142
+Major changes or losses during pregnancy_Yes,Relax/sleep when the newborn is asleep_Yes,0.0014697825154190423
+Feeling for regular activities_Not Reported,Feeling about motherhood_Neutral,0.0014646863528941531
+Maternal_MentalHealth_Risk_Index_Weighted,Feeling about motherhood_Sad,0.0014328386780173734
+Angry after latest child birth_Yes,Birth complications_Yes,0.0014320409080306627
+Relax/sleep when the newborn is asleep_Yes,Age of immediate older children_Not Applicable (Only One Child),0.001374418103464986
+Relax/sleep when the newborn is asleep_Yes,Feeling for regular activities_Worried,0.0013266417151818473
+Relationship with the in-laws_Good,Need for Support_Not Reported,0.001320037596160547
+Economic_Stability_Index_Weighted,Need for Support_Not Reported,0.0013174715613167316
+Depression during pregnancy (PHQ2)_Positive,Feeling about motherhood_Neutral,0.0013144166254354258
+Relax/sleep when the newborn is asleep_Yes,Depression during pregnancy (PHQ2)_Positive,0.0013103582145407979
+Relationship with the in-laws_Good,Age of immediate older children_Not Applicable (Only One Child),0.0013101728106272128
+Major changes or losses during pregnancy_Yes,Relationship with the in-laws_Neutral,0.0012502106335449581
+Major changes or losses during pregnancy_Yes,Feeling for regular activities_Worried,0.0012190243036126047
+Economic_Stability_Index_Weighted,Feeling for regular activities_Worried,0.0011241626052116464
+Age,Feeling for regular activities_Worried,0.0011213785787316647
+Feeling about motherhood_Sad,Age of immediate older children_Not Applicable (Only One Child),0.0011160671569546365
+Trust and share feelings_Yes,Depression during pregnancy (PHQ2)_Positive,0.0010838784168139897
+Angry after latest child birth_Yes,Feeling about motherhood_Neutral,0.0010614445801880967
+Need for Support_Not Reported,Age,0.0009944206457403822
+Need for Support_Not Reported,Relationship with the in-laws_Neutral,0.0009779638370294374
+Trust and share feelings_Yes,Age of immediate older children_Not Applicable (Only One Child),0.0009476766487329912
+Major changes or losses during pregnancy_Yes,Age of immediate older children_Not Applicable (Only One Child),0.0009456357251315941
+Major changes or losses during pregnancy_Yes,Need for Support_Not Reported,0.0009112417140759964
+Relationship with the in-laws_Neutral,Feeling for regular activities_Worried,0.0008903394268542896
+Birth complications_Yes,Age of immediate older children_Not Applicable (Only One Child),0.0008894278104294124
+Relationship with the in-laws_Good,Birth complications_Yes,0.0008677226435941305
+Relax/sleep when the newborn is asleep_Yes,Feeling about motherhood_Neutral,0.0008654883060816605
+Depression during pregnancy (PHQ2)_Positive,Birth complications_Yes,0.0008622388249447733
+Depression during pregnancy (PHQ2)_Positive,Age of immediate older children_Not Applicable (Only One Child),0.000844276205409066
+Trust and share feelings_Yes,Birth complications_Yes,0.0008324556134714416
+Depression during pregnancy (PHQ2)_Positive,Feeling for regular activities_Worried,0.0007946159861681216
+Feeling about motherhood_Sad,Age,0.0007658427610563038
+Neonatal_Delivery_Stress_Index_Weighted,Feeling about motherhood_Sad,0.0007259663121394269
+Age of immediate older children_Not Applicable (Only One Child),Feeling for regular activities_Worried,0.0007239246513352228
+Feeling about motherhood_Neutral,Age of immediate older children_Not Applicable (Only One Child),0.0006818910981130236
+Trust and share feelings_Yes,Need for Support_Not Reported,0.0006722617904634899
+Trust and share feelings_Yes,Feeling for regular activities_Worried,0.000637395232626753
+Relax/sleep when the newborn is asleep_Yes,Need for Support_Not Reported,0.0006279818559750252
+Economic_Stability_Index_Weighted,Feeling about motherhood_Sad,0.0006194941831276648
+Relationship with the in-laws_Good,Feeling for regular activities_Worried,0.0006161242194153901
+Feeling for regular activities_Not Reported,Feeling about motherhood_Sad,0.0006130200947713305
+Need for Support_Not Reported,Birth complications_Yes,0.0006043360221552696
+Need for Support_Not Reported,Age of immediate older children_Not Applicable (Only One Child),0.0005773651323782139
+Feeling about motherhood_Sad,Need for Support_Not Reported,0.0005718478971691209
+Major changes or losses during pregnancy_Yes,Feeling about motherhood_Sad,0.0005571744365121306
+Depression during pregnancy (PHQ2)_Positive,Need for Support_Not Reported,0.0005457314246514431
+Feeling about motherhood_Sad,Feeling about motherhood_Neutral,0.0005216738992217509
+Trust and share feelings_Yes,Feeling about motherhood_Sad,0.0005017221128186406
+Feeling about motherhood_Sad,Feeling for regular activities_Worried,0.0005011291037293151
+Feeling about motherhood_Neutral,Feeling for regular activities_Worried,0.0004869438391556932
+Depression during pregnancy (PHQ2)_Positive,Feeling about motherhood_Sad,0.00044530384288107665
+Relationship with the in-laws_Good,Feeling about motherhood_Sad,0.0004038603188010956
+Feeling about motherhood_Sad,Birth complications_Yes,0.00035766098861000754
+Need for Support_Not Reported,Feeling about motherhood_Neutral,0.0003382529770767321
+Need for Support_Not Reported,Feeling for regular activities_Worried,0.00032774414381023985
+Feeling about motherhood_Sad,Relationship with the in-laws_Neutral,0.00028600747079261893

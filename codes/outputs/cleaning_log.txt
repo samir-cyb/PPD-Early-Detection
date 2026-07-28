@@ -1,0 +1,142 @@
+
+==========================================================================================
+1. LOAD RAW DATA
+==========================================================================================
+Loaded raw shape: (800, 70)
+Dropped 'sr' index column.
+
+==========================================================================================
+2. CLEAN COLUMN NAMES
+==========================================================================================
+Columns after cleanup: 69
+
+==========================================================================================
+3. FIX CATEGORY LABEL INCONSISTENCIES
+==========================================================================================
+  Education Level: 6 -> 4 unique values (mapping applied: {'High school': 'High School', 'Primaryschool': 'Primary School', 'Primary school': 'Primary School'})
+  Husband's education level: 6 -> 4 unique values (mapping applied: {'High school': 'High School', 'Primaryschool': 'Primary School', 'Primary school': 'Primary School'})
+  Total children: 4 -> 3 unique values (mapping applied: {'More than two': 'More than Two'})
+  History of pregnancy loss: 3 -> 2 unique values (mapping applied: {'Still-born delivery': 'Still-born Delivery'})
+  Diseases during pregnancy: 4 -> 2 unique values (mapping applied: {'Chronic disease': 'Chronic Disease', 'Non-chronic disease': 'Non-Chronic Disease', 'Non-chronic Disease': 'Non-Chronic Disease'})
+  Disease before pregnancy: 3 -> 2 unique values (mapping applied: {'Chronic disease': 'Chronic Disease', 'Non-chronic disease': 'Non-Chronic Disease', 'Non-chronic Disease': 'Non-Chronic Disease', '1.2': nan})
+  Occupation before latest pregnancy: 8 -> 7 unique values (mapping applied: {'House wife': 'Housewife'})
+  Occupation After Your Latest Childbirth: 8 -> 7 unique values (mapping applied: {'House wife': 'Housewife'})
+
+Fixing Likert-scale item columns (EPDS + PHQ-9), unifying 'Several Days' / Bangla text -> 'Several days':
+  You have been able to laugh and see the funny side of things: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  You have looked forward with enjoyment to things: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  You have blamed myself unnecessarily when things went wrong: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  You have been anxious or worried for no good reason: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  You have felt scared or panicky for no good reason: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Things have been getting to you: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  You have been so unhappy that you have had difficulty sleeping: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  You have felt sad or miserable: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  You have been so unhappy that you have been crying: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  The thought of harming yourself has occurred: 5 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Little interest or pleasure in doing things: 3 -> 3 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Feeling down, depressed, or hopeless: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Trouble falling or staying asleep, or sleeping too much: 6 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Feeling tired or having little energy: 5 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Poor appetite or overeating: 5 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Feeling bad about yourself or that you are a failure or have let yourself or your family down: 5 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Trouble concentrating on things: 5 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Moving or speaking or restlessness: 5 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+  Thoughts that you would be better off dead, or of hurting yourself: 5 -> 4 unique values (mapping applied: {'Several Days': 'Several days', 'several days': 'Several days', 'মাঝে মধ্যে (Several days)': 'Several days'})
+
+Validation - any Likert item column NOT in the 4 canonical labels?
+  (no output above other than this line = all clean)
+
+==========================================================================================
+4. STRUCTURAL MISSING VALUES -> EXPLICIT 'NOT APPLICABLE' CATEGORIES
+==========================================================================================
+These columns have high missing % because the question did not apply to that mother (e.g. no addiction, no disease, only one child) -- filling with median/mode would inject false information. We instead give them an explicit, honest category.
+  Addiction: filled 789 missing -> 'No Addiction'
+  History of pregnancy loss: filled 613 missing -> 'No Pregnancy Loss'
+  Disease before pregnancy: filled 589 missing -> 'No Disease'
+  Diseases during pregnancy: filled 371 missing -> 'No Disease'
+  Age of immediate older children: filled 517 missing -> 'Not Applicable (Only One Child)'
+
+Checking whether missing income correlates with occupation (sanity check before filling):
+
+  Occupation breakdown for missing 'Monthly income before latest pregnancy':
+  Occupation before latest pregnancy
+  Housewife    313
+  Student      118
+  Service        2
+  Teacher        2
+  Doctor         1
+  Other          1
+
+  Occupation breakdown for missing 'Current monthly income':
+  Occupation After Your Latest Childbirth
+  Housewife    445
+  Student       62
+  Doctor        10
+  Other          4
+  Service        3
+  Business       1
+
+  Monthly income before latest pregnancy: filled 437 missing -> 'No Personal Income'
+
+  Current monthly income: filled 525 missing -> 'No Personal Income'
+
+  Feeling for regular activities: filled 223 missing -> 'Not Reported' (meaning not clearly structural -- keep as its own category rather than guessing mode)
+
+  Need for Support: 167 missing -- diagnosing correlation with 'Received Support' before filling:
+  Received Support breakdown for missing 'Need for Support':
+  Received Support
+  High      102
+  Medium     40
+  Low        25
+  Received Support breakdown for the FULL dataset (for comparison):
+  Received Support
+  Medium    339
+  High      307
+  Low       154
+  Need for Support: filled 167 missing -> 'Not Reported' (kept as its own category; revisit if the crosstab above shows a clear pattern, e.g. mostly 'High' Received Support)
+
+==========================================================================================
+5. TRUE RANDOM MISSING VALUES -> MODE IMPUTATION (with flag column)
+==========================================================================================
+  Abuse: filled 38 missing -> mode 'Yes' (flag column 'Abuse_was_missing' added, sum=38)
+  Husband's monthly income: filled 28 missing -> mode 'More than 30000' (flag column 'Husband's monthly income_was_missing' added, sum=28)
+  Husband's education level: filled 9 missing -> mode 'University' (flag column 'Husband's education level_was_missing' added, sum=9)
+  Education Level: filled 6 missing -> mode 'University' (flag column 'Education Level_was_missing' added, sum=6)
+  Trust and share feelings: filled 1 missing -> mode 'Yes' (flag column 'Trust and share feelings_was_missing' added, sum=1)
+
+==========================================================================================
+6. RECOMPUTE TARGET CATEGORIES FROM SCORES (fixes inconsistent labels)
+==========================================================================================
+EPDS Result: 16 / 800 rows disagreed with the score-based band (0-8 Low, 9-12 Medium, 13-30 High). Replacing 'EPDS Result' with the recomputed, guaranteed-consistent version.
+New EPDS Result distribution:
+EPDS Result
+High      349
+Low       247
+Medium    204
+
+PHQ9 Result: 40 / 800 rows disagreed with the standard score-based band (0-4 Minimal ... 20+ Severe), including all rows previously labeled the non-standard 'Normal'. Replacing 'PHQ9 Result' with the recomputed, guaranteed-consistent version.
+New PHQ9 Result distribution:
+PHQ9 Result
+Mild                 263
+Moderate             237
+Moderately Severe    132
+Severe                89
+Minimal               79
+
+Added binary target 'PPD_binary' (EPDS Score >= 13 -> 1):
+PPD_binary
+0    451
+1    349
+
+==========================================================================================
+7. FINAL CHECKS
+==========================================================================================
+Duplicate rows: 0
+Final shape: (800, 75)
+No missing values remain anywhere in the dataset.
+
+==========================================================================================
+8. SAVE CLEANED DATASET
+==========================================================================================
+Saved cleaned dataset -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\PPD_dataset_cleaned_v2.csv
+Shape saved: (800, 75)

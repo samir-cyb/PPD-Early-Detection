@@ -1,0 +1,290 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033
+{\fonttbl{\f0\froman Cambria;}{\f1\fswiss Calibri;}{\f2\fmodern Consolas;}}
+{\colortbl;\red0\green0\blue0;\red31\green56\blue100;\red90\green90\blue90;}
+\pard\qc\f0\fs44\b\cf2 Leakage-Free, Explainable Machine Learning Framework for Early Detection of Postpartum Depression in Bangladesh\b0\cf1\fs22\par
+\pard\qc\f1\fs24\i A Full Technical Project Report\i0\par
+\pard\qc\f1\fs20 Dataset: "Data for Postpartum Depression Prediction in Bangladesh" (Mendeley, n = 800)\par
+\pard\qc\f1\fs20 Prepared by: Samir\par
+\par\par
+
+\pard\f0\fs30\b\cf2 Table of Contents\cf1\b0\fs22\par
+\pard\f1\fs22\sa60 1. Introduction and Motivation\par
+2. Dataset Description\par
+3. Overall Methodology and Workflow\par
+4. Novel Contribution: Composite Risk Indices\par
+5. Data Cleaning and Leakage-Free Design\par
+6. Baseline Modeling (Step 7)\par
+7. Advanced Modeling: Hyperparameter Tuning, Deep Learning, and Stacking (Step 7b)\par
+8. Ablation Study: Proving the Composite Indices Add Value (Step 8)\par
+9. Explainable AI: SHAP Analysis (Step 9)\par
+10. Ordinal-Aware Modeling: Quadratic Weighted Kappa and Regression-Threshold (Step 10)\par
+11. Decision Threshold Tuning and Probability Calibration (Step 11)\par
+12. CatBoost Native Categorical Handling and Repeated Cross-Validation (Step 12)\par
+13. Second-Round Improvement Experiments (Tier 2)\par
+14. Clinical Literature Grounding\par
+15. Deeper Explainability: Interactions, Clustering, and Error Analysis\par
+16. Closing-the-Loop Feature Test\par
+17. Master Model Comparison Tables\par
+18. Key Novelties and Contributions\par
+19. Limitations\par
+20. Conclusion\par
+\page
+
+\pard\f0\fs30\b\cf2 1. Introduction and Motivation\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 Postpartum Depression (PPD) is a common but under-diagnosed mental health condition affecting mothers after childbirth. In Bangladesh, screening relies primarily on clinical instruments such as the Edinburgh Postnatal Depression Scale (EPDS) and the Patient Health Questionnaire-9 (PHQ-9), both of which require a trained interviewer and are not applied universally. A machine learning model that can flag high-risk mothers using only routinely-collectable demographic, economic, family, and pregnancy-history information -- without requiring the EPDS/PHQ-9 interview itself -- could support earlier, more scalable screening.\par
+
+An existing external study on a similar Bangladesh dataset reports near-perfect discrimination (AUROC), which is a strong indicator of data leakage: the model was very likely trained using answers to the EPDS/PHQ-9 items themselves (or scores derived from them) as predictors of a label that is directly computed from those same items. Such a model cannot be deployed in practice, because at prediction time a mother who has not yet completed an EPDS/PHQ-9 interview has none of those answers available.\par
+
+This project builds a machine learning framework that is explicitly designed to avoid this failure mode, while introducing a genuine methodological contribution -- four engineered Composite Risk Indices -- and a thorough, multi-angle explainability analysis so that the model's predictions can be trusted and clinically interpreted rather than treated as a black box.\par
+\page
+
+\pard\f0\fs30\b\cf2 2. Dataset Description\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 The dataset is the Mendeley "Data for Postpartum Depression Prediction in Bangladesh" dataset: 800 postpartum mothers, 70 raw columns (69 after removing a redundant index column). It contains demographic, economic, family/social, pregnancy, delivery, neonatal, and prior mental-health-history questions, plus the 10 EPDS items and 9 PHQ-9 items used to compute two clinical scores and their corresponding severity categories.\par
+
+\pard\f1\fs22\b\sa60 Column roles\b0\par
+\pard\f1\fs22\sa120 - Target candidates: EPDS Score, EPDS Result (Low/Medium/High), PHQ9 Score, PHQ9 Result (Minimal/Mild/Moderate/Moderately Severe/Severe), and an engineered binary target PPD_binary (EPDS Score >= 13 -> 1, following the convention used in the reference literature).\par
+- Leakage columns (23 total, never used as model input): the 10 EPDS items, the 9 PHQ-9 items, and the 4 score/category columns they produce.\par
+- Safe input features (46 raw columns): demographic, family, economic, pregnancy, delivery, neonatal, and prior (pre-postpartum) mental-health-history questions -- none of which are derived from the EPDS/PHQ-9 interview itself.\par
+
+\pard\f1\fs22\b\sa60 Target class distributions (n = 800)\b0\par
+\pard\f1\fs22\sa120 EPDS Result: High 349, Low 247, Medium 204. PHQ9 Result: Mild 263, Moderate 237, Moderately Severe 132, Severe 89, Minimal 79. PPD_binary: Positive 349, Negative 451. All three targets were recomputed directly from the numeric EPDS/PHQ-9 scores using the standard clinical cut-offs (rather than trusting the dataset's original category labels), which corrected 16 mislabeled EPDS Result rows and 40 mislabeled PHQ9 Result rows -- including every row that had been labeled with the non-standard category "Normal", which does not exist in the official PHQ-9 severity scale.\par
+\page
+
+\pard\f0\fs30\b\cf2 3. Overall Methodology and Workflow\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 The project follows a strict, auditable pipeline in which every stage's output feeds the next, and every script is independently re-runnable and logged:\par
+\pard\f1\fs20\f2 Raw CSV (n=800, 70 cols)\par
+   ->01_dataset_overview.py  -- classify every column as TARGET / LEAKAGE / SAFE INPUT\par
+   ->02_data_cleaning.py  -- fix label typos, fill structural missing values, mode-impute true-random missing values, recompute targets from scores\par
+   ->03_association_eda.py  -- chi-square / ANOVA association of every raw feature vs. every target\par
+   ->04_feature_engineering.py  -- build the 4 Composite Risk Indices (equal-weight and chi-square-weighted variants)\par
+   ->05_direction_check.py  -- empirically verify every ordinal sub-feature mapping's direction against real PPD rates\par
+   ->06_encoding.py  -- one-hot encode categoricals, drop leakage columns, produce the final model-ready table\par
+   ->07 / 07b_modeling.py  -- baseline models, then hyperparameter tuning + deep learning + stacking\par
+   ->08_ablation_study.py  -- Raw-only vs. Raw+Composite vs. Selected+Composite, with paired significance testing\par
+   ->09_shap_explainability.py  -- SHAP-based global and local explanations of the chosen model\par
+   ->10-20  -- ordinal-aware evaluation, threshold/calibration tuning, CatBoost native handling, Tier-2 refinements, literature grounding, and five further explainability/discovery experiments (SHAP interactions, clustering, error analysis, closing-loop feature test)\par
+\pard\f1\fs22\sa120 At no point after script 06 do the raw EPDS/PHQ-9 item answers or scores re-enter the feature set -- this constraint is enforced in code (an explicit drop list), not just by convention, in every one of the 20 scripts.\par
+\page
+
+\pard\f0\fs30\b\cf2 4. Novel Contribution: Composite Risk Indices\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 The central methodological contribution of this project is to replace a flat bag of 108 raw one-hot survey answers with four clinically-grounded, interpretable composite scores, each summarizing a group of related raw questions into a single 0-10 index.\par
+
+\pard\f1\fs22\b\sa60 General formula\b0\par
+\pard\f1\fs20\f2\sa120 normalize(x) = (score(x) - min) / (max - min)\par
+Composite Index = 10 \u215 \u931 ( w_i \u215 normalize(sub-feature_i) )\par
+\pard\f1\fs22\sa120 Two weighting schemes for w_i were built and compared: \b Equal-weight\b0  (w_i = 1/n, every sub-feature counts the same) and \b Chi-square-weighted\b0  (w_i is proportional to -log10(p_i), where p_i is that sub-feature's own chi-square association p-value against PPD_binary, so a sub-feature that is individually a stronger risk marker counts for more inside the composite). The weighted variant was adopted as final: under equal-weighting, the Maternal Mental-Health Risk Index became statistically NON-significant because its strongest sub-feature (Abuse) was diluted by weaker/noisier co-features -- a concrete, empirical justification for the weighting choice rather than an arbitrary preference.\par
+
+\pard\f1\fs22\b\sa60 The four indices\b0\par
+\trowd\trgaph80\trleft0\trbrdrt\brdrs\brdrw10\trbrdrb\brdrs\brdrw10
+\cellx1900\cellx5100\cellx9360
+\pard\intbl\f1\fs19\b Index\cell Sub-features used\cell Interpretation\cell\b0\row
+\trowd\trgaph80\trleft0\cellx1900\cellx5100\cellx9360
+\pard\intbl\f1\fs19 Economic Stability Index (ESI)\cell Current monthly income, Husband's monthly income, Occupation after childbirth, Education Level\cell Higher = more economically stable / protective\cell\row
+\trowd\trgaph80\trleft0\cellx1900\cellx5100\cellx9360
+\pard\intbl\f1\fs19 Social/Family Support Index (SSI)\cell Family type, Relationship with in-laws, Relationship with husband, Number of household members, Received Support\cell Higher = more social/family support\cell\row
+\trowd\trgaph80\trleft0\cellx1900\cellx5100\cellx9360
+\pard\intbl\f1\fs19 Maternal Mental-Health Risk Index (MHRI)\cell PHQ-2 before pregnancy, PHQ-2 during pregnancy, Disease before pregnancy, Abuse, History of pregnancy loss\cell Higher = more pre-existing mental-health risk\cell\row
+\trowd\trgaph80\trleft0\cellx1900\cellx5100\cellx9360
+\pard\intbl\f1\fs19 Neonatal/Delivery Stress Index (NSI)\cell Mode of delivery, Birth complications, Newborn illness, Worry about newborn\cell Higher = more delivery/neonatal stress\cell\row
+\pard\f1\fs22\sa120\par
+\pard\f1\fs22\sa120 All 4 weighted composite indices are statistically significant (both ANOVA and Kruskal-Wallis, p < 0.05) against all 3 targets -- 24 out of 24 tests -- confirmed in \f2 composite_index_association.csv\f1 . Two notable, empirically-corrected direction findings (verified in script 05 against real PPD rates, not assumed): (1) more education was associated with a HIGHER observed PPD rate in this sample (University 48.5% vs. Primary 22.2%), plausibly reflecting greater symptom awareness/reporting, so the Education sub-score was reverse-mapped to keep ESI's "higher = protective" meaning internally consistent; (2) the raw "Abuse" question's "No" answers were associated with a markedly HIGHER PPD rate than "Yes" answers (64.1% vs. 27.0%), the opposite of the naive clinical assumption -- the composite mapping was aligned to this empirical pattern, and this direction was independently reproduced by two later, unrelated methods (a Logistic-Regression-learned weighting scheme in Step 13, and the raw SHAP feature ranking in Step 9), which rules out the possibility that it is an artifact of the original chi-square weighting choice specifically. This finding is flagged in the Limitations section as needing verification of the original Bangla questionnaire wording.\par
+\page
+
+\pard\f0\fs30\b\cf2 5. Data Cleaning and Leakage-Free Design\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 Cleaning addressed four distinct classes of data-quality issues, each handled with a different, documented strategy rather than one blanket approach:\par
+\pard\f1\fs22\sa60 (a) Category-label inconsistencies (typos, case mismatches, stray Bangla text in Likert-scale items) were unified via explicit mapping dictionaries.\par
+(b) Structural missing values (e.g. no addiction, no pregnancy loss, only one child) were filled with an explicit, honest category such as "No Addiction" or "Not Applicable" -- never with a statistical average, since the value is not randomly missing, it does not apply.\par
+(c) True random missing values (Abuse: 38, Husband's monthly income: 28, Husband's education: 9, Education Level: 6, Trust and share feelings: 1) were mode-imputed, each paired with a "_was_missing" flag column so the model can still learn from the fact that a value was originally missing.\par
+(d) The EPDS Result and PHQ9 Result category labels were recomputed directly from the numeric scores using the standard clinical cut-offs (EPDS: 0-8 Low, 9-12 Medium, 13-30 High; PHQ-9: 0-4 Minimal, 5-9 Mild, 10-14 Moderate, 15-19 Moderately Severe, 20-27 Severe), fixing 16 + 40 internally-inconsistent rows respectively.\par
+\pard\f1\fs22\sa120 The leakage-free design is enforced at the encoding stage (script 06): the 10 EPDS items, 9 PHQ-9 items, and both raw scores are permanently dropped from the feature table before any model ever sees the data, and the three targets are carried alongside the features but never included as an input to each other's model.\par
+\page
+
+\pard\f0\fs30\b\cf2 6. Baseline Modeling (Step 7)\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 Five model families (Logistic Regression, Random Forest, XGBoost, LightGBM, CatBoost) were trained per target on the full raw+composite feature set, using stratified 5-fold cross-validation plus an 80/20 holdout split. See Section 17 for the full comparison table. Random Forest was the strongest baseline for EPDS Result (CV F1-macro 0.583) and a close second for the other two targets; results for PHQ9 Result in particular showed low absolute F1-macro (~0.34-0.36) across every baseline model, an early signal that this 5-class ordinal target would need special handling (addressed later in Step 10).\par
+\page
+
+\pard\f0\fs30\b\cf2 7. Advanced Modeling: Tuning, Deep Learning, and Stacking (Step 7b)\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 Each of the four tree-based baselines was tuned via RandomizedSearchCV, an MLP (small feed-forward neural network) architecture search was run, and a Stacking Ensemble (all four tuned tree models feeding a Logistic Regression meta-learner) was tested. Full hyperparameters selected per target are recorded in \f2 best_hyperparameters.json\f1 . Key result: for PPD_binary, the Stacking Ensemble achieved the single best result found anywhere in the project (CV F1-macro 0.762, holdout F1-macro 0.765) -- better than any single baseline or single tuned model. For EPDS Result, tuned Random Forest achieved the best CV F1-macro (0.590) but a WORSE holdout F1-macro (0.502) than the untuned baseline (0.520/0.540 depending on split), a sign of mild overfitting to the CV folds during hyperparameter search on a modest n=800 dataset -- discussed further in Section 17.\par
+\page
+
+\pard\f0\fs30\b\cf2 8. Ablation Study: Proving the Composite Indices Add Value (Step 8)\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 This is the core evidence for the project's central novelty claim. Three feature "arms" were compared under an identical modeling protocol, for every model family and every target:\par
+\pard\f1\fs22\sa60 Arm A "Raw only" (108 features) -- no composite indices.\par
+Arm B "Raw + Composite" (112 features) -- Arm A plus the 4 chi-square-weighted composite indices.\par
+Arm C "Selected + Composite" (30 features) -- the top-30 most important features from Arm B, selected by Random Forest importance, re-derived independently inside every cross-validation fold's training portion (a NESTED selection procedure, fixed after an earlier version selected features once on the full dataset -- a subtle form of data leakage that was caught and corrected).\par
+\pard\f1\fs22\sa120 Result (averaged across all 5 models): composite features helped for EPDS Result and PHQ9 Result, and were roughly neutral for PPD_binary, in the original 5-fold test. Because a simple mean comparison does not establish whether a difference is real or noise, a paired t-test and Wilcoxon signed-rank test were added on the same 5 folds -- the original test found 0 of 30 arm-vs-arm comparisons statistically significant at p<0.05, a low-power result given only 5 paired observations. Re-running the same comparison with RepeatedStratifiedKFold (5 folds \u215 5 repeats = 25 paired observations) found 2 of 15 comparisons significant (EPDS Result \u215 XGBoost, +0.022, p=0.0008; PHQ9 Result \u215 LightGBM, +0.022, p=0.002), confirming that the original null result reflected low statistical power rather than an absent effect -- and every other comparison remained positive in direction even where short of significance.\par
+\page
+
+\pard\f0\fs30\b\cf2 9. Explainable AI: SHAP Analysis (Step 9)\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 The explainability backbone model is a Random Forest (n_estimators=300, class_weight="balanced") trained on Arm B's 112 features, explained via \f2 shap.TreeExplainer\f1  on the held-out 20% test set. Random Forest was deliberately chosen over the Stacking Ensemble (Step 7b's best raw performer for PPD_binary) because TreeExplainer gives fast, exact Shapley values for a single tree ensemble, while a 4-model stacking ensemble would require a slower, approximate explanation method -- a conscious clarity-over-marginal-accuracy trade-off, consistent with the project's stated goal of being \i explainable\i0 , not merely accurate.\par
+
+\pard\f1\fs22\b\sa60 Top-10 SHAP features by target (focus class: PPD_binary=1, EPDS Result=High, PHQ9 Result=Severe)\b0\par
+\trowd\trgaph80\trleft0\trbrdrt\brdrs\brdrw10\trbrdrb\brdrs\brdrw10
+\cellx700\cellx3600\cellx6500\cellx9360
+\pard\intbl\f1\fs19\b Rank\cell EPDS Result\cell PHQ9 Result\cell PPD_binary\b0\cell\row
+\trowd\trgaph80\trleft0\cellx700\cellx3600\cellx6500\cellx9360
+\pard\intbl\f1\fs18 1\cell Angry after childbirth = Yes\cell Social Support Index (W)\cell Angry after childbirth = Yes\cell\row
+\trowd\trgaph80\trleft0\cellx700\cellx3600\cellx6500\cellx9360
+\pard\intbl\f1\fs18 2\cell Mental-Health Risk Index (W)\cell Angry after childbirth = Yes\cell Mental-Health Risk Index (W)\cell\row
+\trowd\trgaph80\trleft0\cellx700\cellx3600\cellx6500\cellx9360
+\pard\intbl\f1\fs18 3\cell Social Support Index (W)\cell Mental-Health Risk Index (W)\cell Abuse = Yes\cell\row
+\trowd\trgaph80\trleft0\cellx700\cellx3600\cellx6500\cellx9360
+\pard\intbl\f1\fs18 4\cell Abuse = Yes\cell Abuse = Yes\cell Social Support Index (W)\cell\row
+\trowd\trgaph80\trleft0\cellx700\cellx3600\cellx6500\cellx9360
+\pard\intbl\f1\fs18 5\cell Feeling for regular activities = Not Reported\cell Relationship with in-laws = Good\cell Economic Stability Index (W)\cell\row
+\pard\f1\fs22\sa120\par
+\pard\f1\fs22\sa120 The composite indices dominate the global top ranking: 4/4 in the top-10 for EPDS Result and PPD_binary, 3/4 for PHQ9 Result -- and for PHQ9 Result specifically, the Social Support Index is the single MOST important feature overall, ahead of every raw answer. Train accuracy was 1.000 for all three targets (normal, expected behavior for an unconstrained Random Forest on a modest dataset, not a leakage symptom, since held-out test accuracy is realistic and matches the CV numbers). Concrete patient-level examples: for EPDS Result, the model's predicted probability of the "High" risk class ranged from 0.933 for its most confident high-risk example down to 0.037 for its most confident low-risk example -- a wide, well-separated range. For PHQ9 Result, even the model's most confident "Severe" prediction only reached P=0.483, a concrete, patient-level confirmation that PHQ9's five ordinal bands blur into each other and are the hardest target to separate cleanly -- directly motivating the ordinal-aware methods introduced in Step 10.\par
+\page
+
+\pard\f0\fs30\b\cf2 10. Ordinal-Aware Modeling: QWK and Regression-Threshold (Step 10)\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 EPDS Result and PHQ9 Result are ORDINAL targets (Low < Medium < High; Minimal < ... < Severe), but a plain multi-class classifier and plain F1-macro treat every misclassification as equally wrong -- "predicted Low, actual High" counts the same as "predicted Moderate, actual Moderately Severe." Quadratic Weighted Kappa (QWK) is the standard ordinal-aware metric, penalizing distant misses more than adjacent ones, and was added here for the first time. In parallel, a REGRESSION-THEN-THRESHOLD approach was tested: predict the continuous EPDS/PHQ9 Score directly (5 regressor families), then apply the exact same clinical cut-offs used to build the official labels, and compare this against the direct classifier on an identical split.\par
+
+\pard\f1\fs22\b\sa60 Findings\b0\par
+\pard\f1\fs22\sa120 QWK was notably higher than F1-macro for both targets (EPDS: 0.540 -> 0.557; PHQ9: 0.329 -> 0.548 for the direct classifier), confirming most model errors are near-miss/adjacent-band rather than wild misses -- both targets are more clinically useful than F1-macro alone suggested. For PHQ9 Result, Regression + Threshold (Linear Regression) genuinely beat the direct classifier on every metric: accuracy 0.344 -> 0.463, F1-macro 0.329 -> 0.426, QWK 0.548 -> 0.602 -- adopted as the final PHQ9 Result approach. For EPDS Result, the direct classifier remained best (QWK 0.557 vs. best regression 0.521) -- reported honestly as no universal winner across targets. A caveat found along the way: Random Forest regression compresses predictions toward the mean (a classic ensemble-averaging effect), which badly hurt its categorical conversion for PHQ9 (F1-macro only 0.251 despite R\up6 2\up0\nosupersub  = 0.433) -- Linear Regression or CatBoost are the better regressor choices for this specific thresholding use case.\par
+\page
+
+\pard\f0\fs30\b\cf2 11. Decision Threshold Tuning and Probability Calibration (Step 11)\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 For PPD_binary, the default 0.5 decision threshold is an arbitrary convention, not necessarily optimal. Precision-recall-curve-based threshold tuning found a max-F1 threshold of 0.407, which gave the same accuracy (0.775) but better F1 (0.731 -> 0.753) and notably better recall (0.700 -> 0.786) at only a small precision cost -- adopted as the new default operating point. A "recall >= 85% screening" threshold of 0.303 was also documented as an alternative for a high-recall screening use case (accuracy drops to 0.6875, precision to 0.600, but recall reaches 0.857) -- both options are reported so the deployment context (cost of a missed case vs. a false alarm) can decide which to use. Separately, CalibratedClassifierCV (Platt/sigmoid scaling) gave a small, expected improvement in probability calibration (Brier score 0.1677 -> 0.1667) with ROC-AUC essentially unchanged (0.829 -> 0.828), confirming calibration reshaped the probability values without hurting discrimination -- the calibrated probabilities are recommended whenever a patient-facing risk score (not just a binary flag) needs to be reported.\par
+\page
+
+\pard\f0\fs30\b\cf2 12. CatBoost Native Categorical Handling and Repeated CV (Step 12)\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 Part A compared CatBoost's native categorical-feature handling (no one-hot encoding, 59 features) against the standard one-hot pipeline (116 features) on an identical split, for all three targets. Result: no universal winner -- native categorical won clearly on PHQ9 Result's holdout split (F1-macro 0.400 vs. 0.336) and was roughly tied elsewhere, but achieved comparable results using barely half the features, a genuine simplicity/efficiency finding worth reporting even without a raw accuracy win. Part B re-ran the Step 8 ablation significance test using RepeatedStratifiedKFold (5 folds \u215 5 repeats = 25 paired observations instead of 5) for higher statistical power, described in Section 8 above.\par
+\page
+
+\pard\f0\fs30\b\cf2 13. Second-Round Improvement Experiments (Tier 2)\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 Three further, independent improvement ideas were tested and evaluated on their own merits -- two were rejected after honest evaluation, illustrating methodological rigor rather than only reporting wins.\par
+
+\pard\f1\fs22\b\sa60 (a) Data-driven composite weight learning\b0\par
+\pard\f1\fs22\sa120 Per-domain Logistic Regression was used to learn each composite's sub-feature weights directly from the data (using the LR's own predicted probability, scaled, as the new composite score), compared against the original chi-square-weighted composites. Both variants were 12/12 significant on association tests (a tie); predictively, the LR-learned version won for EPDS Result (0.590 vs. 0.578) and PHQ9 Result (0.371 vs. 0.365), while chi-square-weighting won for PPD_binary (0.753 vs. 0.746) -- no universal winner, so the simpler, already-validated chi-square weighting was kept as final. A notable bonus finding: the independently-learned LR coefficients reproduced the same counter-intuitive "Abuse" direction finding described in Section 4, a third independent confirmation that this is a genuine data pattern rather than an artifact of one specific weighting method.\par
+
+\pard\f1\fs22\b\sa60 (b) SMOTENC oversampling and MICE-style imputation\b0\par
+\pard\f1\fs22\sa120 SMOTENC (fold-safe, applied only to each fold's training portion) gave a tiny improvement for EPDS Result (0.578 -> 0.583) and PPD_binary (0.753 -> 0.758), but made PHQ9 Result WORSE (0.365 -> 0.348) -- exactly the target it was meant to help most, since it has the most severe class imbalance. The likely cause: with ~112 mostly-binary one-hot features, "nearest neighbor" becomes unreliable in high-dimensional space (the curse of dimensionality), so SMOTE's synthetic minority patients end up as unrealistic combinations of survey answers. Decision: not adopted; class_weight="balanced" alone remains the right approach. Separately, IterativeImputer (MICE-style) was compared against the original mode-fill for 5 true-random-missing columns: it agreed completely for binary columns with a dominant category, but disagreed substantially for multi-category columns (e.g. Husband's monthly income: 28/28 values changed) -- yet downstream PPD_binary CV F1-macro was statistically indistinguishable (mode-fill 0.654 vs. MICE 0.647, within each other's noise). Decision: keep the simpler mode-fill.\par
+
+\pard\f1\fs22\b\sa60 (c) Non-linear Age features and group-level importance\b0\par
+\pard\f1\fs22\sa120 Age\up6 2\up0\nosupersub  and clinical Age bands were tested as candidate features: neither was significantly associated with any target on its own (all p > 0.10), and adding them changed CV F1-macro negligibly for all three targets. However, group-level permutation importance (aggregating one-hot dummies back to their original survey question) revealed that standard per-dummy SHAP/RF-importance rankings had UNDER-STATED several raw variables for PHQ9 Result specifically: "Age of immediate older children" (grouped rank #2, absent entirely from the standard top-15) and "Disease before pregnancy" (grouped rank #3, also absent) -- a genuinely valuable methodological discovery, since it shows one-hot encoding can hide a variable's true importance by splitting its signal across several correlated dummy columns.\par
+\page
+
+\pard\f0\fs30\b\cf2 14. Clinical Literature Grounding\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 Each of the four composite domains was cross-checked against independent, external clinical literature (not just this project's own internal statistics):\par
+\pard\f1\fs22\sa60 - Social Support: an umbrella review of 77 meta-analyses found poor social support (RR 3.57) among the strongest PPD risk factors; a Chinese-population meta-analysis found OR 2.57 for lack of social support.\par
+- Abuse / Intimate Partner Violence: meta-analyses report up to a 5.46-fold increased PPD risk (POR 5.46, 95% CI 3.94-7.56) for IPV exposure, with physical/emotional/sexual sub-types each independently significant.\par
+- Economic Stability: Bangladesh-specific studies (Dhaka urban slums, rural cross-sectional surveys) directly confirm low economic status and household-resource poverty as established PPD risk factors in exactly this population, with prevalence as high as 39.4% in the most deprived urban-slum cohort -- the strongest literature match of the four, since it is population-specific rather than a global average.\par
+- Neonatal/Delivery Stress: cesarean delivery (planned or emergency) is associated with a >15% increased risk of postpartum psychiatric conditions versus vaginal birth, with childbirth trauma (higher blood loss, emergency cesarean) mediating part of this risk.\par
+\pard\f1\fs22\sa120 All four composite domains therefore have independent EXTERNAL support, not just internal statistical significance -- meaningfully strengthening the justification for this specific 4-domain composite design.\par
+\page
+
+\pard\f0\fs30\b\cf2 15. Deeper Explainability: Interactions, Clustering, and Error Analysis\cf1\b0\fs22\par
+\pard\f1\fs22\b\sa60 (a) SHAP without vs. with composites, and SHAP-additive group importance\b0\par
+\pard\f1\fs22\sa120 Re-running SHAP on the raw-only feature set (no composites) on the identical split showed the top features are individual raw answers; once composites are added, they rise to the top -- for PHQ9 Result specifically, the Social Support Index becomes the single most important feature overall, overtaking every raw answer. A SHAP-additive group-importance view (summing a group's one-hot dummies' SHAP values, since SHAP values are additive by construction) mostly agreed with the earlier permutation-based grouping, with one instructive exception: "Age of immediate older children" ranked #2 by permutation importance for PHQ9 Result but only #14 by SHAP-additive importance -- resolved by the interaction analysis below.\par
+
+\pard\f1\fs22\b\sa60 (b) SHAP interaction values\b0\par
+\pard\f1\fs22\sa120 Pairwise SHAP interaction values (restricted to each target's top-20 features for tractability) revealed that the single strongest interaction in ALL THREE targets involves two composite indices (or a composite plus the top raw flag): Mental-Health-Risk \u215  Social-Support for EPDS Result, Social-Support \u215  Angry-after-birth for PHQ9 Result, and Angry-after-birth \u215  Social-Support for PPD_binary. Economic-Stability \u215  Mental-Health-Risk was consistently a top-5 interaction across all three targets -- a robust, cross-target finding that financial hardship measurably amplifies mental-health risk's effect on the prediction. This analysis also resolved the "Age of immediate older children" puzzle from (a): its strongest interaction (with Social Support) ranked 9th of 190 pairs for PHQ9 Result, confirming its true importance is interaction-driven rather than a simple main effect -- exactly the mechanism permutation importance is sensitive to and plain SHAP-sum is not.\par
+
+\pard\f1\fs22\b\sa60 (c) Unsupervised cluster analysis\b0\par
+\pard\f1\fs22\sa120 K-Means clustering on a compact, clinically interpretable 6-feature space (the 4 weighted composites + Age + pregnancy count) -- deliberately NOT the full 112-dimension one-hot space -- found K=3 natural groups by silhouette score, using no PPD label at all. The resulting PPD_binary prevalence differed dramatically across these unsupervised groups: 66.4% in the "low support / low economic stability / high mental-health risk" cluster versus 18.6% in the "high support / high economic stability / low mental-health risk" cluster (chi-square p = 3.73e-28) -- a 3.6-fold spread. Because the clustering step never saw a single PPD label, this is a genuinely independent confirmation that the composite-index risk story reflects real structure in the data, not something a supervised model was merely trained to exploit.\par
+
+\pard\f1\fs22\b\sa60 (d) Error analysis\b0\par
+\pard\f1\fs22\sa120 Splitting the PPD_binary held-out test set into true/false positives/negatives (TN=75, TP=48, FN=22, FP=15) and comparing composite-index values between correct and incorrect predictions found that BOTH types of error are explained almost entirely by the same two composites: false negatives (missed real PPD cases) had unusually LOW Mental-Health-Risk-Index and HIGH Social-Support-Index scores (an "atypical presentation" subgroup who do not outwardly show the usual risk factors); false positives showed the mirror-image pattern. This is a well-characterized, specific limitation rather than a vague one -- valuable for an honest discussion section.\par
+\page
+
+\pard\f0\fs30\b\cf2 16. Closing-the-Loop Feature Test\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 A final experiment directly tested whether the interaction pairs (Section 15b) and cluster structure (Section 15c) discovered during explainability analysis could be turned into an actual model improvement, by adding them as new engineered features (3 interaction product-terms; a fold-safe K-Means cluster-ID feature) to each target's own current-best model, evaluated by 5-fold cross-validation. Result: for every target, every configuration's improvement over baseline was SMALLER than that target's own fold-to-fold noise (standard deviation) -- i.e., no configuration produced a real, adoptable improvement. For PHQ9 Result, adding the interaction terms consistently made performance slightly WORSE. This is a valuable, honest negative result: it confirms that Random Forest and other tree ensembles already learn these feature interactions internally through their own splits (the SHAP interaction values were measuring existing learned interactions, not missed ones), and that a K-Means cluster label is an information-REDUCING transformation of continuous scores that are already present as direct inputs -- so no further gain was available from this direction. Decision: no configuration adopted; each target's model, as documented in Section 17, remains unchanged.\par
+\page
+
+\pard\f0\fs30\b\cf2 17. Master Model Comparison Tables\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 The following tables consolidate every model actually run for each target. \b Bold\b0  marks the best result in each stage-block by cross-validated F1-macro; a star (*) marks the model actually adopted as the project's final, current-best model for that target.\par
+
+\pard\f1\fs22\b\sa60 17.1 EPDS Result (Low / Medium / High)\b0\par
+\trowd\trgaph80\trleft0\trbrdrt\brdrs\brdrw10\trbrdrb\brdrs\brdrw10
+\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs19\b Stage\cell Model\cell CV F1-macro\cell Holdout F1 / ROC-AUC\b0\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Baseline\cell Random Forest\cell \b 0.5828\b0\cell 0.5201 / 0.7485\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Baseline\cell XGBoost / LR / LightGBM / CatBoost\cell 0.537-0.547\cell 0.47-0.52\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Tuned/Ensemble\cell Random Forest (tuned)\cell \b 0.5896\b0\cell 0.5020 / 0.7491\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Tuned/Ensemble\cell Stacking Ensemble\cell 0.5771\cell 0.5411 / 0.7604\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Ablation Arm A (raw only, 108 feat)\cell Random Forest\cell 0.5712\cell 0.5409 / 0.7673\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Ablation Arm B (raw+composite, 112 feat) *\cell \b Random Forest\b0\cell \b 0.5785\b0\cell 0.5399 / 0.7554\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Ablation Arm C (selected 30 feat)\cell Random Forest\cell 0.5789\cell 0.5151 / 0.7396\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Tier 2 (best variant)\cell Arm B + LR-learned weights\cell 0.5905\cell --\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Closing-loop (Script 20)\cell Arm B + interaction/cluster feat.\cell 0.573-0.583 (noise)\cell --\cell\row
+\pard\f1\fs20\sa120\par
+\pard\f1\fs20\i Adopted: Random Forest, Arm B (112 features), untuned. The tuned RF's higher CV score did not generalize to holdout as well, so the simpler, more reproducible model was kept as the explainability backbone.\i0\par
+\par
+
+\pard\f1\fs22\b\sa60 17.2 PHQ9 Result (Minimal / Mild / Moderate / Moderately Severe / Severe)\b0\par
+\trowd\trgaph80\trleft0\trbrdrt\brdrs\brdrw10\trbrdrb\brdrs\brdrw10
+\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs19\b Stage\cell Model\cell CV F1-macro\cell Holdout F1 / QWK\b0\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Baseline\cell XGBoost\cell \b 0.3622\b0\cell 0.3591 / --\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Baseline\cell RF / LR / LightGBM / CatBoost\cell 0.337-0.350\cell 0.31-0.40\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Tuned/Ensemble\cell Random Forest (tuned)\cell \b 0.3700\b0\cell 0.3167 / --\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Ablation Arm A / Arm B\cell Random Forest\cell 0.3575 / 0.3648\cell 0.31 / 0.33\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Direct classifier (Step 10 baseline)\cell Random Forest\cell --\cell F1 0.329, QWK 0.548\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Regression + Threshold *\cell \b Linear Regression\b0\cell --\cell \b F1 0.426, QWK 0.602\b0\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Tier 2 (best variant)\cell Arm B + LR-learned weights\cell 0.3714\cell --\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Closing-loop (Script 20)\cell +interaction/cluster feat.\cell 0.334-0.353 (<= baseline)\cell --\cell\row
+\pard\f1\fs20\sa120\par
+\pard\f1\fs20\i Adopted: Linear Regression on the continuous PHQ9 Score, thresholded into the 5 official bands -- the one target where the modeling APPROACH itself changed, not merely a hyperparameter.\i0\par
+\par
+
+\pard\f1\fs22\b\sa60 17.3 PPD_binary (binary)\b0\par
+\trowd\trgaph80\trleft0\trbrdrt\brdrs\brdrw10\trbrdrb\brdrs\brdrw10
+\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs19\b Stage\cell Model\cell CV F1-macro\cell Holdout F1 / ROC-AUC\b0\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Baseline\cell LightGBM\cell \b 0.7588\b0\cell 0.7279 / 0.8186\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Baseline\cell Random Forest\cell 0.7459\cell 0.7362 / \b 0.8261\b0\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Tuned/Ensemble\cell Stacking Ensemble\cell \b 0.7618\b0\cell \b 0.7654\b0 / 0.8089\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Tuned/Ensemble\cell Random Forest (tuned)\cell 0.7574\cell 0.7570 / 0.7929\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Ablation Arm B (raw+composite) *\cell \b Random Forest\b0\cell \b 0.7527\b0\cell 0.7620 / 0.8287\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Threshold retuned to 0.407\cell Random Forest\cell --\cell F1 0.753, Recall 0.786\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Tier 2 (SMOTE)\cell Arm B + SMOTE\cell 0.7576\cell --\cell\row
+\trowd\trgaph80\trleft0\cellx2600\cellx5400\cellx7100\cellx9360
+\pard\intbl\f1\fs18 Closing-loop (Script 20)\cell +interaction/cluster feat.\cell 0.751-0.760 (noise)\cell --\cell\row
+\pard\f1\fs20\sa120\par
+\pard\f1\fs20\i Adopted: Random Forest, Arm B, decision threshold 0.407, calibrated probabilities. The Stacking Ensemble is the single best RAW predictor found anywhere in the project for this target, but was not adopted as final due to the explainability trade-off (Section 9).\i0\par
+\page
+
+\pard\f0\fs30\b\cf2 18. Key Novelties and Contributions\cf1\b0\fs22\par
+\pard\f1\fs22\sa120\b 1. Four engineered Composite Risk Indices\b0  -- a documented, empirically-validated, data-driven weighting scheme (not a manual fudge), each significant across all 3 targets and independently reproduced by 3 separate methods.\par
+\b 2. A genuinely leakage-free pipeline\b0  -- an explicit, code-enforced drop of all EPDS/PHQ-9 item and score columns, producing realistic (not suspiciously perfect) accuracy, directly contrasting with a comparable reference paper that shows signs of leakage.\par
+\b 3. A statistically rigorous ablation study\b0  -- nested, leakage-safe feature selection, paired significance testing, and a follow-up higher-power repeated-CV test that correctly distinguished "no effect" from "underpowered test."\par
+\b 4. Five independent explainability angles\b0  on one consistent model -- global SHAP importance, an arm-comparison "before/after" view, SHAP-additive group importance, SHAP pairwise interaction values, and an independent unsupervised clustering confirmation -- plus a targeted error analysis of the model's specific blind spot.\par
+\b 5. Ordinal-aware evaluation and modeling\b0  -- Quadratic Weighted Kappa alongside F1-macro, and a genuine, adopted change of modeling approach (regression-then-threshold) for the hardest target, PHQ9 Result.\par
+\b 6. An explicit, honestly-reported interpretability-over-accuracy trade-off\b0  -- documenting that a Stacking Ensemble is technically more accurate for PPD_binary, while explaining precisely why a single Random Forest was kept as the project's explainable backbone.\par
+\b 7. Transparent negative results\b0  -- LR-learned weights, SMOTE, MICE imputation, Age features, and the final closing-loop feature test were all tested and, where they did not help, honestly reported as rejected rather than omitted -- itself evidence of methodological rigor.\par
+\page
+
+\pard\f0\fs30\b\cf2 19. Limitations\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 - The "Abuse" survey question's real-world meaning needs verification against the original Bangla questionnaire wording, since its empirical direction (No answers associating with higher PPD) is counter-intuitive and consistently reproduced across three independent methods, suggesting either a genuine but unusual finding or a translation/coding nuance rather than a modeling artifact.\par
+- With n = 800 and, for PHQ9 Result, 5 imbalanced classes, statistical power for some comparisons (e.g. the original 5-fold ablation significance test) is limited; this was mitigated but not eliminated by the repeated-CV re-test.\par
+- The error analysis identified a specific, characterized blind spot: mothers whose survey answers do not outwardly match the "typical" risk profile (low apparent mental-health risk, decent apparent support) despite genuinely meeting clinical PPD criteria are the mothers the model is most likely to miss.\par
+- All results are internal, cross-validated estimates on a single-country, single-dataset sample; external validation on an independent Bangladeshi (or other South Asian) cohort would be needed before any clinical deployment claim.\par
+\page
+
+\pard\f0\fs30\b\cf2 20. Conclusion\cf1\b0\fs22\par
+\pard\f1\fs22\sa120 This project delivers a complete, leakage-free, and thoroughly validated machine learning framework for early PPD detection in Bangladesh. Its central contribution -- four clinically-grounded Composite Risk Indices -- is supported by internal statistical testing, an ablation study with significance testing, independent external literature, an independently-learned alternative weighting scheme, and an unsupervised clustering analysis that never used a PPD label at all. The chosen models (Random Forest for EPDS Result and PPD_binary; Linear-Regression-then-threshold for PHQ9 Result) were selected not simply for the highest raw accuracy number, but through an explicit, reasoned balance between predictive performance and explainability -- and every explainability finding was further stress-tested by asking whether it could be turned into an actual model improvement, honestly reporting that it could not, which is itself informative: the current models already capture what these composite indices have to offer.\par
+}

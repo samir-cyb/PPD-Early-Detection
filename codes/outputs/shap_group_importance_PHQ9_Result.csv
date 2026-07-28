@@ -1,0 +1,51 @@
+group,n_columns_in_group,mean_abs_grouped_shap
+Social_Support_Index_Weighted,1,0.03381987532507161
+Angry after latest child birth,1,0.03320528935975613
+Maternal_MentalHealth_Risk_Index_Weighted,1,0.02753180753976776
+Abuse,2,0.020644286421566634
+Major changes or losses during pregnancy,1,0.011980893968841683
+Relationship with the in-laws,4,0.01141101977394474
+Relax/sleep when the newborn is asleep,1,0.01069785296580323
+Feeling about motherhood,2,0.010563108067716825
+Feeling for regular activities,3,0.010487882949118257
+Neonatal_Delivery_Stress_Index_Weighted,1,0.010427573557236645
+Trust and share feelings,2,0.01040142782167916
+Depression during pregnancy (PHQ2),1,0.009298184256389109
+Economic_Stability_Index_Weighted,1,0.006906025347098865
+Age of immediate older children,4,0.006668951028921437
+Current monthly income,5,0.006536104633089915
+Need for Support,3,0.00643192280289383
+Occupation After Your Latest Childbirth,6,0.005236302285244465
+Occupation before latest pregnancy,6,0.004898807962041761
+Birth complications,1,0.004757641994669202
+Age,1,0.0045574478412442835
+Relationship with the newborn,3,0.003963240196700152
+Worry about newborn,1,0.0038119755274976957
+Depression before pregnancy (PHQ2),1,0.003799525304141961
+Husband's education level,4,0.0037724580216510206
+Relationship with husband,4,0.003752008498014628
+Monthly income before latest pregnancy,5,0.003575885995343653
+Relationship between father and newborn,3,0.0029095778279025373
+Husband's monthly income,5,0.002901017367212656
+Number of household members,2,0.002825851465023832
+Total children,2,0.0027676100262356137
+Diseases during pregnancy,2,0.0027252618189721072
+Pregnancy length,5,0.002716491025453702
+Received Support,2,0.002601754888017221
+Age of newborn,3,0.0025709055417597907
+Fear of pregnancy,1,0.0024630325085173302
+Mode of delivery,1,0.002438029336865259
+Regular checkups,1,0.0022914014733504936
+Education Level,4,0.00227931234211715
+History of pregnancy loss,2,0.0020302335921656553
+Gender of newborn,1,0.002008144149055557
+Number of the latest pregnancy,1,0.001999927177007752
+Breastfeed,1,0.0018913114861216149
+Disease before pregnancy,2,0.0018911490035710657
+Relax/sleep when newborn is tended,1,0.0018106243275086548
+Pregnancy plan,1,0.001522769235853952
+Family type,1,0.001517510295736151
+Residence,1,0.0010657904071884855
+Newborn illness,1,0.000950516560502849
+Addiction,3,0.00017424346754896748
+Marital status,1,0.00011835483231873384

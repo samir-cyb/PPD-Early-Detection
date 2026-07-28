@@ -1,0 +1,16 @@
+rank,without_composites (Arm A),without_composites_score,with_composites (Arm B),with_composites_score
+1,Angry after latest child birth_Yes,0.09661241094341924,Angry after latest child birth_Yes,0.08299363226046243
+2,Abuse_Yes,0.06254110586382336,Maternal_MentalHealth_Risk_Index_Weighted,0.05113326550437024
+3,Relationship with the in-laws_Good,0.024715124320547906,Abuse_Yes,0.0355206952579259
+4,Major changes or losses during pregnancy_Yes,0.024508562219186642,Social_Support_Index_Weighted,0.033364627293102814
+5,Relationship with husband_Good,0.02275652939897744,Economic_Stability_Index_Weighted,0.023508955441781082
+6,Feeling for regular activities_Not Reported,0.020353495773965426,Feeling for regular activities_Not Reported,0.018403672162503337
+7,Need for Support_Not Reported,0.018864934228084117,Neonatal_Delivery_Stress_Index_Weighted,0.018024486306749896
+8,Relax/sleep when the newborn is asleep_Yes,0.016587008206803,Major changes or losses during pregnancy_Yes,0.016884666560305864
+9,Trust and share feelings_Yes,0.015215490818909324,Relax/sleep when the newborn is asleep_Yes,0.015946129529737445
+10,Fear of pregnancy_Yes,0.015184746711061204,Relationship with husband_Good,0.015330908532321524
+11,Depression during pregnancy (PHQ2)_Positive,0.012677235119046967,Need for Support_Not Reported,0.01433132493889388
+12,Worry about newborn_Yes,0.011719519789033959,Relationship with the in-laws_Good,0.0137078857269835
+13,Depression before pregnancy (PHQ2)_Positive,0.011243619475636926,Fear of pregnancy_Yes,0.013310359645527478
+14,Education Level_University,0.010494185011251201,Trust and share feelings_Yes,0.011409037934153043
+15,Diseases during pregnancy_No Disease,0.01015155193642726,Depression during pregnancy (PHQ2)_Positive,0.008297494233115708

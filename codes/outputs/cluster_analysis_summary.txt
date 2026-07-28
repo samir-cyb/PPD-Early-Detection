@@ -1,0 +1,5 @@
+Cluster analysis summary (K=3, chosen by silhouette score)
+============================================================
+Cluster 0 has the HIGHEST PPD rate (66.4%): Lower support, higher mental-health risk, lower economic stability
+Cluster 1 has the LOWEST PPD rate (18.6%): Higher support, lower mental-health risk, higher economic stability
+Chi-square test (cluster vs PPD_binary): p=3.73e-28 (significant)

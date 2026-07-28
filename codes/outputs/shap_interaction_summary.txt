@@ -1,0 +1,3 @@
+EPDS Result: strongest interaction = 'Maternal_MentalHealth_Risk_Index_Weighted' x 'Social_Support_Index_Weighted' (mean |interaction| = 0.0135).
+PHQ9 Result: strongest interaction = 'Social_Support_Index_Weighted' x 'Angry after latest child birth_Yes' (mean |interaction| = 0.0114).
+PPD_binary: strongest interaction = 'Angry after latest child birth_Yes' x 'Social_Support_Index_Weighted' (mean |interaction| = 0.0137).

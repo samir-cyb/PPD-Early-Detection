@@ -1,0 +1,7 @@
+target,composite_variant,n_features,cv_f1_macro_mean,cv_f1_macro_std
+EPDS Result,LR-learned composites,112,0.5904768011556014,0.03608802675947037
+EPDS Result,Chi-square-weighted composites (current),112,0.5784786441060312,0.034902444429545675
+PHQ9 Result,LR-learned composites,112,0.37135457283757906,0.05406911390026996
+PHQ9 Result,Chi-square-weighted composites (current),112,0.36479862573974264,0.05030708340510276
+PPD_binary,LR-learned composites,112,0.7456717046963566,0.025254910450851643
+PPD_binary,Chi-square-weighted composites (current),112,0.7527180507753481,0.02720720092620011

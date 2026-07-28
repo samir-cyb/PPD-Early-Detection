@@ -1,0 +1,16 @@
+rank,without_composites (Arm A),without_composites_score,with_composites (Arm B),with_composites_score
+1,Angry after latest child birth_Yes,0.039495383465802406,Social_Support_Index_Weighted,0.033819875325071594
+2,Abuse_Yes,0.03697454948120597,Angry after latest child birth_Yes,0.03320528935975613
+3,Relationship with the in-laws_Good,0.02275064128675259,Maternal_MentalHealth_Risk_Index_Weighted,0.02753180753976775
+4,Major changes or losses during pregnancy_Yes,0.01603569418718529,Abuse_Yes,0.020408745475093443
+5,Trust and share feelings_Yes,0.014677809909425155,Relationship with the in-laws_Good,0.012653010914518056
+6,Depression during pregnancy (PHQ2)_Positive,0.012897108113975136,Major changes or losses during pregnancy_Yes,0.011980893968841689
+7,Relax/sleep when the newborn is asleep_Yes,0.01163125115539904,Relax/sleep when the newborn is asleep_Yes,0.010697852965803237
+8,Worry about newborn_Yes,0.010612079694099833,Neonatal_Delivery_Stress_Index_Weighted,0.010427573557236645
+9,Feeling for regular activities_Not Reported,0.010594081199702838,Trust and share feelings_Yes,0.010405242308467183
+10,Feeling about motherhood_Sad,0.009577524077125109,Depression during pregnancy (PHQ2)_Positive,0.009298184256389105
+11,Relationship with the in-laws_Neutral,0.008399337518830671,Feeling for regular activities_Not Reported,0.008870408528314116
+12,Need for Support_Not Reported,0.007181901456819351,Economic_Stability_Index_Weighted,0.006906025347098868
+13,Feeling about motherhood_Neutral,0.007019062816664213,Feeling about motherhood_Sad,0.006831703082786541
+14,Current monthly income_No Personal Income,0.006900372975793885,Need for Support_Not Reported,0.0058997381185454095
+15,Depression before pregnancy (PHQ2)_Positive,0.005913275371801396,Feeling about motherhood_Neutral,0.005554332665658397

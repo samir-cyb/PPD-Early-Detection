@@ -1,0 +1,357 @@
+
+==========================================================================================
+1. LOADING DATASET
+==========================================================================================
+Loaded: D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\PPD_dataset_v3.csv
+Raw shape (rows, cols): (800, 70)
+Dropped index column 'sr'.
+
+==========================================================================================
+2. CLEANING COLUMN NAMES
+==========================================================================================
+Cleaned column count: 69
+Final shape after cleaning: (800, 69)
+
+==========================================================================================
+3. COLUMN ROLE DEFINITIONS (for leakage-free modeling)
+==========================================================================================
+Target candidates (4):
+   - EPDS Score
+   - EPDS Result
+   - PHQ9 Score
+   - PHQ9 Result
+
+Leakage columns to EXCLUDE from input, 23 total (EPDS 10 items + PHQ-9 9 items + 4 score/result columns):
+   - You have been able to laugh and see the funny side of things
+   - You have looked forward with enjoyment to things
+   - You have blamed myself unnecessarily when things went wrong
+   - You have been anxious or worried for no good reason
+   - You have felt scared or panicky for no good reason
+   - Things have been getting to you
+   - You have been so unhappy that you have had difficulty sleeping
+   - You have felt sad or miserable
+   - You have been so unhappy that you have been crying
+   - The thought of harming yourself has occurred
+   - Little interest or pleasure in doing things
+   - Feeling down, depressed, or hopeless
+   - Trouble falling or staying asleep, or sleeping too much
+   - Feeling tired or having little energy
+   - Poor appetite or overeating
+   - Feeling bad about yourself or that you are a failure or have let yourself or your family down
+   - Trouble concentrating on things
+   - Moving or speaking or restlessness
+   - Thoughts that you would be better off dead, or of hurting yourself
+   - EPDS Score
+   - EPDS Result
+   - PHQ9 Score
+   - PHQ9 Result
+
+SAFE input features for a leakage-free model, 46 total:
+   - Age
+   - Residence
+   - Education Level
+   - Marital status
+   - Occupation before latest pregnancy
+   - Monthly income before latest pregnancy
+   - Occupation After Your Latest Childbirth
+   - Current monthly income
+   - Husband's education level
+   - Husband's monthly income
+   - Addiction
+   - Total children
+   - Disease before pregnancy
+   - History of pregnancy loss
+   - Family type
+   - Number of household members
+   - Relationship with the in-laws
+   - Relationship with husband
+   - Relationship with the newborn
+   - Relationship between father and newborn
+   - Feeling about motherhood
+   - Received Support
+   - Need for Support
+   - Major changes or losses during pregnancy
+   - Abuse
+   - Trust and share feelings
+   - Number of the latest pregnancy
+   - Pregnancy length
+   - Pregnancy plan
+   - Regular checkups
+   - Fear of pregnancy
+   - Diseases during pregnancy
+   - Age of newborn
+   - Age of immediate older children
+   - Mode of delivery
+   - Gender of newborn
+   - Birth complications
+   - Breastfeed
+   - Newborn illness
+   - Worry about newborn
+   - Relax/sleep when newborn is tended
+   - Relax/sleep when the newborn is asleep
+   - Angry after latest child birth
+   - Feeling for regular activities
+   - Depression before pregnancy (PHQ2)
+   - Depression during pregnancy (PHQ2)
+
+Note: PHQ-2 columns ['Depression before pregnancy (PHQ2)', 'Depression during pregnancy (PHQ2)'] are KEPT as safe input features (prior psychiatric history, not part of the postpartum EPDS/PHQ-9 scoring), consistent with the two reference papers in this folder.
+
+==========================================================================================
+4. DTYPES & MISSING VALUES
+==========================================================================================
+Age                                                                                              int64
+Residence                                                                                          str
+Education Level                                                                                    str
+Marital status                                                                                     str
+Occupation before latest pregnancy                                                                 str
+Monthly income before latest pregnancy                                                             str
+Occupation After Your Latest Childbirth                                                            str
+Current monthly income                                                                             str
+Husband's education level                                                                          str
+Husband's monthly income                                                                           str
+Addiction                                                                                          str
+Total children                                                                                     str
+Disease before pregnancy                                                                           str
+History of pregnancy loss                                                                          str
+Family type                                                                                        str
+Number of household members                                                                        str
+Relationship with the in-laws                                                                      str
+Relationship with husband                                                                          str
+Relationship with the newborn                                                                      str
+Relationship between father and newborn                                                            str
+Feeling about motherhood                                                                           str
+Received Support                                                                                   str
+Need for Support                                                                                   str
+Major changes or losses during pregnancy                                                           str
+Abuse                                                                                              str
+Trust and share feelings                                                                           str
+Number of the latest pregnancy                                                                   int64
+Pregnancy length                                                                                   str
+Pregnancy plan                                                                                     str
+Regular checkups                                                                                   str
+Fear of pregnancy                                                                                  str
+Diseases during pregnancy                                                                          str
+Age of newborn                                                                                     str
+Age of immediate older children                                                                    str
+Mode of delivery                                                                                   str
+Gender of newborn                                                                                  str
+Birth complications                                                                                str
+Breastfeed                                                                                         str
+Newborn illness                                                                                    str
+Worry about newborn                                                                                str
+Relax/sleep when newborn is tended                                                                 str
+Relax/sleep when the newborn is asleep                                                             str
+Angry after latest child birth                                                                     str
+Feeling for regular activities                                                                     str
+Depression before pregnancy (PHQ2)                                                                 str
+Depression during pregnancy (PHQ2)                                                                 str
+Little interest or pleasure in doing things                                                        str
+Feeling down, depressed, or hopeless                                                               str
+Trouble falling or staying asleep, or sleeping too much                                            str
+Feeling tired or having little energy                                                              str
+Poor appetite or overeating                                                                        str
+Feeling bad about yourself or that you are a failure or have let yourself or your family down      str
+Trouble concentrating on things                                                                    str
+Moving or speaking or restlessness                                                                 str
+Thoughts that you would be better off dead, or of hurting yourself                                 str
+PHQ9 Score                                                                                       int64
+PHQ9 Result                                                                                        str
+You have been able to laugh and see the funny side of things                                       str
+You have looked forward with enjoyment to things                                                   str
+You have blamed myself unnecessarily when things went wrong                                        str
+You have been anxious or worried for no good reason                                                str
+You have felt scared or panicky for no good reason                                                 str
+Things have been getting to you                                                                    str
+You have been so unhappy that you have had difficulty sleeping                                     str
+You have felt sad or miserable                                                                     str
+You have been so unhappy that you have been crying                                                 str
+The thought of harming yourself has occurred                                                       str
+EPDS Score                                                                                       int64
+EPDS Result                                                                                        str
+
+Columns with missing values (sorted by % missing):
+                                        missing_count  missing_pct
+Addiction                                         789        98.62
+History of pregnancy loss                         613        76.62
+Disease before pregnancy                          588        73.50
+Current monthly income                            525        65.62
+Age of immediate older children                   517        64.62
+Monthly income before latest pregnancy            437        54.62
+Diseases during pregnancy                         371        46.38
+Feeling for regular activities                    223        27.88
+Need for Support                                  167        20.88
+Abuse                                              38         4.75
+Husband's monthly income                           28         3.50
+Husband's education level                           9         1.12
+Education Level                                     6         0.75
+Trust and share feelings                            1         0.12
+
+Saved -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\missing_values.csv
+
+==========================================================================================
+5. BUILDING FULL COLUMN CATALOGUE
+==========================================================================================
+Saved full column catalogue -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\column_catalogue.csv
+
+Preview:
+                                                                                       column dtype                              role  n_unique  missing_count  missing_pct                                                                                                  sample_values
+                                                                                          Age int64                        SAFE_INPUT        25              0         0.00                                                                                    24 | 31 | 32 | 27 | 29 | 30
+                                                                                    Residence   str                        SAFE_INPUT         2              0         0.00                                                                                                 City | Village
+                                                                              Education Level   str                        SAFE_INPUT         6              6         0.75                             University | College | Primary School | High School | High school | Primary school
+                                                                               Marital status   str                        SAFE_INPUT         2              0         0.00                                                                                             Married | Divorced
+                                                           Occupation before latest pregnancy   str                        SAFE_INPUT         8              0         0.00                                                       Student | Doctor | Service | Housewife | Teacher | Other
+                                                       Monthly income before latest pregnancy   str                        SAFE_INPUT         5            437        54.62                             10000 to 20000 | More than 30000 | Less than 5000 | 5000 to 10000 | 20000 to 30000
+                                                      Occupation After Your Latest Childbirth   str                        SAFE_INPUT         8              0         0.00                                                    Student | Doctor | Service | Housewife | Teacher | Business
+                                                                       Current monthly income   str                        SAFE_INPUT         5            525        65.62                             10000 to 20000 | More than 30000 | Less than 5000 | 5000 to 10000 | 20000 to 30000
+                                                                    Husband's education level   str                        SAFE_INPUT         6              9         1.12                             University | College | Primary School | High School | High school | Primary school
+                                                                     Husband's monthly income   str                        SAFE_INPUT         5             28         3.50                             More than 30000 | 10000 to 20000 | 5000 to 10000 | 20000 to 30000 | Less than 5000
+                                                                                    Addiction   str                        SAFE_INPUT         3            789        98.62                                                                                     Smoking | Drinking | Drugs
+                                                                               Total children   str                        SAFE_INPUT         4              0         0.00                                                                      One | Two | More than two | More than Two
+                                                                     Disease before pregnancy   str                        SAFE_INPUT         3            588        73.50                                                                    Non-Chronic Disease | Chronic Disease | 1.2
+                                                                    History of pregnancy loss   str                        SAFE_INPUT         3            613        76.62                                                        Miscarriage | Still-born Delivery | Still-born delivery
+                                                                                  Family type   str                        SAFE_INPUT         2              0         0.00                                                                                                Nuclear | Joint
+                                                                  Number of household members   str                        SAFE_INPUT         3              0         0.00                                                                                    6 to 8 | 2 to 5 | 9 or more
+                                                                Relationship with the in-laws   str                        SAFE_INPUT         5              0         0.00                                                                         Neutral | Good | Bad | Friendly | Poor
+                                                                    Relationship with husband   str                        SAFE_INPUT         5              0         0.00                                                                         Good | Neutral | Bad | Friendly | Poor
+                                                                Relationship with the newborn   str                        SAFE_INPUT         4              0         0.00                                                                               Good | Neutral | Bad | Very good
+                                                      Relationship between father and newborn   str                        SAFE_INPUT         4              0         0.00                                                                               Good | Neutral | Bad | Very good
+                                                                     Feeling about motherhood   str                        SAFE_INPUT         3              0         0.00                                                                                          Neutral | Happy | Sad
+                                                                             Received Support   str                        SAFE_INPUT         3              0         0.00                                                                                            High | Medium | Low
+                                                                             Need for Support   str                        SAFE_INPUT         3            167        20.88                                                                                            Medium | Low | High
+                                                     Major changes or losses during pregnancy   str                        SAFE_INPUT         2              0         0.00                                                                                                       Yes | No
+                                                                                        Abuse   str                        SAFE_INPUT         2             38         4.75                                                                                                       Yes | No
+                                                                     Trust and share feelings   str                        SAFE_INPUT         2              1         0.12                                                                                                       Yes | No
+                                                               Number of the latest pregnancy int64                        SAFE_INPUT         7              0         0.00                                                                                          1 | 2 | 3 | 4 | 5 | 7
+                                                                             Pregnancy length   str                        SAFE_INPUT         6              0         0.00                                     10 months | 9 months | 8 months | Less than 5 months | 7 months | 6 months
+                                                                               Pregnancy plan   str                        SAFE_INPUT         2              0         0.00                                                                                                       No | Yes
+                                                                             Regular checkups   str                        SAFE_INPUT         2              0         0.00                                                                                                       Yes | No
+                                                                            Fear of pregnancy   str                        SAFE_INPUT         2              0         0.00                                                                                                       Yes | No
+                                                                    Diseases during pregnancy   str                        SAFE_INPUT         4            371        46.38                                  Chronic Disease | Non-Chronic Disease | Non-chronic disease | Chronic disease
+                                                                               Age of newborn   str                        SAFE_INPUT         4              0         0.00                                  6 months to 1 year | Older than 1.5 year | 0 to 6 months | 1 year to 1.5 year
+                                                              Age of immediate older children   str                        SAFE_INPUT         4            517        64.62                                                           13yr or more | 1yr to 3yr | 7yr to 12yr | 4yr to 6yr
+                                                                             Mode of delivery   str                        SAFE_INPUT         2              0         0.00                                                                            Normal Delivery | Caesarean Section
+                                                                            Gender of newborn   str                        SAFE_INPUT         2              0         0.00                                                                                                     Boy | Girl
+                                                                          Birth complications   str                        SAFE_INPUT         2              0         0.00                                                                                                       No | Yes
+                                                                                   Breastfeed   str                        SAFE_INPUT         2              0         0.00                                                                                                       Yes | No
+                                                                              Newborn illness   str                        SAFE_INPUT         2              0         0.00                                                                                                       No | Yes
+                                                                          Worry about newborn   str                        SAFE_INPUT         2              0         0.00                                                                                                       Yes | No
+                                                           Relax/sleep when newborn is tended   str                        SAFE_INPUT         2              0         0.00                                                                                                       Yes | No
+                                                       Relax/sleep when the newborn is asleep   str                        SAFE_INPUT         2              0         0.00                                                                                                       Yes | No
+                                                               Angry after latest child birth   str                        SAFE_INPUT         2              0         0.00                                                                                                       No | Yes
+                                                               Feeling for regular activities   str                        SAFE_INPUT         3            223        27.88                                                                                       Worried | Tired | Afraid
+                                                           Depression before pregnancy (PHQ2)   str  SAFE_INPUT (psychiatric history)         2              0         0.00                                                                                            Negative | Positive
+                                                           Depression during pregnancy (PHQ2)   str  SAFE_INPUT (psychiatric history)         2              0         0.00                                                                                            Negative | Positive
+                                                  Little interest or pleasure in doing things   str LEAKAGE_ITEM (exclude from input)         3              0         0.00                                                           Nearly every day | Around half the days | Not at all
+                                                         Feeling down, depressed, or hopeless   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Nearly every day | Not at all | Around half the days | Several days | মাঝে মধ্যে (Several days) | Several Days
+                                      Trouble falling or staying asleep, or sleeping too much   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Not at all | Several days | Nearly every day | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+                                                        Feeling tired or having little energy   str LEAKAGE_ITEM (exclude from input)         5              0         0.00                             Nearly every day | Several days | Not at all | Around half the days | Several Days
+                                                                  Poor appetite or overeating   str LEAKAGE_ITEM (exclude from input)         5              0         0.00                             Nearly every day | Several Days | Around half the days | Not at all | Several days
+Feeling bad about yourself or that you are a failure or have let yourself or your family down   str LEAKAGE_ITEM (exclude from input)         5              0         0.00                             Not at all | Around half the days | Several Days | Nearly every day | Several days
+                                                              Trouble concentrating on things   str LEAKAGE_ITEM (exclude from input)         5              0         0.00                             Several Days | Nearly every day | Not at all | Around half the days | Several days
+                                                           Moving or speaking or restlessness   str LEAKAGE_ITEM (exclude from input)         5              0         0.00                             Several Days | Nearly every day | Not at all | Around half the days | Several days
+                           Thoughts that you would be better off dead, or of hurting yourself   str LEAKAGE_ITEM (exclude from input)         5              0         0.00                             Not at all | Nearly every day | Around half the days | Several Days | Several days
+                                                                                   PHQ9 Score int64                  TARGET_CANDIDATE        28              0         0.00                                                                                     14 | 16 | 5 | 11 | 13 | 27
+                                                                                  PHQ9 Result   str                  TARGET_CANDIDATE         6              0         0.00                                                Moderate | Moderately Severe | Mild | Severe | Minimal | Normal
+                                 You have been able to laugh and see the funny side of things   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Not at all | Several days | Nearly every day | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+                                             You have looked forward with enjoyment to things   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Not at all | Several days | Nearly every day | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+                                  You have blamed myself unnecessarily when things went wrong   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Not at all | Around half the days | Several days | Nearly every day | মাঝে মধ্যে (Several days) | Several Days
+                                          You have been anxious or worried for no good reason   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Nearly every day | Not at all | Around half the days | Several days | মাঝে মধ্যে (Several days) | Several Days
+                                           You have felt scared or panicky for no good reason   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Not at all | Around half the days | Several days | Nearly every day | মাঝে মধ্যে (Several days) | Several Days
+                                                              Things have been getting to you   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Several days | Nearly every day | Not at all | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+                               You have been so unhappy that you have had difficulty sleeping   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Not at all | Several days | Nearly every day | Around half the days | মাঝে মধ্যে (Several days) | Several Days
+                                                               You have felt sad or miserable   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Nearly every day | Not at all | Around half the days | Several days | মাঝে মধ্যে (Several days) | Several Days
+                                           You have been so unhappy that you have been crying   str LEAKAGE_ITEM (exclude from input)         6              0         0.00 Not at all | Around half the days | Several days | Nearly every day | মাঝে মধ্যে (Several days) | Several Days
+                                                 The thought of harming yourself has occurred   str LEAKAGE_ITEM (exclude from input)         5              0         0.00                             Not at all | Nearly every day | Around half the days | Several days | Several Days
+                                                                                   EPDS Score int64                  TARGET_CANDIDATE        31              0         0.00                                                                                      13 | 20 | 16 | 5 | 7 | 23
+                                                                                  EPDS Result   str                  TARGET_CANDIDATE         3              0         0.00                                                                                            High | Low | Medium
+
+==========================================================================================
+6. NUMERIC FEATURE SUMMARY
+==========================================================================================
+Numeric columns: ['Age', 'Number of the latest pregnancy', 'PHQ9 Score', 'EPDS Score']
+                                count      mean       std   min   25%   50%   75%   max
+Age                             800.0  27.72500  4.465625  18.0  25.0  27.0  31.0  45.0
+Number of the latest pregnancy  800.0   1.63125  0.895140   1.0   1.0   1.0   2.0   7.0
+PHQ9 Score                      800.0  11.30750  5.769710   0.0   7.0  11.0  15.0  27.0
+EPDS Score                      800.0  12.46250  7.097998   0.0   7.0  11.0  17.0  30.0
+
+==========================================================================================
+7. TARGET DISTRIBUTIONS
+==========================================================================================
+
+EPDS Result value counts:
+EPDS Result
+High      350
+Low       260
+Medium    190
+
+EPDS Result percentages:
+EPDS Result
+High      43.75
+Low       32.50
+Medium    23.75
+
+PHQ9 Result value counts:
+PHQ9 Result
+Moderate             237
+Mild                 231
+Moderately Severe    132
+Minimal              103
+Severe                89
+Normal                 8
+
+PHQ9 Result percentages:
+PHQ9 Result
+Moderate             29.62
+Mild                 28.88
+Moderately Severe    16.50
+Minimal              12.88
+Severe               11.12
+Normal                1.00
+
+Binary PPD (EPDS>=13) preview distribution:
+_PPD_binary_preview
+0    451
+1    349
+_PPD_binary_preview
+0    56.38
+1    43.62
+
+==========================================================================================
+8. CATEGORICAL FREQUENCIES (SAFE INPUT FEATURES ONLY)
+==========================================================================================
+
+==========================================================================================
+9. DUPLICATE ROWS
+==========================================================================================
+Duplicate rows: 0
+
+==========================================================================================
+10. RAW COLUMNS EARMARKED FOR COMPOSITE INDEX ENGINEERING (next step)
+==========================================================================================
+
+Economic Stability Index (ESI):
+   uses: ['Current monthly income', "Husband's monthly income", 'Occupation After Your Latest Childbirth', 'Education Level']
+
+Social/Family Support Index (SSI):
+   uses: ['Family type', 'Relationship with the in-laws', 'Relationship with husband', 'Number of household members', 'Received Support', 'Need for Support']
+
+Maternal Mental-Health Risk Index (MHRI):
+   uses: ['Depression before pregnancy (PHQ2)', 'Depression during pregnancy (PHQ2)', 'Disease before pregnancy', 'Abuse', 'History of pregnancy loss']
+
+Neonatal/Delivery Stress Index (NSI):
+   uses: ['Mode of delivery', 'Birth complications', 'Newborn illness', 'Worry about newborn']
+
+Saved composite feature plan -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\composite_feature_plan.json
+
+==========================================================================================
+11. PLOTS
+==========================================================================================
+Saved -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\epds_class_distribution.png
+Saved -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\phq9_class_distribution.png
+Saved -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\missingness_bar.png
+
+==========================================================================================
+12. SAVING CLEANED DATASET
+==========================================================================================
+Saved cleaned dataset (col names fixed, 'None' -> NaN) -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\PPD_dataset_cleaned.csv

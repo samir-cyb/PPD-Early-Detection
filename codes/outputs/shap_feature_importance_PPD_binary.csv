@@ -1,0 +1,113 @@
+rank,feature,mean_abs_shap,is_composite_index
+1,Angry after latest child birth_Yes,0.08299363226046243,False
+2,Maternal_MentalHealth_Risk_Index_Weighted,0.05113326550437024,True
+3,Abuse_Yes,0.0355206952579259,False
+4,Social_Support_Index_Weighted,0.033364627293102814,True
+5,Economic_Stability_Index_Weighted,0.023508955441781082,True
+6,Feeling for regular activities_Not Reported,0.018403672162503337,False
+7,Neonatal_Delivery_Stress_Index_Weighted,0.018024486306749896,True
+8,Major changes or losses during pregnancy_Yes,0.016884666560305864,False
+9,Relax/sleep when the newborn is asleep_Yes,0.015946129529737445,False
+10,Relationship with husband_Good,0.015330908532321524,False
+11,Need for Support_Not Reported,0.01433132493889388,False
+12,Relationship with the in-laws_Good,0.0137078857269835,False
+13,Fear of pregnancy_Yes,0.013310359645527478,False
+14,Trust and share feelings_Yes,0.011409037934153043,False
+15,Depression during pregnancy (PHQ2)_Positive,0.008297494233115708,False
+16,Education Level_University,0.007983149213603177,False
+17,Depression before pregnancy (PHQ2)_Positive,0.007188441043771578,False
+18,Gender of newborn_Girl,0.007100198793031835,False
+19,Worry about newborn_Yes,0.006993773118331545,False
+20,Family type_Nuclear,0.006867398342249744,False
+21,Diseases during pregnancy_No Disease,0.006789175894009326,False
+22,Number of household members_6 to 8,0.006505448211077536,False
+23,Pregnancy plan_Yes,0.0064527010612345755,False
+24,Received Support_Low,0.0059655314473254836,False
+25,Pregnancy length_9 months,0.00567599417090547,False
+26,Feeling about motherhood_Neutral,0.005667122849426631,False
+27,Need for Support_Low,0.0056435732792556,False
+28,Feeling about motherhood_Sad,0.005213315727686076,False
+29,Age,0.004646773103430697,False
+30,Birth complications_Yes,0.004573607096759646,False
+31,Diseases during pregnancy_Non-Chronic Disease,0.004387178760653811,False
+32,Occupation before latest pregnancy_Housewife,0.00425777164752161,False
+33,Feeling for regular activities_Worried,0.004053424671205485,False
+34,Relationship with husband_Neutral,0.0038749072020465404,False
+35,Received Support_Medium,0.0036725874767122766,False
+36,Age of immediate older children_7yr to 12yr,0.0036584689299873027,False
+37,Feeling for regular activities_Tired,0.003649115377856419,False
+38,Husband's monthly income_More than 30000,0.0035382437343212864,False
+39,Relationship with the newborn_Neutral,0.0034087231052213,False
+40,Relationship between father and newborn_Good,0.0033367566559364065,False
+41,Relationship between father and newborn_Neutral,0.0031898716067342383,False
+42,Age of immediate older children_Not Applicable (Only One Child),0.0029788463051366953,False
+43,Age of newborn_6 months to 1 year,0.0028873051048195425,False
+44,Mode of delivery_Normal Delivery,0.0027182400273333194,False
+45,Disease before pregnancy_No Disease,0.0027142820994051045,False
+46,Occupation before latest pregnancy_Student,0.00266908512231989,False
+47,Education Level_High School,0.002642508899282722,False
+48,Number of the latest pregnancy,0.002599850720635897,False
+49,Current monthly income_No Personal Income,0.002563515010863866,False
+50,Relax/sleep when newborn is tended_Yes,0.0025169995495582962,False
+51,Abuse_was_missing,0.002182049752033426,False
+52,Relationship with the in-laws_Neutral,0.002153031351511212,False
+53,Total children_One,0.0019973855688563674,False
+54,Husband's education level_University,0.001923346065780576,False
+55,Occupation before latest pregnancy_Other,0.0019089197939681358,False
+56,Husband's education level_High School,0.0018865119975867632,False
+57,Current monthly income_20000 to 30000,0.0017772858197181538,False
+58,Relationship with the newborn_Good,0.0017639959156280694,False
+59,Breastfeed_Yes,0.0017523780795501774,False
+60,Total children_Two,0.001676356477264002,False
+61,Husband's monthly income_20000 to 30000,0.0016670971237661542,False
+62,Monthly income before latest pregnancy_5000 to 10000,0.0015547903017309162,False
+63,Relationship with the newborn_Very good,0.0014975532971883763,False
+64,Monthly income before latest pregnancy_No Personal Income,0.00148040338537982,False
+65,Age of immediate older children_4yr to 6yr,0.0014687837919472749,False
+66,Age of newborn_1 year to 1.5 year,0.0014177201118539642,False
+67,Occupation After Your Latest Childbirth_Housewife,0.0013118506681930064,False
+68,Residence_Village,0.0012336747361741274,False
+69,History of pregnancy loss_No Pregnancy Loss,0.0012007712165854334,False
+70,Pregnancy length_Less than 5 months,0.0011779229326635975,False
+71,Occupation before latest pregnancy_Service,0.0011772470324307375,False
+72,History of pregnancy loss_Still-born Delivery,0.0011686903910998422,False
+73,Occupation After Your Latest Childbirth_Service,0.0011677809058373964,False
+74,Newborn illness_Yes,0.0011582711303382144,False
+75,Need for Support_Medium,0.0011197851995956231,False
+76,Occupation After Your Latest Childbirth_Student,0.0010969396277139957,False
+77,Relationship with the in-laws_Friendly,0.0010846473382970282,False
+78,Age of newborn_Older than 1.5 year,0.0010714580862205615,False
+79,Monthly income before latest pregnancy_20000 to 30000,0.0010233025555870725,False
+80,Number of household members_9 or more,0.0009940642158925458,False
+81,Occupation After Your Latest Childbirth_Teacher,0.0009501017396187789,False
+82,Disease before pregnancy_Non-Chronic Disease,0.0008829691021672425,False
+83,Husband's monthly income_5000 to 10000,0.0008682889837885093,False
+84,Relationship with husband_Friendly,0.0008290906330539604,False
+85,Age of immediate older children_1yr to 3yr,0.0008179368774475226,False
+86,Current monthly income_More than 30000,0.0008170449702022698,False
+87,Current monthly income_5000 to 10000,0.0007971048714293961,False
+88,Occupation before latest pregnancy_Teacher,0.00073030751078596,False
+89,Pregnancy length_8 months,0.0006301085632418784,False
+90,Relationship between father and newborn_Very good,0.0005701639758339476,False
+91,Occupation before latest pregnancy_Doctor,0.0005630147444478293,False
+92,Pregnancy length_6 months,0.0005477018597769411,False
+93,Husband's education level_Primary School,0.0005317368085096954,False
+94,Monthly income before latest pregnancy_Less than 5000,0.0005211011174668862,False
+95,Pregnancy length_7 months,0.0005152073639255606,False
+96,Current monthly income_Less than 5000,0.0005027792353835334,False
+97,Education Level_Primary School,0.00048744132679715853,False
+98,Monthly income before latest pregnancy_More than 30000,0.00048565192582280387,False
+99,Occupation After Your Latest Childbirth_Other,0.0004299189695476176,False
+100,Regular checkups_Yes,0.0004227428610355759,False
+101,Occupation After Your Latest Childbirth_Doctor,0.0003102241137707445,False
+102,Husband's education level_was_missing,0.00028657061751956775,False
+103,Husband's monthly income_was_missing,0.0002688373677304659,False
+104,Relationship with husband_Poor,0.00018755151024853824,False
+105,Addiction_Smoking,0.0001351786029159638,False
+106,Relationship with the in-laws_Poor,0.00012746286369682004,False
+107,Addiction_No Addiction,0.00011473085118417275,False
+108,Husband's monthly income_Less than 5000,8.998702588572423e-05,False
+109,Education Level_was_missing,8.436967492891208e-05,False
+110,Marital status_Married,6.056313606744772e-05,False
+111,Trust and share feelings_was_missing,5.1119742176621595e-05,False
+112,Addiction_Drugs,8.45757996333835e-06,False

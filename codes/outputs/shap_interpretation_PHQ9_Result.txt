@@ -1,0 +1,15 @@
+SHAP explainability summary -- PHQ9 Result (focus class: 'Severe')
+======================================================================
+Model: Random Forest (class_weight=balanced, n_estimators=300)
+Feature set: Raw + Composite (Arm B, 112 features)
+Train accuracy: 1.000 | Held-out test accuracy: 0.344
+SHAP values computed on the held-out 20% test set (unseen data).
+
+Top 5 features driving predictions toward 'Severe':
+    1. Social_Support_Index_Weighted [COMPOSITE INDEX] (mean |SHAP| = 0.0338)
+    2. Angry after latest child birth_Yes (mean |SHAP| = 0.0332)
+    3. Maternal_MentalHealth_Risk_Index_Weighted [COMPOSITE INDEX] (mean |SHAP| = 0.0275)
+    4. Abuse_Yes (mean |SHAP| = 0.0204)
+    5. Relationship with the in-laws_Good (mean |SHAP| = 0.0127)
+
+3/4 composite indices rank in the global top 10 most important features (out of 112 total).

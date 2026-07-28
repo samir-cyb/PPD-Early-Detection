@@ -1,0 +1,29 @@
+{
+  "Economic Stability Index (ESI)": [
+    "Current monthly income",
+    "Husband's monthly income",
+    "Occupation After Your Latest Childbirth",
+    "Education Level"
+  ],
+  "Social/Family Support Index (SSI)": [
+    "Family type",
+    "Relationship with the in-laws",
+    "Relationship with husband",
+    "Number of household members",
+    "Received Support",
+    "Need for Support"
+  ],
+  "Maternal Mental-Health Risk Index (MHRI)": [
+    "Depression before pregnancy (PHQ2)",
+    "Depression during pregnancy (PHQ2)",
+    "Disease before pregnancy",
+    "Abuse",
+    "History of pregnancy loss"
+  ],
+  "Neonatal/Delivery Stress Index (NSI)": [
+    "Mode of delivery",
+    "Birth complications",
+    "Newborn illness",
+    "Worry about newborn"
+  ]
+}
