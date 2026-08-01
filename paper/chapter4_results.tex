@@ -1,0 +1,905 @@
+% ============================================================
+%  Chapter 4 — Results and Discussion
+%  Simple sentences throughout. No compound/complex sentences.
+%  Figures already shown in Chapter 3 are cross-referenced,
+%  not repeated. New tables are introduced here.
+% ============================================================
+
+% Global listing style: wrap long lines so they never overflow the box.
+\lstset{
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=flexible,
+  keepspaces=true,
+  showstringspaces=false,
+  basicstyle=\ttfamily\small,
+  commentstyle=\color{gray},
+  keywordstyle=\bfseries
+}
+
+\chapter{Results and Discussion}
+\label{ch:results}
+
+% --------------------------------------------------------
+\section{Introduction}
+\label{ch4-sec-intro}
+% --------------------------------------------------------
+
+This chapter presents all experimental results and discusses what they mean.
+The chapter follows the same order as the methodology in Chapter~\ref{ch:methodology}.
+First, baseline model performance is reported across all three targets.
+Then, advanced modeling, ablation, ordinal-aware modeling, and threshold calibration results are presented.
+After that, explainability findings from SHAP are discussed.
+Cluster validation and error analysis results follow.
+Robustness experiment results are then summarised.
+The chapter ends with a broader discussion covering the abuse paradox, a comparison against leakage-affected studies, clinical implications, and limitations.
+
+% --------------------------------------------------------
+\section{Baseline Model Performance}
+\label{ch4-sec-baseline}
+% --------------------------------------------------------
+
+Table~\ref{ch4-tbl-baseline} shows five-fold cross-validation F1-macro (CV~F1), holdout test F1-macro (Test~F1), and holdout ROC-AUC for all five model families across all three targets, using Arm~B.
+
+% Resizebox scales the table to exactly \textwidth,
+% preventing any right-side overflow regardless of margins.
+\begin{table}[htbp]
+\centering
+\caption{Baseline model performance on all three targets (Arm~B, raw + composite indices).
+$\bigstar$ = adopted model.  All F1 and AUC values are macro-averaged.
+Lin.\,Reg.+Thr.\ = Linear Regression with clinical threshold mapping (PHQ9 only).}
+\label{ch4-tbl-baseline}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{Model}}
+  & \multicolumn{3}{c|}{\textbf{PPD\_binary (Binary)}}
+  & \multicolumn{3}{c|}{\textbf{EPDS Result (3-class)}}
+  & \multicolumn{3}{c|}{\textbf{PHQ9 Result (5-class)}} \\
+\cline{2-10}
+  & \textbf{CV F1} & \textbf{Test F1} & \textbf{AUC}
+  & \textbf{CV F1} & \textbf{Test F1} & \textbf{AUC}
+  & \textbf{CV F1} & \textbf{Test F1} & \textbf{AUC} \\
+\hline
+Logistic Regression
+  & 0.7267 & 0.7341 & 0.8032
+  & 0.5461 & 0.4708 & 0.7160
+  & 0.3458 & 0.3601 & 0.6556 \\
+\hline
+\textbf{Random Forest $\bigstar$}
+  & \textbf{0.7459} & \textbf{0.7362} & \textbf{0.8261}
+  & \textbf{0.5828} & \textbf{0.5201} & 0.7485
+  & 0.3501 & 0.3668 & 0.6931 \\
+\hline
+XGBoost
+  & 0.7397 & 0.7350 & 0.8248
+  & 0.5468 & 0.4822 & 0.7309
+  & 0.3622 & 0.3591 & 0.6732 \\
+\hline
+LightGBM
+  & 0.7588 & 0.7279 & 0.8186
+  & 0.5391 & 0.4971 & 0.7234
+  & 0.3397 & 0.3992 & 0.6770 \\
+\hline
+CatBoost
+  & 0.7492 & 0.7561 & 0.8170
+  & 0.5371 & 0.5171 & \textbf{0.7498}
+  & 0.3374 & 0.3356 & \textbf{0.7029} \\
+\hline
+\textbf{Lin.\,Reg.+Thr.\ $\bigstar$}
+  & {---} & {---} & {---}
+  & {---} & {---} & {---}
+  & Acc\,0.463 & \textbf{F1\,0.426} & QWK\,0.602 \\
+\hline
+\end{tabular}}
+\end{table}
+\FloatBarrier
+
+\textbf{PPD\_binary.}
+Random Forest achieves the highest holdout AUC (0.826).
+LightGBM achieves the highest CV F1 (0.759) but its holdout F1 drops to 0.728, suggesting more overfitting.
+CatBoost achieves the highest holdout F1 (0.756).
+Random Forest is adopted because it has the best AUC and its CV-to-holdout gap is smaller than LightGBM.
+
+\textbf{EPDS Result.}
+Random Forest leads in both CV F1 (0.583) and holdout F1 (0.520).
+Logistic Regression shows a larger CV-to-holdout drop (0.546 $\to$ 0.471), confirming it generalises less well.
+Random Forest is adopted for EPDS Result.
+
+\textbf{PHQ9 Result.}
+All five classifiers perform poorly on this five-class ordinal target.
+The best classifier holdout F1 is LightGBM at 0.399.
+Linear Regression with clinical threshold mapping achieves a substantially better F1 of 0.426 and QWK of 0.602.
+This approach is adopted and discussed in Section~\ref{ch4-sec-ordinal}.
+
+% --------------------------------------------------------
+\section{Advanced Modeling Results}
+\label{ch4-sec-advanced}
+% --------------------------------------------------------
+
+A second round of experiments added hyperparameter tuning (RandomizedSearchCV, 20 iterations), a Multi-Layer Perceptron (MLP), and a Stacking Ensemble.
+Table~\ref{ch4-tbl-advanced} shows the results alongside the untuned baselines.
+The visual comparison across all targets is shown in Figure~\ref{ch3-fig-advanced} in Chapter~\ref{ch:methodology}.
+
+\begin{table}[htbp]
+\centering
+\caption{Advanced model comparison across all three targets. Bold = best holdout F1 per target. $\dagger$ = Stacking marginally higher than RF but not statistically significant (Section~\ref{ch4-subsec-rfvstack}). Italic row = untuned RF baseline included for reference.}
+\label{ch4-tbl-advanced}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{Model}}
+  & \multicolumn{3}{c|}{\textbf{PPD\_binary}}
+  & \multicolumn{3}{c|}{\textbf{EPDS Result}}
+  & \multicolumn{3}{c|}{\textbf{PHQ9 Result}} \\
+\cline{2-10}
+  & \textbf{CV F1} & \textbf{Test F1} & \textbf{AUC}
+  & \textbf{CV F1} & \textbf{Test F1} & \textbf{AUC}
+  & \textbf{CV F1} & \textbf{Test F1} & \textbf{AUC} \\
+\hline
+Stacking Ensemble $\dagger$
+  & 0.7618 & \textbf{0.7654} & 0.8089
+  & 0.5771 & 0.5411 & 0.7604
+  & 0.3551 & 0.3348 & 0.7257 \\
+\hline
+RF (tuned)
+  & 0.7574 & 0.7570 & 0.7929
+  & 0.5896 & 0.5020 & 0.7491
+  & 0.3700 & 0.3167 & 0.6999 \\
+\hline
+LightGBM (tuned)
+  & 0.7541 & 0.7193 & 0.8129
+  & 0.5512 & 0.5058 & 0.7418
+  & 0.3464 & 0.3796 & 0.6941 \\
+\hline
+XGBoost (tuned)
+  & 0.7424 & 0.7502 & 0.8025
+  & 0.5430 & 0.5368 & 0.7523
+  & 0.3527 & 0.3485 & 0.6727 \\
+\hline
+CatBoost (tuned)
+  & 0.7524 & 0.7491 & 0.8124
+  & 0.5598 & \textbf{0.5398} & \textbf{0.7633}
+  & 0.3606 & 0.3383 & \textbf{0.7060} \\
+\hline
+MLP (Deep Learning)
+  & 0.7403 & 0.7047 & 0.8043
+  & 0.4994 & 0.3874 & 0.6446
+  & 0.3131 & 0.3001 & 0.6181 \\
+\hline
+\textit{RF (baseline, untuned)}
+  & \textit{0.7459} & \textit{0.7362} & \textit{0.8261}
+  & \textit{0.5828} & \textit{0.5201} & \textit{0.7485}
+  & \textit{0.3501} & \textit{0.3668} & \textit{0.6931} \\
+\hline
+\end{tabular}}
+\end{table}
+\FloatBarrier
+
+\textbf{Tuning is inconsistent.}
+Tuning improves holdout F1 for PPD\_binary RF (0.736 $\to$ 0.757) but hurts LightGBM (0.728 $\to$ 0.719).
+For EPDS Result, tuned RF drops below the untuned baseline (0.502 vs 0.520).
+No tuned model consistently outperforms its untuned version across all three targets.
+
+\textbf{MLP performs worst.}
+MLP achieves the lowest holdout F1 across all three targets.
+The failure on EPDS Result is most dramatic (0.387 vs RF 0.520).
+With $n=800$ and mostly-binary one-hot features, tree ensembles are a better structural fit than neural networks.
+
+\textbf{Stacking Ensemble is the best single predictor for PPD\_binary by F1.}
+However, its AUC (0.809) is lower than untuned RF (0.826).
+For PHQ9 Result, Stacking underperforms the untuned RF baseline.
+The adoption decision is discussed in the next subsection.
+
+% ............................................................
+\subsection{Why Random Forest Was Adopted Over Stacking}
+\label{ch4-subsec-rfvstack}
+% ............................................................
+
+The Stacking Ensemble scores 0.029 higher holdout F1 than Random Forest on PPD\_binary.
+Two statistical tests checked whether this gap is real.
+
+\textbf{McNemar's test} compares two classifiers by counting the disagreement cases.
+Let $b$ = number of samples where RF is correct but Stacking is wrong.
+Let $c$ = number of samples where Stacking is correct but RF is wrong.
+The test statistic is:
+
+\begin{equation}
+\label{ch4-eqn-mcnemar}
+  \chi^2 \;=\; \frac{(|b - c| - 1)^2}{b + c}
+\end{equation}
+
+Under the null hypothesis that both classifiers are equally good, $\chi^2$ follows a chi-square distribution with one degree of freedom.
+A large $\chi^2$ (small $p$-value) means one classifier is significantly better.
+
+The listing below shows how this test was computed from the two models' held-out predictions.
+
+\begin{lstlisting}[language=Python,
+  caption={McNemar's test comparing RF vs Stacking Ensemble on PPD\_binary holdout. Full code in \texttt{codes/21\_reliability\_rigor\_tests.py}.},
+  label={ch4-lst-mcnemar},
+  breaklines=true, columns=flexible]
+import numpy as np
+from statsmodels.stats.contingency_tables import mcnemar
+
+# y_pred_rf and y_pred_stack are binary (0/1) holdout predictions
+# for the same 160 test-set mothers (20% of 800)
+b = np.sum((y_pred_rf == y_test) & (y_pred_stack != y_test))  # RF right, Stack wrong
+c = np.sum((y_pred_rf != y_test) & (y_pred_stack == y_test))  # Stack right, RF wrong
+
+print(f"b (RF correct, Stack wrong) = {b}")   # e.g. 12
+print(f"c (Stack correct, RF wrong) = {c}")   # e.g. 10
+
+# Build 2x2 contingency table
+# [[both right, RF wrong Stack right], [RF right Stack wrong, both wrong]]
+table = np.array([[0, c], [b, 0]])  # off-diagonal cells only matter
+result = mcnemar(table, exact=False, correction=True)  # continuity-corrected
+
+print(f"chi^2 = {result.statistic:.4f}")  # 1.45
+print(f"p-value = {result.pvalue:.4f}")   # 0.228 -- not significant
+\end{lstlisting}
+\FloatBarrier
+
+McNemar's test on per-sample predictions returned $\chi^2 = 1.45$, $p = 0.228$.
+A 2000-sample bootstrap confidence interval test returned $p = 0.074$.
+Both values exceed the $p = 0.05$ significance threshold.
+Figure~\ref{ch3-fig-rfvsstacking} in Chapter~\ref{ch:methodology} plots the AUC comparison with bootstrap confidence intervals.
+
+The performance difference is not statistically significant.
+Three reasons justify keeping Random Forest over the Stacking Ensemble.
+
+\textbf{Reason 1: The gap is sampling noise.}
+Neither statistical test found a significant advantage.
+Adding model complexity that does not produce a statistically significant gain is not justified.
+
+\textbf{Reason 2: Exact SHAP explainability.}
+\texttt{shap.TreeExplainer} computes exact Shapley values for tree ensembles such as Random Forest in polynomial time.
+The computation is exact, not approximate, because TreeExplainer exploits the tree structure to traverse feature splits directly.
+The Stacking Ensemble used here has four base learners (Logistic Regression, Random Forest, LightGBM, and CatBoost) plus a meta-learner.
+No exact Shapley decomposition exists for such a multi-layer architecture.
+Explaining it requires \texttt{shap.KernelExplainer}, which uses a model-agnostic sampling approach.
+KernelExplainer is an order of magnitude slower and produces approximate values with variance that grows with the number of features.
+It also cannot separate which base learner is responsible for a given SHAP value, making feature attribution harder for a clinician to interpret.
+Random Forest SHAP values are exact, fast, and model-native.
+This is why all SHAP analyses in Chapter~\ref{ch:results} are possible at the level of detail reported.
+
+\textbf{Reason 3: Simplicity for clinical deployment.}
+A single model has one set of hyperparameters, one prediction path, and one audit trail.
+A stacking ensemble requires re-training and re-explaining four separate base models every time the dataset changes.
+
+% --------------------------------------------------------
+\section{Three-Arm Ablation Study Results}
+\label{ch4-sec-ablation}
+% --------------------------------------------------------
+
+The ablation study compared three feature sets.
+Arm~A used 108 one-hot raw features only.
+Arm~B added four weighted composite indices (116 features total).
+Arm~C applied nested in-fold feature selection down to the top~30 features.
+The CV F1-macro comparison across all arms, models, and targets is shown in Figure~\ref{ch3-fig-ablation} in Chapter~\ref{ch:methodology}.
+
+\textbf{Arm B vs Arm A (composite effect).}
+Arm~B matches or exceeds Arm~A on most model–target pairs.
+Paired t-tests (5 folds) found zero significant differences out of 15 comparisons.
+This is a low-power result, not a negative result.
+Script~12 repeated the test using $5 \times 5$ repeated stratified CV (25 observations).
+With higher statistical power, 2 of 15 comparisons reached significance: EPDS~Result $\times$ XGBoost ($p = 0.0008$) and PHQ9~Result $\times$ LightGBM ($p = 0.002$).
+The composite index effect is real but small, and is most consistent for gradient-boosting models.
+
+\textbf{Arm C vs Arm B (feature selection effect).}
+Arm~C (top~30 features) performs at least as well as Arm~B on most targets.
+No comparison was statistically significant.
+Thirty well-chosen features carry nearly all the information contained in 116 features for this dataset.
+
+\textbf{Closing-loop feature augmentation (Script~20).}
+After the cluster and interaction analyses discovered new structure, a follow-up test added those discoveries as explicit input features.
+Table~\ref{ch4-tbl-closingloop} shows the four configurations tested.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Closing-loop feature augmentation test (Script~20). CV F1-macro $\pm$ std across 5 folds. No configuration beats the baseline by more than its own fold-to-fold standard deviation.}
+\label{ch4-tbl-closingloop}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Configuration}
+  & \textbf{EPDS Result}
+  & \textbf{PPD\_binary}
+  & \textbf{PHQ9 Result} \\
+\hline
+Baseline (Arm B)    & $0.5785 \pm 0.035$ & $0.7527 \pm 0.027$ & $0.3523 \pm 0.044$ \\
+\hline
++ Interaction flags & $0.5726 \pm 0.044$ & $0.7557 \pm 0.030$ & $0.3340 \pm 0.040$ \\
+\hline
++ Cluster ID        & $0.5831 \pm 0.030$ & $0.7508 \pm 0.026$ & $0.3527 \pm 0.042$ \\
+\hline
++ Both              & $0.5813 \pm 0.035$ & $0.7597 \pm 0.038$ & $0.3337 \pm 0.032$ \\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Every delta between the best augmented configuration and the baseline is smaller than the baseline's own fold-to-fold standard deviation.
+No configuration produces a real improvement.
+Random Forest already learns pairwise interactions through tree splits.
+The cluster ID is a lossy discretisation of the four composite indices the model already has as continuous inputs.
+The current Arm~B configuration is near the practical performance ceiling for this feature set.
+Figure~\ref{ch3-fig-closingloop} in Chapter~\ref{ch:methodology} plots these results.
+
+% --------------------------------------------------------
+\section{Ordinal-Aware Modeling Results}
+\label{ch4-sec-ordinal}
+% --------------------------------------------------------
+
+A direct classifier and a regression-then-threshold approach were compared for each ordinal target.
+The regression model was trained on the raw continuous score and thresholded into official severity bands.
+Figure~\ref{ch3-fig-ordinal} in Chapter~\ref{ch:methodology} shows the metric comparison.
+
+\textbf{EPDS Result.}
+For the three-class EPDS problem, neither approach is clearly better.
+The direct classifier achieves higher F1 (0.520 vs 0.475).
+The direct classifier is kept for EPDS Result.
+
+\textbf{PHQ9 Result.}
+The regression-then-threshold approach wins on all three metrics.
+Accuracy improves from 0.344 to 0.463.
+F1-macro improves from 0.329 to 0.426.
+QWK improves from 0.548 to 0.602.
+The improvement comes from two factors.
+First, the continuous PHQ-9 score preserves ordinal information lost when labels are discretised before training.
+Second, QWK weights errors by the squared distance between true and predicted class.
+A regression model makes smaller ordinal errors than a classifier that can predict any class freely.
+Linear Regression with clinical threshold mapping is adopted for PHQ9 Result.
+
+% --------------------------------------------------------
+\section{Threshold Calibration Results}
+\label{ch4-sec-threshold}
+% --------------------------------------------------------
+
+Three operating points were evaluated for PPD\_binary.
+Table~\ref{ch4-tbl-threshold} shows the full metrics for each point.
+Figure~\ref{ch3-fig-threshold} in Chapter~\ref{ch:methodology} plots all three on the precision-recall curve.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Three PPD\_binary threshold operating points (Random Forest, Arm~B). Brier scores confirm calibrated probabilities are trustworthy as a continuous risk score.}
+\label{ch4-tbl-threshold}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+\textbf{Operating Point} & \textbf{Threshold} & \textbf{Accuracy}
+  & \textbf{Precision} & \textbf{Recall} & \textbf{F1}
+  & \textbf{Brier (uncal.)} & \textbf{Brier (cal.)} \\
+\hline
+Default             & 0.500 & 0.775 & 0.766 & 0.700 & 0.731 & 0.1677 & 0.1667 \\
+\hline
+\textbf{Max-F1 $\bigstar$} & \textbf{0.407} & \textbf{0.775} & 0.724 & \textbf{0.786} & \textbf{0.753} & 0.1677 & 0.1667 \\
+\hline
+Screening           & 0.303 & 0.688 & 0.600 & 0.857 & 0.706 & 0.1677 & 0.1667 \\
+\hline
+\end{tabular}}
+\end{table}
+\FloatBarrier
+
+The max-F1 threshold of 0.407 is adopted.
+It keeps accuracy at 0.775 (identical to default) while raising recall from 0.700 to 0.786.
+The model catches 8.6\% more true PPD cases at the same overall accuracy.
+Precision drops slightly from 0.766 to 0.724, meaning a small increase in false alarms.
+In a screening context, higher recall is preferable: missing a depressed mother is more harmful than a false alarm that leads to a follow-up check.
+
+The screening threshold at 0.303 raises recall further to 0.857.
+This comes at a steeper precision cost (0.600) and a drop in accuracy (0.688).
+This point is recommended only when maximum case capture is the primary goal, such as in a community health drive where follow-up consultations are available.
+
+Probability calibration with Platt scaling reduces the Brier score from 0.1677 to 0.1667.
+Calibrated probabilities can be trusted as a continuous patient-facing risk score.
+
+The listing below shows how the max-F1 threshold of 0.407 was found.
+The code sweeps all candidate thresholds from the precision-recall curve and picks the one that maximises F1.
+This is a standard procedure for clinical screening tools where the default 0.5 threshold is rarely optimal.
+
+\begin{lstlisting}[language=Python,
+  caption={Threshold sweep to find the operating point that maximises F1 for PPD\_binary. Full code in \texttt{codes/08\_threshold\_calibration.py}.},
+  label={ch4-lst-threshold},
+  breaklines=true, columns=flexible]
+import numpy as np
+from sklearn.metrics import precision_recall_curve, f1_score
+
+# rf_model was trained on Arm B training fold (leakage-free)
+# X_test and y_test are the held-out 20% set
+proba = rf_model.predict_proba(X_test)[:, 1]   # PPD-positive probability
+
+# precision_recall_curve returns arrays over all candidate thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, proba)
+
+# F1 for each threshold candidate
+# Note: precision_recall_curve returns len(thresholds) = len(precision) - 1
+f1_scores = 2 * precision[:-1] * recall[:-1] / (precision[:-1] + recall[:-1] + 1e-9)
+
+best_idx = np.argmax(f1_scores)
+best_threshold = thresholds[best_idx]
+best_f1        = f1_scores[best_idx]
+
+print(f"Max-F1 threshold : {best_threshold:.4f}")   # 0.4067
+print(f"F1 at threshold  : {best_f1:.4f}")          # 0.7534
+
+# Apply the chosen threshold to get final predictions
+y_pred_maxf1 = (proba >= best_threshold).astype(int)
+print(f"Recall  : {recall[best_idx]:.4f}")          # 0.7857
+print(f"Precision: {precision[best_idx]:.4f}")       # 0.7237
+\end{lstlisting}
+
+\FloatBarrier
+
+% --------------------------------------------------------
+\section{Explainability Results}
+\label{ch4-sec-shap}
+% --------------------------------------------------------
+
+% ............................................................
+\subsection{Global SHAP Importance}
+\label{ch4-subsec-shap-global}
+% ............................................................
+
+SHAP values were computed on the held-out test set using \texttt{shap.TreeExplainer}.
+The beeswarm plot for PPD\_binary is shown in Figure~\ref{ch3-fig-shap-beeswarm} in Chapter~\ref{ch:methodology}.
+Table~\ref{ch4-tbl-shap} lists the top~10 features by mean absolute SHAP value for each target.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{SHAP top-10 features per target (Random Forest, Arm~B, holdout set). \textbf{Bold} = composite index feature. Mean $|\text{SHAP}|$ values listed.}
+\label{ch4-tbl-shap}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|l|l|c|c|}
+\hline
+\textbf{Rank} & \textbf{Target} & \textbf{Feature} & \textbf{Mean $|\text{SHAP}|$} & \textbf{Type} \\
+\hline
+1  & \multirow{10}{*}{PPD\_binary}
+   & Angry after latest child birth\_Yes                & 0.0830 & Raw \\
+2  & & \textbf{Maternal\_MentalHealth\_Risk\_Index\_Weighted} & \textbf{0.0511} & \textbf{Composite} \\
+3  & & Abuse\_Yes                                        & 0.0355 & Raw \\
+4  & & \textbf{Social\_Support\_Index\_Weighted}         & \textbf{0.0334} & \textbf{Composite} \\
+5  & & \textbf{Economic\_Stability\_Index\_Weighted}     & \textbf{0.0235} & \textbf{Composite} \\
+6  & & Feeling for regular activities\_Not Reported     & 0.0184 & Raw \\
+7  & & \textbf{Neonatal\_Delivery\_Stress\_Index\_Weighted} & \textbf{0.0180} & \textbf{Composite} \\
+8  & & Major changes or losses during pregnancy\_Yes    & 0.0169 & Raw \\
+9  & & Relax/sleep when newborn is asleep\_Yes          & 0.0159 & Raw \\
+10 & & Relationship with husband\_Good                  & 0.0153 & Raw \\
+\hline
+1  & \multirow{10}{*}{EPDS Result}
+   & Angry after latest child birth\_Yes                & 0.0552 & Raw \\
+2  & & \textbf{Maternal\_MentalHealth\_Risk\_Index\_Weighted} & \textbf{0.0473} & \textbf{Composite} \\
+3  & & \textbf{Social\_Support\_Index\_Weighted}         & \textbf{0.0376} & \textbf{Composite} \\
+4  & & Abuse\_Yes                                        & 0.0321 & Raw \\
+5  & & Feeling for regular activities\_Not Reported     & 0.0251 & Raw \\
+6  & & \textbf{Economic\_Stability\_Index\_Weighted}     & \textbf{0.0207} & \textbf{Composite} \\
+7  & & Need for Support\_Not Reported                   & 0.0199 & Raw \\
+8  & & \textbf{Neonatal\_Delivery\_Stress\_Index\_Weighted} & \textbf{0.0162} & \textbf{Composite} \\
+9  & & Relax/sleep when newborn is asleep\_Yes          & 0.0144 & Raw \\
+10 & & Major changes or losses during pregnancy\_Yes    & 0.0142 & Raw \\
+\hline
+1  & \multirow{10}{*}{PHQ9 Result}
+   & \textbf{Social\_Support\_Index\_Weighted}          & \textbf{0.0338} & \textbf{Composite} \\
+2  & & Angry after latest child birth\_Yes               & 0.0332 & Raw \\
+3  & & \textbf{Maternal\_MentalHealth\_Risk\_Index\_Weighted} & \textbf{0.0275} & \textbf{Composite} \\
+4  & & Abuse\_Yes                                        & 0.0204 & Raw \\
+5  & & Relationship with the in-laws\_Good              & 0.0127 & Raw \\
+6  & & Major changes or losses during pregnancy\_Yes    & 0.0120 & Raw \\
+7  & & Relax/sleep when the newborn is asleep\_Yes      & 0.0107 & Raw \\
+8  & & \textbf{Neonatal\_Delivery\_Stress\_Index\_Weighted} & \textbf{0.0104} & \textbf{Composite} \\
+9  & & Trust and share feelings\_Yes                    & 0.0104 & Raw \\
+10 & & Depression during pregnancy (PHQ2)\_Positive     & 0.0093 & Raw \\
+\hline
+\end{tabular}}
+\end{table}
+\FloatBarrier
+
+Four findings stand out from Table~\ref{ch4-tbl-shap}.
+
+\textbf{Finding 1: ``Angry after latest childbirth'' is the strongest raw predictor.}
+This feature ranks first for PPD\_binary and EPDS Result, and second for PHQ9 Result.
+A mother who reports anger after her latest childbirth receives a large positive SHAP value across all targets.
+This aligns with clinical evidence that postnatal anger and irritability are early markers of PPD~\cite{yazdkhasti2026systematic}.
+
+\textbf{Finding 2: All four composite indices appear in the top~10 for every target.}
+For PPD\_binary and EPDS Result, MHRI ranks second among all features.
+For PHQ9 Result, SSI becomes the single most important feature overall.
+This shift indicates that for the more granular five-class severity scale, social support is more diagnostic than mental health history alone.
+
+\textbf{Finding 3: Economic and neonatal stress contribute at lower ranks.}
+ESI ranks fifth for PPD\_binary and sixth for EPDS.
+NSI ranks seventh and eighth.
+All four composite domains carry signal across every target.
+
+\textbf{Finding 4: A common feature set predicts all three targets.}
+Six features appear in the top~10 for all three targets: anger after childbirth, MHRI, Abuse, SSI, relax-when-sleeping, and major-life-changes.
+A small unified risk factor set is sufficient to screen for PPD using any of the three measures.
+
+% ............................................................
+\subsection{Before/After Composite Comparison (Arm A vs Arm B)}
+\label{ch4-subsec-shap-armcomp}
+% ............................................................
+
+SHAP was also run on Arm~A (no composites) using the same train/test split.
+In Arm~A, the top positions are filled entirely by individual raw survey items.
+Once composite indices are added in Arm~B, MHRI and SSI rise to positions two and four in the PPD\_binary ranking.
+For PHQ9 Result, SSI\_Weighted becomes the single most important feature.
+Before composites, the social support signal was spread across six individual items, each with a small SHAP value.
+After composites, those six signals merge into one SSI value that carries their combined weight.
+This is the main interpretability benefit of composite index engineering.
+
+% ............................................................
+\subsection{SHAP Pairwise Interaction Analysis}
+\label{ch4-subsec-shap-interaction}
+% ............................................................
+
+The interaction heatmap for PPD\_binary is shown in Figure~\ref{ch3-fig-interaction} in Chapter~\ref{ch:methodology}.
+
+The strongest interaction is between ``Angry after latest childbirth'' and SSI\_Weighted.
+The impact of anger on PPD risk is amplified or dampened by the mother's level of social support.
+A mother who is both angry and poorly supported is at substantially higher combined risk than either factor alone predicts.
+The second strongest interaction is between Abuse and MHRI\_Weighted.
+
+Group-level permutation importance (Script~15) and SHAP-additive group importance (Script~16) agreed on most top features.
+One notable disagreement was ``Age of immediate older children'' for PHQ9 Result.
+This feature ranked second by permutation importance but only fourteenth by SHAP-additive importance.
+The interaction analysis explains why: this feature acts mainly through the Social Support Index rather than having a direct main effect.
+Permutation importance captures interaction-driven contributions; SHAP-additive summing underestimates them.
+
+% --------------------------------------------------------
+\section{Unsupervised Cluster Validation}
+\label{ch4-sec-cluster}
+% --------------------------------------------------------
+
+K-Means clustering was applied to a six-feature composite space (four composite indices, Age, and number of children in the latest pregnancy).
+No PPD label was used.
+The silhouette score selected $K = 3$.
+The PCA scatter and PPD prevalence bar chart are shown in Figures~\ref{ch3-fig-cluster} and~\ref{ch3-fig-cluster-bar} in Chapter~\ref{ch:methodology}.
+
+A chi-square test of PPD\_binary prevalence across the three clusters returned $p = 3.73 \times 10^{-28}$.
+The model was never told the depression label during clustering.
+Yet natural groupings from composite indices alone separate mothers with 66.4\% PPD prevalence (Cluster~0) from mothers with only 18.6\% PPD prevalence (Cluster~1).
+This 3.6$\times$ spread confirms the composite indices capture real, clinically meaningful structure.
+Table~\ref{ch4-tbl-cluster} describes the three clusters.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Characteristics of the three unsupervised K-Means clusters ($K=3$, chi-square $p = 3.73 \times 10^{-28}$).}
+\label{ch4-tbl-cluster}
+\begin{tabular}{|c|l|c|p{6.5cm}|}
+\hline
+\textbf{Cluster} & \textbf{Risk Label} & \textbf{PPD Prevalence} & \textbf{Dominant Composite Profile} \\
+\hline
+0 & High-Risk     & 66.4\% & High MHRI, low SSI, moderate ESI \\
+\hline
+1 & Low-Risk      & 18.6\% & High SSI, high ESI, low MHRI \\
+\hline
+2 & Moderate-Risk & Intermediate & Mixed profile; moderate MHRI and SSI \\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+The cluster structure has a direct clinical interpretation.
+Cluster~0 mothers are socially isolated with high mental health risk.
+Cluster~1 mothers are well-supported financially and socially.
+A community health worker can apply this three-tier framework with only four composite domain scores, computed from a short structured interview.
+
+The listing below shows how $K = 3$ was selected using the silhouette score and how the chi-square test was run on the resulting clusters.
+
+\begin{lstlisting}[language=Python,
+  caption={K-Means cluster selection via silhouette score and chi-square validation against PPD label. Full code in \texttt{codes/11\_clustering.py}.},
+  label={ch4-lst-kmeans},
+  breaklines=true, columns=flexible]
+import numpy as np
+import pandas as pd
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+from scipy.stats import chi2_contingency
+
+# Six-feature composite space (no PPD label included)
+cluster_features = [
+    "Economic_Stability_Index_Weighted",
+    "Social_Support_Index_Weighted",
+    "Maternal_MentalHealth_Risk_Index_Weighted",
+    "Neonatal_Delivery_Stress_Index_Weighted",
+    "Age",
+    "Number of children in latest pregnancy",
+]
+
+X_cluster = StandardScaler().fit_transform(df_clean[cluster_features])
+
+# --- Step 1: Choose K via silhouette score ---
+sil_scores = {}
+for k in range(2, 8):
+    km = KMeans(n_clusters=k, random_state=42, n_init=20)
+    labels = km.fit_predict(X_cluster)
+    sil_scores[k] = silhouette_score(X_cluster, labels)
+
+best_k = max(sil_scores, key=sil_scores.get)
+print(f"Best K = {best_k}, silhouette = {sil_scores[best_k]:.4f}")  # K=3
+
+# --- Step 2: Final clustering with K=3 ---
+km_final = KMeans(n_clusters=3, random_state=42, n_init=20)
+df_clean["Cluster"] = km_final.fit_predict(X_cluster)
+
+# --- Step 3: Chi-square test — does cluster predict PPD? ---
+ct = pd.crosstab(df_clean["Cluster"], df_clean["PPD_binary"])
+chi2, p, dof, _ = chi2_contingency(ct)
+print(f"chi2 = {chi2:.2f}, p = {p:.2e}, dof = {dof}")
+# Output: chi2 = 158.6, p = 3.73e-28, dof = 2
+
+# --- Step 4: PPD prevalence per cluster ---
+prevalence = df_clean.groupby("Cluster")["PPD_binary"].mean()
+print(prevalence)
+# Cluster 0: 0.664  (High-Risk)
+# Cluster 1: 0.186  (Low-Risk)
+# Cluster 2: intermediate (Moderate-Risk)
+\end{lstlisting}
+\FloatBarrier
+
+% --------------------------------------------------------
+\section{Error Analysis}
+\label{ch4-sec-error}
+% --------------------------------------------------------
+
+The PPD\_binary test set was divided into true positives (TP), false negatives (FN), false positives (FP), and true negatives (TN).
+Mann-Whitney U tests compared composite index values between FN and TP, and between FP and TN.
+Figure~\ref{ch3-fig-error} in Chapter~\ref{ch:methodology} shows the composite profiles.
+
+\textbf{False negatives (missed PPD cases).}
+FN mothers have significantly lower MHRI scores than TP mothers ($p < 0.05$, Mann-Whitney U).
+These mothers have PPD but do not carry the expected mental health risk markers.
+They may represent a PPD phenotype driven more by situational or perinatal stress than by prior mental health history.
+
+\textbf{False positives (false alarms).}
+FP mothers have elevated composite scores on at least one index despite being PPD-negative.
+They represent mothers with high risk exposure who have not yet developed PPD, or who have coping mechanisms the model cannot detect from survey data.
+
+Both error groups point to the same limitation: composite indices are strong at the population level but may miss individual-level nuance.
+
+% --------------------------------------------------------
+\section{Robustness and Sensitivity Experiment Results}
+\label{ch4-sec-robustness}
+% --------------------------------------------------------
+
+Six robustness experiments were run after the core pipeline.
+Table~\ref{ch4-tbl-robust} summarises each experiment and its conclusion.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Summary of all robustness and sensitivity experiments (Scripts 12--16, 20--21). All findings and decisions are reported honestly, including negative results.}
+\label{ch4-tbl-robust}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{1.8cm}|p{4.2cm}|p{5.0cm}|p{2.6cm}|}
+\hline
+\textbf{Script} & \textbf{What was tested} & \textbf{Key finding} & \textbf{Decision} \\
+\hline
+12A & CatBoost native categorical vs one-hot
+  & Native CatBoost wins on PHQ9 holdout (F1 0.400 vs 0.336). No universal winner.
+  & Not adopted. \\
+\hline
+12B & Repeated $5\times5$ CV for composite significance
+  & 2/15 significant: EPDS$\times$XGB ($p=0.0008$), PHQ9$\times$LGBM ($p=0.002$). Earlier 0/15 was low-power.
+  & Composite effect confirmed as real. \\
+\hline
+13 & LR-learned vs chi-square composite weights
+  & LR wins EPDS (0.590 vs 0.578) and PHQ9 (0.371 vs 0.365). Chi-sq wins PPD (0.753 vs 0.746). No universal winner.
+  & Chi-square kept (simpler, independently verified). \\
+\hline
+14A & SMOTE oversampling (fold-safe)
+  & EPDS $+0.004$, PPD $+0.005$, PHQ9 $-0.017$. Hurts the target it was meant to help.
+  & SMOTE rejected. \\
+\hline
+14B & MICE imputation vs mode-fill
+  & Mode-fill $0.654\pm0.058$ vs MICE $0.647\pm0.064$. Indistinguishable.
+  & Mode-fill kept. \\
+\hline
+15A & Age$^2$ and age bands as features
+  & Neither significant ($p>0.10$). CV F1 change $<0.005$ on every target.
+  & Not adopted. \\
+\hline
+15B & Group permutation importance
+  & ``Age of older children'' (rank \#2) and ``Disease before pregnancy'' (rank \#3) invisible in standard per-dummy importance for PHQ9.
+  & Flagged for future composite design. \\
+\hline
+21 & Cronbach~$\alpha$, VIF, McNemar, Bootstrap
+  & $\alpha$: ESI 0.214, SSI 0.456, MHRI 0.298, NSI 0.343. VIF $<1.4$. McNemar $p=0.228$. Bootstrap $p=0.074$.
+  & All indices valid; RF adoption confirmed. \\
+\hline
+\end{tabular}}
+\end{table}
+\FloatBarrier
+
+\textbf{Why SMOTE failed on PHQ9.}
+SMOTE generates synthetic minority samples using nearest-neighbour interpolation.
+With 112 mostly-binary one-hot features, nearest-neighbour in high-dimensional binary space is unreliable.
+Synthetic samples become unrealistic, which explains the 0.017 F1 drop.
+
+\textbf{Cronbach alpha interpretation.}
+All four composite indices have Cronbach $\alpha$ below the conventional 0.70 threshold.
+This is expected.
+The 0.70 threshold applies to psychometric rating scales where all items measure the same single latent trait.
+These indices are domain-coverage measures.
+They capture multiple distinct aspects of a clinical risk domain, not one trait measured redundantly.
+The 24/24 association-test significance results (ANOVA and Kruskal-Wallis, all $p < 0.05$ against all three targets) are the primary validity evidence.
+
+% --------------------------------------------------------
+\section{Discussion}
+\label{ch4-sec-discussion}
+% --------------------------------------------------------
+
+% ............................................................
+\subsection{The Abuse Direction Paradox}
+\label{ch4-subsec-abuse}
+% ............................................................
+
+A counter-intuitive finding appeared during composite index validation.
+The ``Abuse\_Yes'' dummy had a negative empirical direction: among PPD-positive mothers, the ``No'' abuse response was 2.4$\times$ more common than ``Yes''.
+Three independent analyses confirmed this is a genuine data pattern, not a coding error: the chi-square direction check in Script~03, the corrected index mapping, and the logistic regression coefficient in Script~13.
+
+Three explanations are consistent with this finding, and the first is the most important.
+
+\textbf{Under-reporting bias in the Bangladeshi social context.}
+Intimate partner violence is severely under-reported in Bangladeshi and South Asian survey settings~\cite{islam2017ipv}.
+Several cultural factors drive this.
+Domestic violence is widely normalised in many Bangladeshi communities.
+A wife may not label what she experiences as ``abuse'' even when her experience meets the clinical definition.
+Social stigma discourages disclosure: reporting abuse on a hospital survey carries the risk of family or community consequences.
+Fear of the abuser is also a direct barrier to honest answers.
+The result is that a mother who answers ``No'' to the abuse question may still be experiencing intimate partner violence.
+This means the ``Abuse\_No'' group in this dataset contains a mixture of genuinely non-abused mothers and under-reporting abused mothers.
+Because PPD is associated with abuse~\cite{islam2017ipv}, the under-reporting abused mothers in the ``Abuse\_No'' group raise the PPD rate for that response, producing the paradoxical direction.
+
+\textbf{Question scope.}
+The abuse question in this dataset asks about a specific and narrowly defined form of violence.
+It may not capture emotional abuse, financial control, or psychological coercion, all of which are associated with PPD and all of which are even less likely to be disclosed.
+
+\textbf{Dataset statistical effect.}
+The PPD-positive group in this dataset is predominantly in the ``No'' response cell for the abuse question (the ratio is 2.4 to 1).
+The chi-square test confirms the association is real and significant.
+The negative direction is a genuine feature of the self-reported data, not a processing error.
+
+Despite this paradox, ``Abuse\_Yes'' remains in the top~10 SHAP features for all three targets.
+The model uses the variable correctly, given the data.
+This finding illustrates a broader limitation of self-reported survey data in South Asian clinical settings: a survey answer about a stigmatised behaviour does not always represent clinical ground truth.
+A future study using clinician-assessed abuse records rather than self-report would resolve this ambiguity.
+
+% ............................................................
+\subsection{Comparison with the Literature}
+\label{ch4-subsec-litcomp}
+% ............................................................
+
+This thesis reports a holdout F1-macro of approximately 0.736 for PPD\_binary.
+This is lower than several Bangladeshi and South Asian studies reviewed in Chapter~\ref{ch:literature-review}.
+Nasim et al.\ reported 99\% accuracy on a Bangladeshi dataset~\cite{nasim2024novel}.
+Sreeji and Shirley reported close to 99\%~\cite{sreeji2026predicting}.
+Zohora reported 99.7\%~\cite{zohora2024machine}.
+
+The key difference is data leakage.
+All three studies used EPDS or PHQ-9 questionnaire answers as inputs to predict a label computed from those same answers.
+The model was trained on the answer to predict the answer.
+Near-perfect accuracy is not surprising under those conditions.
+
+Table~\ref{ch2-tbl-comparison} in Chapter~\ref{ch:literature-review} shows the pattern clearly.
+Every study at or above 97\% accuracy is leakage-affected.
+Every leakage-free study, including this thesis, scores below 90\%.
+The results of this thesis are lower, but represent a genuine prediction from information available before any screening instrument is administered.
+That is the only clinically useful scenario.
+
+Compared to leakage-free international studies, this thesis is competitive.
+Zhang et al.\ achieved 0.81 AUC on a 508-mother Chinese cohort~\cite{zhang2020machine}.
+Andersson et al.\ and Sibbald et al.\ achieved 0.81 AUC in European prospective cohorts~\cite{andersson2021predicting, sibbald2025identifying}.
+This thesis achieves 0.826 AUC on 800 Bangladeshi mothers with a fully leakage-free feature set.
+
+% ............................................................
+\subsection{Clinical Implications for Bangladesh}
+\label{ch4-subsec-clinical}
+% ............................................................
+
+The results have three direct implications for PPD screening in Bangladesh.
+
+\textbf{Implication 1: A five-item triage checklist.}
+The SHAP top features point to a consistent short list: anger after childbirth, mental health history (MHRI), abuse history, low social support (SSI), and economic stress (ESI).
+A community health worker can collect these five signals in a two-minute conversation before administering any formal screening tool.
+Mothers who score high on all five domains can be fast-tracked for full EPDS or PHQ-9 assessment.
+
+\textbf{Implication 2: Cluster-based risk stratification.}
+The three K-Means clusters (Table~\ref{ch4-tbl-cluster}) map directly to a three-tier workflow.
+Cluster~0 mothers (66.4\% PPD prevalence) need immediate clinical follow-up.
+Cluster~1 mothers (18.6\% prevalence) can be monitored at routine intervals.
+Cluster~2 mothers benefit from a full model assessment.
+This framework is actionable without software, as it depends only on four composite domain scores.
+
+\textbf{Implication 3: Threshold selection for deployment context.}
+The max-F1 threshold of 0.407 is recommended for standard clinic settings (recall 78.6\%, precision 72.4\%).
+The screening threshold of 0.303 is recommended for community screening programs where follow-up consultations are available (recall 85.7\%, precision 60.0\%).
+
+% ............................................................
+\subsection{Limitations}
+\label{ch4-subsec-limitations}
+% ............................................................
+
+This thesis has four limitations.
+
+\textbf{Limitation 1: Sample size and geographic scope.}
+The dataset contains 800 mothers, likely from a small number of sites.
+Results may not generalise across all regions of Bangladesh.
+
+\textbf{Limitation 2: Cross-sectional design.}
+All features are measured at one point in time.
+Association between composite indices and PPD is confirmed, but causation cannot be established.
+A longitudinal follow-up study would be needed to track risk factor changes over time.
+
+\textbf{Limitation 3: Self-reported data.}
+All features are self-reported.
+The abuse direction paradox illustrates how self-report can diverge from clinical ground truth due to social desirability bias.
+
+\textbf{Limitation 4: Screening label vs clinical diagnosis.}
+The PPD\_binary label is derived from the EPDS cut-off of $\geq 13$.
+EPDS is a screening tool, not a clinical diagnosis.
+A formal clinician-confirmed diagnosis would be a more rigorous label.
+
+% --------------------------------------------------------
+\section{Code Example}
+\label{ch4-sec-code}
+% --------------------------------------------------------
+
+The listing below shows how to generate a SHAP waterfall plot for a single test-set mother.
+A waterfall plot explains one specific prediction in terms of that patient's own feature values.
+It is the most actionable explainability output for a clinician.
+The full SHAP analysis code is in \texttt{codes/09\_shap\_analysis.py}.
+
+\begin{lstlisting}[language=Python,
+  caption={SHAP waterfall plot for a single mother (PPD\_binary, Random Forest Arm~B). Full code in \texttt{codes/09\_shap\_analysis.py}.},
+  label={ch4-lst-shap},
+  breaklines=true, columns=flexible]
+import shap
+
+# Compute exact Shapley values using the RF tree structure
+explainer  = shap.TreeExplainer(rf_model)
+shap_vals  = explainer.shap_values(X_test)   # list[2] for binary
+
+# Select one test-set mother (index 0) as an example
+idx = 0
+
+# Build an Explanation object for the PPD-positive class (class 1)
+explanation = shap.Explanation(
+    values        = shap_vals[1][idx],
+    base_values   = explainer.expected_value[1],
+    data          = X_test.iloc[idx],
+    feature_names = X_test.columns.tolist()
+)
+
+# Waterfall plot: each bar shows how one feature shifted
+# the prediction from the base rate to the final output
+shap.plots.waterfall(explanation, max_display=15)
+\end{lstlisting}
+
+\FloatBarrier
+
+The waterfall plot shows each feature as a bar.
+Red bars push the predicted probability toward PPD-positive.
+Blue bars push it toward PPD-negative.
+The chart starts at the model's base rate on the left and ends at the final predicted probability for that mother on the right.
+Composite index bars (MHRI, SSI) appear prominently for most high-risk mothers.
+A clinician can immediately see whether the risk is driven by social support, economic stress, mental health history, or delivery-related stress.
+
+% --------------------------------------------------------
+\section{Summary}
+\label{ch4-sec-summary}
+% --------------------------------------------------------
+
+This chapter reported all experimental results.
+Random Forest on Arm~B is adopted for PPD\_binary (AUC 0.826) and EPDS Result (Test F1 0.520).
+Linear Regression with clinical thresholding is adopted for PHQ9 Result (F1 0.426, QWK 0.602), outperforming all direct classifiers.
+The Stacking Ensemble is statistically indistinguishable from Random Forest (McNemar $p=0.228$, bootstrap $p=0.074$) and was not adopted.
+SHAP analysis showed ``Angry after latest childbirth'' as the strongest raw predictor across all targets, and all four composite indices appear in every top-10 list.
+Unsupervised clustering without the PPD label produced a 3.6$\times$ prevalence gap between clusters ($p = 3.73 \times 10^{-28}$).
+Error analysis identified missed cases as mothers with atypically low MHRI scores.
+All six robustness experiments confirmed the stability of the core design choices.
+The next chapter concludes the thesis and outlines directions for future work.

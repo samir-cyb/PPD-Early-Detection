@@ -1,0 +1,157 @@
+% NOTE: This chapter uses the "longtable" package for Table~\ref{ch2-tbl-comparison}
+% (it has too many rows to fit safely inside a normal floating table).
+% Add this to your preamble if it is not already there:
+%   \usepackage{longtable}
+% "multirow" and "placeins" (for \FloatBarrier) are assumed already loaded,
+% since the original chapter template already uses both.
+
+\chapter{Literature Review}
+\label{ch:literature-review}
+
+This chapter reviews the existing work on machine learning based prediction of postpartum depression (PPD), points out the gaps that this thesis is built to close, compares the different approaches side by side in a single table, and then reviews the clinical literature that supports the four composite risk indices introduced in Chapter~\ref{ch:introduction}. The chapter ends by justifying, in one place, why the methods proposed in this thesis are needed.
+
+\section{Existing Machine Learning Approaches for PPD Prediction}
+\label{ch2-sec-existing-work}
+
+Work on predicting PPD with machine learning has grown from a few small studies into a fairly large and varied body of research, and it is easiest to follow if it is split into three groups by where the data came from.
+
+The first group of studies used data that was already sitting inside electronic health record (EHR) systems. Zhang et al. trained a model on more than 30,000 patient records in the United States and reached an AUROC of 0.92 \cite{zhang2021development}, and the same research group later moved their model into an actual hospital's clinical decision support system \cite{zhang2024implementation}. Amit et al. worked with UK primary care records and reported an AUC of 0.744 when the model was tested on data from a later time period than the one it was trained on, which is a harder and more realistic test than a random split \cite{amit2021estimation}. Jeevitha and Priya also built an EHR-based model, focusing on temporal feature engineering across a patient's visit history \cite{jeevitha2025early}.
+
+The second group of studies used large surveys instead of clinical records. Shin et al. used PRAMS, a nationwide United States government survey with more than 35,000 responses, and compared nine different algorithms, with Random Forest performing best at an AUC of 0.884 \cite{shin2020machine}. Andersson et al. and Sibbald et al. used prospective cohort surveys in Sweden and the Netherlands respectively, both reporting AUCs close to 0.81 \cite{andersson2021predicting, sibbald2025identifying}, while Zhang et al. carried out a similar cohort study in China with 508 mothers and compared expert-selected features against filter-based feature selection \cite{zhang2020machine}. Gopalakrishnan compared how three different screening tools, EPDS, PHQ-9, and PDSS, affect model performance when used as the basis for the label \cite{gopalakrishnan2022predicting}, and Qasrawi et al. studied the effect of COVID-19 restrictions on perinatal mental health across five Arab countries using GAD-7 and PHQ-9 \cite{qasrawi2022machine}. More recent Chinese studies by Qi et al., Huang et al., and Zhang et al. combined psychosocial and clinical survey features, reached AUCs above 0.80, and used SHAP to explain their models \cite{qi2025prediction, huang2025postpartum, zhang2025interpretable}.
+
+The third group, which matters most for this thesis, is Bangladeshi and South Asian survey-based studies. The starting point for this thesis is the pilot study by Raisa et al., who surveyed 150 mothers in Bangladesh and reached 89\% accuracy with a Random Forest model \cite{raisa2022machine}. That pilot study is what led to the collection of the larger, 800-mother dataset used here. Several other South Asian studies exist in this space too, including work by Sreeji and Shirley \cite{sreeji2026predicting}, Nasim et al. \cite{nasim2024novel}, Zohora \cite{zohora2024machine}, Pillai and Chinnasamy \cite{pillai2025prediction}, and Shivaprasad et al. \cite{shivaprasad2024explainable}, all of which report very high accuracy, often above 97\%. Section~\ref{ch2-sec-gaps} explains why these particular numbers need to be read with caution.
+
+\section{Research Gaps}
+\label{ch2-sec-gaps}
+
+Three connected gaps come out of the review above, and each one directly shapes a part of this thesis's methodology.
+
+\textbf{Gap 1: Data leakage.} The high-accuracy South Asian studies mentioned at the end of Section~\ref{ch2-sec-existing-work} share a common pattern: they use the individual EPDS or PHQ-9 questionnaire answers, or scores computed directly from them, as input features to predict a label that is itself computed from those same answers. This is data leakage, since the model is effectively given the answer before being asked the question. Two scoping reviews confirm that this is not an isolated mistake but a recurring weakness across the wider PPD prediction literature \cite{keshinro2026deep, alkhateeb2026ai}.
+
+\textbf{Gap 2: No engineered, clinically grouped features.} Almost every study reviewed above, leakage-free or not, feeds raw survey answers into the model one column at a time. None of them group related answers into a smaller number of clinically meaningful composite scores before modeling, which means the final model has no simple, clinician-friendly summary of \emph{why} a mother is flagged as high risk, only a long list of individual feature weights.
+
+\textbf{Gap 3: Explainability and the ordinal nature of the labels are both often ignored.} The same two scoping reviews \cite{keshinro2026deep, alkhateeb2026ai} note that most PPD prediction studies still do not use explainable AI methods such as SHAP, even though a small number of exceptions exist, such as Shivaprasad et al. \cite{shivaprasad2024explainable}, who used four different explainability methods together. Separately, EPDS and PHQ-9 severity levels (for example Low, Medium, and High) are ordered categories, not unrelated ones, yet almost no study in this review treats them that way; they are instead trained as if the categories had no natural order at all.
+
+\section{Comparative Summary of Prior Studies}
+\label{ch2-sec-comparison}
+
+Table~\ref{ch2-tbl-comparison} places all of the studies discussed in Section~\ref{ch2-sec-existing-work} side by side, together with this thesis, so the differences in population, sample size, target label, reported performance, leakage risk, and explainability can be compared directly.
+
+% Column widths are fractions of \textwidth so the table always fits
+% regardless of the margin settings in ulabcse499.sty.
+% Total fraction used: 0.20+0.12+0.05+0.12+0.17+0.07+0.12 = 0.85
+% The remaining 0.15 covers the 8 vertical rules and inter-column padding.
+% Wider Country column (0.12) reduces hyphenation of "Bangladesh"/"Netherlands".
+\footnotesize
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\centering\arraybackslash}p{0.05\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.17\textwidth}|>{\centering\arraybackslash}p{0.07\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|}
+\caption[Comparison of prior PPD prediction studies]{Comparison of this thesis against prior machine learning studies on PPD prediction.}
+\label{ch2-tbl-comparison} \\
+\hline
+\textbf{Study} & \textbf{Country} & \textbf{n} & \textbf{Target} & \textbf{Best Performance} & \textbf{Leakage} & \textbf{XAI Used} \\
+\hline
+\endfirsthead
+
+\multicolumn{7}{c}{\textit{Table~\ref{ch2-tbl-comparison} continued from previous page}} \\
+\hline
+\textbf{Study} & \textbf{Country} & \textbf{n} & \textbf{Target} & \textbf{Best Performance} & \textbf{Leakage} & \textbf{XAI Used} \\
+\hline
+\endhead
+
+\hline
+\multicolumn{7}{r}{\textit{Continued on next page}} \\
+\endfoot
+
+\hline
+\endlastfoot
+
+\textbf{This Study (2026)} & Bangladesh & 800 & EPDS$\geq$13; PHQ-9 bands & $\sim$75\% F1-macro & No & SHAP, Inter\-actions, Clustering \\
+\hline
+Raisa et al.~\cite{raisa2022machine} & Bangladesh & 150 & EPDS Label & 89\% Acc.\ (RF) & No & No \\
+\hline
+Jeevitha \& Priya~\cite{jeevitha2025early} & UK & 86,862 & ICD Diagnosis & 0.82 AUC & No & SHAP \\
+\hline
+Amit et al.~\cite{amit2021estimation} & UK & 86,862 & Clinical Codes & 0.744 AUC & No & SHAP \\
+\hline
+Zhang et al.~\cite{zhang2021development} & USA & 30,000+ & EHR/ Diagnosis & 0.92 AUROC & No & No \\
+\hline
+Zhang et al.~\cite{zhang2024implementation} & USA & --- & PPD Risk & Deployment study & No & Feature Attr. \\
+\hline
+Shin et al.~\cite{shin2020machine} & USA & 35,518 & PPD Symptoms & 0.884 AUC (RF) & No & Feature Ranking \\
+\hline
+Andersson~\cite{andersson2021predicting} & Sweden & 508 & EPDS$\geq$12 & 0.81 AUC & No & No \\
+\hline
+Sibbald et al.~\cite{sibbald2025identifying} & Nether\-lands & 4,000+ & EPDS$\geq$13 & 0.81 AUC & No & No \\
+\hline
+Zhang et al.~\cite{zhang2020machine} & China & 508 & EPDS$\geq$13 & 0.81 AUC & No & Gini Importance \\
+\hline
+Qi et al.~\cite{qi2025prediction} & China & 1,138 & EPDS$\geq$13 & 0.858 AUC & No & SHAP \\
+\hline
+Huang et al.~\cite{huang2025postpartum} & China & 1,065 & PPD Label & 0.80+ AUC & No & SHAP \\
+\hline
+Zhang et al.~\cite{zhang2025interpretable} & China & 2,055 & EPDS/ Clinical & 0.83+ AUC & No & SHAP, PDP \\
+\hline
+Gopalakrishnan~\cite{gopalakrishnan2022predicting} & India & --- & EPDS/ PHQ-9/ PDSS & 81\% AUC & No & No \\
+\hline
+Qasrawi et al.~\cite{qasrawi2022machine} & 5 Arab countries & 1,601 & GAD-7 \& PHQ-9 & --- & No & No \\
+\hline
+Sreeji \& Shirley~\cite{sreeji2026predicting} & India & --- & PPD Symptoms & 99\% Acc. & \textbf{Yes} & No \\
+\hline
+Nasim et al.~\cite{nasim2024novel} & Bangladesh & 1,503 & Depression & 99\% Acc. & \textbf{Yes} & No \\
+\hline
+Zohora~\cite{zohora2024machine} & Bangladesh & --- & Suicidality & 99.7\% Acc. & \textbf{Yes} & No \\
+\hline
+Pillai~\cite{pillai2025prediction} & India & --- & PPD Symptoms & 98.45\% Acc. & \textbf{Yes} & No \\
+\hline
+Shivaprasad et al.~\cite{shivaprasad2024explainable} & India & 1,503 & Suicide Attempt & 97\% Acc. & \textbf{Yes} & LIME, SHAP, ELI5, Anchor \\
+\hline
+\end{longtable}
+\normalsize
+\FloatBarrier
+
+Reading down the leakage column makes the pattern from Section~\ref{ch2-sec-gaps} easy to see: every study with a reported accuracy at or above 97\% is also flagged ``Yes'' for leakage risk, while every study below that range, including this thesis, is flagged ``No''. This is exactly the pattern that motivated the leakage-free design used throughout this thesis.
+
+Beyond the studies listed individually in Table~\ref{ch2-tbl-comparison}, several broader review papers were also consulted rather than benchmarked directly, since they summarize many studies at once instead of presenting a single model. Keshinro et al. reviewed 50 deep-learning-based PPD studies and identified the same explainability gap discussed in Section~\ref{ch2-sec-gaps} \cite{keshinro2026deep}. Saqib et al. summarized 14 studies in a scoping review and found Random Forest to be a consistently strong performer \cite{saqib2021machine}, which is part of why Random Forest was chosen as the main model family in this thesis. Alkhateeb et al. reviewed 65 studies and reached the same conclusion about the underuse of advanced explainable AI methods \cite{alkhateeb2026ai}. Yazdkhasti et al. published a meta-analysis covering 32 articles on PPD prevalence and risk factors, and it is used throughout this thesis as external confirmation of the risk factors captured by the four composite indices, discussed next \cite{yazdkhasti2026systematic}.
+
+\section{Clinical Literature Grounding for the Composite Risk Indices}
+\label{ch2-sec-composite-grounding}
+
+The four composite risk indices used in this thesis, namely Economic Stability (ESI), Social/Family Support (SSI), Maternal Mental-Health Risk (MHRI), and Neonatal/Delivery Stress (NSI), were not invented arbitrarily. Each one is grounded in published clinical literature, summarized in Table~\ref{ch2-tbl-grounding}.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+% Fractions: 0.20 + 0.32 + 0.24 + 0.13 = 0.89; remaining 0.11 covers rules + padding
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.32\textwidth}|>{\raggedright\arraybackslash}p{0.24\textwidth}|>{\centering\arraybackslash}p{0.13\textwidth}|}
+\hline
+\textbf{Composite Index} & \textbf{Grounding Study} & \textbf{Effect Size} & \textbf{Consistent?} \\
+\hline
+Social Support (SSI) & Yazdkhasti et al.\ \cite{yazdkhasti2026systematic}, \textit{BMC Pregnancy Childbirth} & OR: 4.41 (3.44--5.64) & Yes \\
+\hline
+Mental Health (MHRI) -- Abuse & Islam et al.\ \cite{islam2017ipv}, \textit{PLOS One} & OR: 3.48 (2.36--5.13) & Yes \\
+\hline
+Economics (ESI) & Azad et al.\ \cite{azad2019economic}, \textit{PLOS One} & Prevalence 39.4\% (deprived group) & Yes \\
+\hline
+Neonatal Stress (NSI) & Moameri et al.\ \cite{moameri2019cesarean}, \textit{Clin.\ Epidemiol.\ Global Health} & ${>}$15\% increased risk & Partial \\
+\hline
+\end{tabular}
+\caption{Clinical literature grounding for the four composite risk indices.}
+\label{ch2-tbl-grounding}
+\end{table}
+\FloatBarrier
+
+Social support is one of the most consistently reported protective factors against PPD in the wider literature. Yazdkhasti et al.'s meta-analysis of 16,667 women found that a poor relationship with the husband and a lack of family support were among the strongest risk factors identified, with an odds ratio of 4.41 \cite{yazdkhasti2026systematic}. This matches the finding in this thesis that the Social Support Index is significant across every target studied.
+
+Abuse, the strongest single sub-feature inside the Maternal Mental-Health Risk Index, is also the most strongly grounded in the literature. Islam et al.'s study of urban slum mothers in Bangladesh found that lifetime intimate partner violence carried an odds ratio of 3.48 for PPD, making it one of the strongest psychosocial predictors identified in the region \cite{islam2017ipv}. This is consistent with abuse being the single strongest raw predictor found in this thesis's own exploratory data analysis, although, as discussed later in this thesis, the specific direction of the relationship in this dataset needed a closer, more careful look.
+
+Economic hardship is also well documented as a PPD risk factor, and the grounding is especially strong for this thesis because it comes from the same country and a similar population. Azad et al. found a PPD prevalence of 39.4\% among the most economically deprived mothers in the urban slums of Dhaka \cite{azad2019economic}, directly supporting the inclusion of an Economic Stability Index built for a Bangladeshi sample.
+
+Finally, delivery-related stress has a real but comparatively smaller literature base. Moameri et al.'s meta-analysis found that cesarean delivery is associated with a greater than 15\% increase in postpartum psychiatric risk compared to vaginal delivery, though it also notes that prior mental illness remains a stronger predictor overall than delivery mode alone \cite{moameri2019cesarean}. This is why the Neonatal/Delivery Stress Index is marked as only ``Partial'' in Table~\ref{ch2-tbl-grounding}: it is a real and useful signal, but it should not be given as much weight as the other three domains.
+
+\section{Justification for the Proposed Approach}
+\label{ch2-sec-justification}
+
+Putting Sections~\ref{ch2-sec-gaps} through \ref{ch2-sec-composite-grounding} together gives a clear justification for the approach taken in this thesis. Because Gap~1 shows that leakage is common and produces misleadingly high accuracy, this thesis excludes every EPDS and PHQ-9 item from its input features, even though this means reporting a lower, but genuinely trustworthy, accuracy. Because Gap~2 shows that composite, clinically grouped features are missing from prior work, this thesis builds four such indices and grounds each one in the clinical literature reviewed in Section~\ref{ch2-sec-composite-grounding}, rather than relying on internal statistics alone. Because Gap~3 shows that explainability and ordinal-aware modeling are both still rare, this thesis applies multiple explainability methods together and treats the EPDS and PHQ-9 severity levels as the ordered categories that they actually are. Chapter~\ref{ch:introduction} already summarized these same four contributions from a high level; this chapter has shown, point by point, exactly which gap in the existing literature each one is designed to close.
+
+\section{Summary}
+
+This chapter reviewed the existing machine learning literature on PPD prediction, grouped by data source, and compared 20 prior studies against this thesis in a single table. It identified three recurring gaps, namely data leakage, the absence of engineered composite features, and weak explainability together with the ordinal-blind treatment of severity labels, and it showed that the four composite risk indices used later in this thesis are each grounded in independent clinical literature. The next chapter turns from what others have done to exactly what this thesis does, describing the dataset and the full methodology in detail.

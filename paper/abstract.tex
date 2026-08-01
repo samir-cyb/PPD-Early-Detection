@@ -1,0 +1,31 @@
+\thispagestyle{plain}
+\begin{center}
+    \Large \textbf{\uppercase{Abstract}}
+\end{center}
+\vspace{3\baselineskip}
+\noindent
+%----------------------------------------------------------
+Postpartum depression (PPD) affects a significant proportion of mothers worldwide and remains under-screened in Bangladesh.
+Several recent machine learning studies on Bangladeshi and South Asian survey datasets report accuracy figures of 99\% or higher.
+These figures are the result of data leakage: the models use Edinburgh Postnatal Depression Scale (EPDS) or Patient Health Questionnaire (PHQ-9) questionnaire items as input features while predicting a label computed from those same items.
+Such models cannot generalise to a real patient who has not yet been screened.
+
+This thesis presents the first large-scale, leakage-free machine learning framework for PPD prediction in Bangladesh, built on a dataset of 800 Bangladeshi mothers.
+All 23 EPDS and PHQ-9 columns are excluded from the input feature set before any model is trained.
+Four chi-square weighted composite risk indices are engineered from groups of related raw survey answers: Economic Stability (ESI), Social and Family Support (SSI), Maternal Mental Health Risk (MHRI), and Neonatal and Delivery Stress (NSI).
+A three-arm ablation study evaluates raw features alone, raw features plus composite indices, and a leakage-safe selected subset across five model families and three prediction targets.
+
+Random Forest on Arm~B (raw features plus composite indices) is adopted for binary PPD classification and three-class EPDS severity prediction, achieving a holdout AUC of 0.826 and macro F1 of 0.736 for binary PPD.
+Linear Regression with clinical threshold mapping is adopted for five-class PHQ9 severity prediction (macro F1 = 0.426, QWK = 0.602), outperforming all direct classifiers.
+A Stacking Ensemble is tested but not adopted after McNemar's test ($p = 0.228$) finds no statistically significant advantage over Random Forest.
+
+SHAP analysis identifies ``angry after latest childbirth'' as the strongest raw predictor across all targets, and all four composite indices appear in every SHAP top-10 list.
+Unsupervised K-Means clustering of the composite space, without any depression label, produces a 3.6-fold PPD prevalence gap between clusters ($p = 3.73 \times 10^{-28}$), confirming that the composite indices capture genuine clinical structure.
+
+The honest AUC of 0.826 is competitive with the best leakage-free international studies and demonstrates that a clinically useful PPD screening tool can be built without touching a single screening instrument item.
+%----------------------------------------------------------
+\vspace{\baselineskip}
+\noindent
+%----------------------------------------------------------
+\textbf{Keywords}: postpartum depression, machine learning, data leakage, composite risk index, SHAP explainability, Bangladesh
+%----------------------------------------------------------

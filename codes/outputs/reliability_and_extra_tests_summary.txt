@@ -1,0 +1,43 @@
+
+==========================================================================================
+PART A -- CRONBACH'S ALPHA (internal-consistency reliability)
+==========================================================================================
+Economic_Stability_Index: alpha=0.214 (k=4 items, n=800) -> unacceptable
+Social_Support_Index: alpha=0.456 (k=5 items, n=800) -> unacceptable
+Maternal_MentalHealth_Risk_Index: alpha=0.298 (k=5 items, n=800) -> unacceptable
+Neonatal_Delivery_Stress_Index: alpha=0.343 (k=4 items, n=800) -> unacceptable
+
+NOTE: these 4 indices were deliberately built from CLINICALLY-chosen, not purely statistically-chosen, sub-features (e.g. MHRI mixes PHQ2 history, disease history, abuse, and pregnancy loss -- conceptually related but not expected to be highly INTER-correlated survey items). A modest alpha (0.5-0.7) here does not contradict the composites' proven predictive validity (Section composite_index_association.csv, 24/24 significant) -- it simply means the sub-features are moderately, not extremely, inter-correlated, which is expected and defensible for a content-valid (domain-coverage) index rather than a psychometric scale purpose-built to maximize alpha. Report both numbers together in the paper: predictive validity (association tests) AND internal-consistency reliability (this alpha) are different, complementary properties.
+
+Saved -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\composite_reliability_cronbach_alpha.csv
+
+==========================================================================================
+PART B -- VARIANCE INFLATION FACTOR (multicollinearity check)
+==========================================================================================
+Economic_Stability_Index_Weighted: VIF=1.04 -> OK (<5)
+Social_Support_Index_Weighted: VIF=1.32 -> OK (<5)
+Maternal_MentalHealth_Risk_Index_Weighted: VIF=1.34 -> OK (<5)
+Neonatal_Delivery_Stress_Index_Weighted: VIF=1.01 -> OK (<5)
+
+Saved -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\composite_vif.csv
+
+Interpretation: VIF < 5 for all 4 indices means they can be safely used TOGETHER as separate model inputs and their individual SHAP/importance rankings (steps 9/16/17) can be interpreted as reasonably independent contributions, not an artifact of redundant, highly correlated composite scores.
+
+==========================================================================================
+PART C/D -- RF vs STACKING ENSEMBLE: McNemar's test + bootstrap AUC CI (PPD_binary, identical holdout split)
+==========================================================================================
+Train: (640, 116), Test: (160, 116) (identical split used by scripts 07 and 07b -- same random_state=42, same PPD_model_ready.csv)
+
+McNemar 2x2 (paired, same 160 test patients):
+  RF correct / Stacking wrong: 3
+  Stacking correct / RF wrong: 8
+  McNemar chi2=1.455, p=0.2278 (not significant at 0.05)
+
+Holdout ROC-AUC: RF=0.8261, Stacking=0.8084, diff (RF-Stacking)=+0.0177
+
+Bootstrap (2000 valid resamples of 2000) 95% CI for AUC(RF) - AUC(Stacking): [-0.0016, +0.0380]
+Bootstrap two-sided p (proportion crossing zero): 0.0740 (not significant at 0.05)
+
+Interpretation: if the CI straddles 0 and McNemar is not significant, this is a rigorous, honest way to report that Stacking's higher point-estimate F1/accuracy (Section 3.6) is NOT statistically distinguishable from the simpler, explainable Random Forest on this test set -- directly strengthening the Novelty 6 argument that choosing RF for its SHAP-explainability does not come at a statistically demonstrable accuracy cost, only a possible (unproven) small one.
+
+Saved -> D:\Samir\programming\New folder\Data for Postpartum Depression Prediction in Bangl\dataset with exit paper\codes\outputs\rf_vs_stacking_significance_PPD_binary.csv

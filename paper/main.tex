@@ -1,0 +1,80 @@
+\documentclass[12pt]{report}
+%-----------------------------------------------------------------
+% LaTeX template for a Bachelor Capstone Project Report/Thesis
+% (CSE 499) of the Department of Computer Science and Engineering
+% at the University of Liberal Arts Bangladesh (ULAB)
+% Written By: Muhammad Abul Hasan, PhD
+% Date Updated: August 09, 2022 (v1.3)
+% For any comments or suggestions: muhammad.hasan@ulab.edu.bd
+%-----------------------------------------------------------
+\usepackage{ulabcse499}
+\usepackage{multirow}
+\usepackage{longtable}           % REQUIRED for Chapter 2 comparison table
+\usepackage{algorithm}           % format of the algorithm
+% \usepackage{algorithmic}       % format of the algorithm
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{listings}            % For source code
+\usepackage{xspace}              % used for goto algorithm
+\usepackage{placeins}            % \FloatBarrier
+%% for listings color
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Change the name and designation of Head of dept. as required
+\def\HodName{Name of the HoD\xspace}                   % TODO: fill in
+\def\HodPosition{Designation and Position\xspace}       % TODO: fill in
+
+%-----------------------------------------------------------
+% Set your report/thesis particulars
+%-----------------------------------------------------------
+\def\RoportType{Thesis\xspace}
+
+\def\ReportTitle{Leakage-Free Machine Learning Framework for Postpartum Depression Prediction in Bangladesh\xspace}
+
+\def\Supervisor{Supervisor's Name\xspace}               % TODO: fill in
+\def\SupervisorPosition{Supervisor's Position\xspace}   % TODO: fill in
+
+\def\reportSubmissionDate{September 02, 2025}           % TODO: update date
+\def\reportSubmissionTerm{Summer 2025}                  % TODO: update term
+
+%-----------------------------------------------------------
+% Set your group members particulars
+%-----------------------------------------------------------
+\def\numberOfAuthors{1}
+
+\def\firstAuthor{Samir\xspace}                          % TODO: full name
+\def\firstAuthorID{TODO: Student ID\xspace}
+\def\firstAuthorDedication{To my parents, \\ for their endless support and encouragement.}
+
+% Second and third author fields left here in case they are needed by ulabcse499.sty
+\def\secondAuthor{}\def\secondAuthorID{}\def\secondAuthorDedication{}
+\def\thirdAuthor{}\def\thirdAuthorID{}\def\thirdAuthorDedication{}
+
+% Break long words that may overflow
+\hyphenation{post-par-tum de-pres-sion ma-chine learn-ing ex-plain-ab-il-i-ty}
+
+%-----------------------------------------------------------
+\begin{document}
+\input{./Setup/front}
+% Front matter ran once above. Redefine \frontmatter to do nothing
+% so any accidental second call from FrontMatter files is silently ignored.
+\renewcommand{\frontmatter}[1]{\relax}
+
+%-----------------------------------------------------------
+% Include Chapters
+%-----------------------------------------------------------
+\include{./Chapters/chapter1}   % Introduction         (from chapter1_introduction.tex)
+\include{./Chapters/chapter2}   % Literature Review    (from chapter2_literature_review.tex)
+\include{./Chapters/chapter3}   % Methodology
+\include{./Chapters/chapter4}   % Results & Discussion
+\include{./Chapters/chapter5}   % Conclusion
+
+\input{./Setup/rear}            % References section
+
+% \include{./Chapters/chapter7} % Appendix             (optional)
+
+%-----------------------------------------------------------
+\end{document}

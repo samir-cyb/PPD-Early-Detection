@@ -1,0 +1,77 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Motivation}
+
+Postpartum depression, usually shortened to PPD, is a common mental health problem that many mothers face after childbirth. It affects the mother's own health, her bond with the newborn, and the well-being of the whole family. Because of this, doctors and researchers have always looked for simple ways to identify at-risk mothers early, before the problem becomes serious. The Edinburgh Postnatal Depression Scale (EPDS) is a widely used screening tool developed by Cox et al.\ to identify mothers at risk of postnatal depression \cite{cox1987edinburgh}.
+The Patient Health Questionnaire (PHQ-9) is a second validated screening instrument that grades depression severity in nine domains \cite{kroenke2001phq}.
+Both tools turn a mother's answers into a score, and the score tells us how likely she is to be suffering from PPD. Both tools turn a mother's answers into a score, and the score tells us how likely she is to be suffering from PPD. A recent systematic review and meta-analysis confirms that PPD remains common worldwide and that its risk factors are well documented, yet still under-screened in many populations \cite{yazdkhasti2026systematic}.
+
+In the last few years, researchers have started using machine learning to predict PPD risk instead of depending only on manual screening. First, several studies used data already stored in electronic health records. Zhang et al. built a model on more than 30,000 patient records in the United States and reached an AUROC of 0.92 \cite{zhang2021development}, while Amit et al. used electronic health records from the United Kingdom and reported an AUC of 0.744 when the model was tested on data from a later time period than the one it was trained on \cite{amit2021estimation}. Later, the same research group also built a similar model directly into a hospital's clinical decision support system \cite{zhang2024implementation}.
+
+After that, researchers moved towards large, survey-based studies. Shin et al. used a large United States government survey called PRAMS, with more than 35,000 responses, and reported an AUC of 0.884 after comparing nine different algorithms \cite{shin2020machine}. Around the same time, Andersson et al. and Sibbald et al. used prospective cohort studies in Sweden and the Netherlands and reported AUCs close to 0.81 \cite{andersson2021predicting, sibbald2025identifying}. More recently, studies from China combined psychosocial and clinical features and reached AUCs above 0.80, and both of them used SHAP (SHapley Additive exPlanations) to make their models easier to understand \cite{qi2025prediction, huang2025postpartum, zhang2025interpretable}. A scoping review of this whole line of work also confirms that Random Forest is consistently one of the strongest performing algorithms across studies \cite{saqib2021machine}.
+
+For Bangladesh specifically, the starting point of this thesis is the pilot study by Raisa et al., who collected survey data from 150 mothers and reached 89\% accuracy using a Random Forest model \cite{raisa2022machine}. That pilot study proved that a similar questionnaire could work well in a Bangladeshi setting, and it directly led to the collection of the larger, 800-mother dataset used in this thesis.
+
+While going through the literature, however, we noticed a serious problem. Several recent studies, including ones working with Bangladeshi or similar South Asian survey data, report accuracy numbers that are almost too good to be true. Sreeji and Shirley reported close to 99\% accuracy on a similar questionnaire-based dataset \cite{sreeji2026predicting}, Nasim et al. reported 99\% accuracy on a Bangladeshi survey dataset using a meta-learning model \cite{nasim2024novel}, Zohora reported 99.7\% accuracy while studying the same population \cite{zohora2024machine}, and Pillai and Chinnasamy reported 98.45\% accuracy using a hybrid data-mining approach \cite{pillai2025prediction}. On closer inspection, all of these studies shared one thing in common: they used the individual EPDS or PHQ-9 questionnaire answers, or the scores computed directly from them, as \emph{input} features to predict a \emph{label} that was itself computed from those same answers. This is a classic case of data leakage. The model is essentially told the answer before being asked the question, so the reported performance does not reflect how the model would perform on a genuinely new patient.
+
+Two recent scoping reviews confirm that this is not an isolated problem but a common weakness across the wider PPD prediction literature \cite{keshinro2026deep, alkhateeb2026ai}. Both reviews also point out that most existing models still do not use proper explainable AI (XAI) methods, which makes it difficult for a clinician to trust or act on a prediction. A few studies, such as Shivaprasad et al., do use multiple XAI methods together \cite{shivaprasad2024explainable}, which shows that explainability is possible, but such studies remain the exception rather than the rule, and even they are not always free from the leakage problem described above.
+
+This left us with a clear gap in the literature: a machine learning framework for PPD prediction in Bangladesh that, first, never touches the EPDS or PHQ-9 items used to build the label; second, turns the many raw survey questions into a small number of clinically meaningful risk scores instead of feeding in over a hundred raw columns one by one; and third, explains its predictions in a way that a clinician, and not only a data scientist, can follow. This thesis was built to fill exactly that gap.
+
+\section{Problem Statement}
+
+The problem, in short, is this. Existing machine learning models for postpartum depression prediction are often either unrealistic or hard to trust. Some models look extremely accurate on paper, but that accuracy comes from data leakage rather than genuine predictive power \cite{sreeji2026predicting, nasim2024novel}. Other models are technically sound but treat every survey answer as a separate, disconnected input, so the final model becomes a black box built from over a hundred loosely related features with no clear story behind it. On top of that, most existing work treats the different levels of depression severity, for example the Low, Medium, and High EPDS bands, as if they were unrelated categories, even though these levels actually follow a natural order from less severe to more severe.
+
+Bangladesh, in particular, has very few large-scale, leakage-free, and explainable PPD prediction studies. The only earlier Bangladeshi study built on this exact dataset family, by Raisa et al., worked with a much smaller sample of 150 mothers and did not explore engineered risk indices, ablation testing, or model explainability in any depth \cite{raisa2022machine}. This thesis addresses that gap directly, using the larger, 800-mother version of the same dataset, and building the leakage-free, explainable, and clinically interpretable framework that the earlier pilot study could not.
+
+\section{Objective}
+
+The objectives of this thesis are:
+
+\begin{itemize}
+    \item To build a machine learning pipeline for predicting postpartum depression risk that never uses the EPDS or PHQ-9 questionnaire items, or the scores computed from them, as input features.
+    \item To design four composite risk indices, namely Economic Stability, Social/Family Support, Maternal Mental-Health Risk, and Neonatal/Delivery Stress, by grouping related raw survey answers together, and to confirm statistically that each index is meaningfully associated with depression outcomes.
+    \item To measure, through a controlled ablation study, whether adding these composite indices actually improves prediction compared to using raw features alone.
+    \item To explain the chosen model's predictions from several different angles, including global feature importance, feature interactions, and error analysis, so that the reasoning behind a prediction stays transparent.
+    \item To treat the ordinal nature of the EPDS and PHQ-9 severity bands properly, instead of forcing them into a plain, unordered multi-class classification setup.
+    \item To study the trade-off between the single most accurate model and the most easily explainable model, and to justify the final choice made in this thesis.
+\end{itemize}
+
+\section{Approach and Contribution}
+
+To reach the objectives above, this thesis follows six connected steps. Each step builds on the one before it, and together they form the overall contribution of this work.
+
+\subsection{A Leakage-Free Prediction Pipeline}
+First, every EPDS item, every PHQ-9 item, and the four score and result columns computed from them were removed from the list of input features. Only demographic, family, economic, pregnancy, neonatal, and prior-history features were kept as inputs. This single decision is what separates this thesis from studies such as Sreeji and Shirley \cite{sreeji2026predicting}, Nasim et al. \cite{nasim2024novel}, and Zohora \cite{zohora2024machine}, whose near-perfect accuracy numbers are most likely a result of leakage. The result reported in this thesis is lower, but it is honest, and it reflects what a real screening tool could achieve on an unseen mother.
+
+\subsection{Composite Risk Index Engineering}
+Second, instead of feeding more than a hundred individual survey answers directly into a model, four composite risk indices were engineered from groups of related answers. Each raw sub-feature was mapped to a clinically reasoned score, checked against the actual data to confirm the direction of the relationship was correct, and then combined using weights based on each sub-feature's own statistical strength. All four indices were confirmed to be significantly associated with every depression outcome measured in this thesis.
+
+\subsection{Feature Selection and Ablation Study}
+Third, a three-way ablation study was carried out to test whether the engineered indices were actually useful, and not just an assumption. Raw features alone, raw features plus composite indices, and a selected subset of both were compared side by side, using the same models and the same cross-validation folds. Paired statistical tests were added on top of the raw comparison so that any improvement could be reported honestly, including the cases where the improvement was small or not statistically significant with the available sample size.
+
+\subsection{Multi-Angle Explainable AI}
+Fourth, the chosen model's behaviour was explained from more than one direction. Beyond a standard SHAP summary plot, this thesis also compares feature importance before and after the composite indices are added, measures feature-pair interactions, checks whether an unsupervised clustering of mothers, which never sees the depression label, lines up with real depression rates, and studies the specific patients the model gets wrong. Together, these five views give a fuller picture than a single importance plot could.
+
+\subsection{Ordinal-Aware Modeling}
+Fifth, since the EPDS and PHQ-9 severity levels follow a natural order, this thesis adds the Quadratic Weighted Kappa metric, which treats a near-miss prediction as less wrong than a completely wrong one. It also tests whether predicting the continuous depression score and then converting it into severity bands works better than predicting the bands directly, and for one of the two ordinal targets, this alternative approach genuinely performed better than the standard classifier.
+
+\subsection{The Explainability-Accuracy Trade-off}
+Finally, this thesis compares its main, easily explainable model against a more complex stacking ensemble that scored slightly higher on raw accuracy. The difference between the two was tested statistically and found to be too small to be called a confident, real advantage. Because of this, the simpler, explainable model was kept as the final choice, and the trade-off itself is reported openly as part of the contribution, instead of being hidden in favour of a marginally higher accuracy number.
+
+\section{Thesis Organization}
+
+This thesis is organized into five chapters, and each chapter builds on the work of the one before it.
+
+Chapter~1, the current chapter, introduces the motivation behind the work, states the problem being solved, lists the objectives of the thesis, and gives a short overview of the overall approach and contribution.
+
+Chapter~2 reviews the existing literature on postpartum depression prediction, covering both traditional statistical studies and more recent machine learning approaches, and it also reviews the clinical literature that supports the four composite risk indices used later in this thesis.
+
+Chapter~3 describes the methodology in detail. It explains the dataset, the data cleaning process, the design of the four composite risk indices, the leakage-free feature selection process, the models used, and the overall experimental design, including the ablation study.
+
+Chapter~4 presents the results and discusses them. It covers the model comparison across all three depression targets, the ablation study findings, the explainability results, the unsupervised cluster validation, and the error analysis, along with an honest discussion of what worked and what did not.
+
+Chapter~5 concludes the thesis. It summarizes the main findings, discusses the limitations of the current work, including a few open questions that were not fully resolved, and suggests directions for future research.
+
+In short, Chapter~2 explains what has already been done by others, Chapter~3 explains what this thesis actually did, Chapter~4 explains what was found, and Chapter~5 explains what it all means and where it can go next.
