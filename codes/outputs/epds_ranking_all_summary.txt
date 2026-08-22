@@ -1,0 +1,61 @@
+EPDS Feature Ranking — ALL columns (including EPDS/PHQ-9 items)
+Target: EPDS Result
+========================================================================
+
+TOP 30 Original Features (all 3 methods combined)
+Rk   Type        Feature                                     RF    SHAP    Chi2
+------------------------------------------------------------------------
+1    [LEAKAGE]   EPDS Score                              0.2252  0.1145  294.18
+2    [LEAKAGE]   Feeling down, depressed, or hopeless    0.0859  0.0560  145.39
+3    [LEAKAGE]   You have felt sad or miserable          0.0773  0.0495  145.39
+4    [LEAKAGE]   You have been anxious or worried for    0.0701  0.0462  145.39
+5    [LEAKAGE]   PHQ9 Score                              0.0817  0.0408  145.08
+6    [LEAKAGE]   You have looked forward with enjoymen   0.0423  0.0276   79.87
+7    [LEAKAGE]   You have been able to laugh and see t   0.0396  0.0261   79.87
+8    [LEAKAGE]   Things have been getting to you         0.0283  0.0199   84.67
+9    [LEAKAGE]   Little interest or pleasure in doing    0.0321  0.0228   74.65
+10   [LEAKAGE]   Feeling bad about yourself or that yo   0.0294  0.0220   77.75
+11   [LEAKAGE]   Trouble concentrating on things         0.0261  0.0179   84.67
+12   [LEAKAGE]   You have blamed myself unnecessarily    0.0258  0.0186   77.75
+13   [LEAKAGE]   You have felt scared or panicky for n   0.0194  0.0140   62.83
+14   [LEAKAGE]   You have been so unhappy that you hav   0.0153  0.0113   65.76
+15   [LEAKAGE]   Trouble falling or staying asleep, or   0.0121  0.0089   40.11
+16   [LEAKAGE]   You have been so unhappy that you hav   0.0123  0.0086   40.11
+17   [LEAKAGE]   Thoughts that you would be better off   0.0085  0.0057   35.90
+18   [LEAKAGE]   Feeling tired or having little energy   0.0069  0.0032   39.27
+19   [LEAKAGE]   The thought of harming yourself has o   0.0078  0.0054   35.90
+20   [SAFE]      Angry after latest child birth          0.0059  0.0041   38.41
+21   [SAFE]      Abuse                                   0.0056  0.0029   25.29
+22   [SAFE]      Need for Support                        0.0055  0.0028   15.87
+23   [SAFE]      Feeling for regular activities          0.0053  0.0023   15.05
+24   [LEAKAGE]   Moving or speaking or restlessness      0.0055  0.0022   14.62
+25   [SAFE]      Relationship with the in-laws           0.0051  0.0020   18.34
+26   [SAFE]      Received Support                        0.0047  0.0023   14.10
+27   [SAFE]      Relationship with husband               0.0042  0.0022   16.94
+28   [LEAKAGE]   Poor appetite or overeating             0.0046  0.0019   15.00
+29   [SAFE]      Age of immediate older children         0.0054  0.0020    2.49
+30   [SAFE]      Depression during pregnancy (PHQ2)      0.0029  0.0013    7.82
+
+
+SAFE-only TOP 20
+------------------------------------------------------------------------
+1    Angry after latest child birth              0.0059  0.0041   38.41
+2    Abuse                                       0.0056  0.0029   25.29
+3    Need for Support                            0.0055  0.0028   15.87
+4    Feeling for regular activities              0.0053  0.0023   15.05
+5    Relationship with the in-laws               0.0051  0.0020   18.34
+6    Received Support                            0.0047  0.0023   14.10
+7    Relationship with husband                   0.0042  0.0022   16.94
+8    Age of immediate older children             0.0054  0.0020    2.49
+9    Depression during pregnancy (PHQ2)          0.0029  0.0013    7.82
+10   Age                                         0.0086  0.0017    0.46
+11   Pregnancy length                            0.0048  0.0018    0.75
+12   Education Level                             0.0031  0.0013    4.47
+13   Diseases during pregnancy                   0.0034  0.0013    3.97
+14   Monthly income before latest pregnancy      0.0055  0.0015    0.57
+15   Husband's monthly income                    0.0052  0.0017    0.53
+16   Fear of pregnancy                           0.0023  0.0009    7.67
+17   Occupation before latest pregnancy          0.0055  0.0016    0.45
+18   Occupation After Your Latest Childbirth     0.0057  0.0016    0.18
+19   Relationship between father and newborn     0.0025  0.0008    7.60
+20   Current monthly income                      0.0047  0.0014    0.64

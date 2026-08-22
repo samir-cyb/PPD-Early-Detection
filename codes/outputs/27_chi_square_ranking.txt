@@ -1,0 +1,78 @@
+Feature Ranking — Chi-Square ONLY (Script 27)
+Target: EPDS Result
+Excluded columns: Abuse_was_missing, Husband's monthly income_was_missing, Husband's education level_was_missing, Trust and share feelings_was_missing
+===============================================================================================
+
+Total features: 68
+Significant (p<0.05): 49 / 68
+
+Rk    Type        Feature                                        Chi2      p-value  -log10(p)   CramersV   Sig?
+-----------------------------------------------------------------------------------------------
+1     [LEAKAGE]   EPDS Score                                  1600.00    6.66e-295     294.18     1.0000    Yes
+2     [LEAKAGE]   Feeling down, depressed, or hopeless         691.53    4.11e-146     145.39     0.6574    Yes
+3     [LEAKAGE]   You have been anxious or worried for n       691.53    4.11e-146     145.39     0.6574    Yes
+4     [LEAKAGE]   You have felt sad or miserable               691.53    4.11e-146     145.39     0.6574    Yes
+5     [LEAKAGE]   PHQ9 Score                                   861.09    8.35e-146     145.08     0.7336    Yes
+6     [LEAKAGE]   Trouble concentrating on things              409.85     2.14e-85      84.67     0.5061    Yes
+7     [LEAKAGE]   Things have been getting to you              409.85     2.14e-85      84.67     0.5061    Yes
+8     [LEAKAGE]   You have been able to laugh and see th       387.52     1.34e-80      79.87     0.4921    Yes
+9     [LEAKAGE]   You have looked forward with enjoyment       387.52     1.34e-80      79.87     0.4921    Yes
+10    [LEAKAGE]   Feeling bad about yourself or that you       377.65     1.78e-78      77.75     0.4858    Yes
+11    [LEAKAGE]   You have blamed myself unnecessarily w       377.65     1.78e-78      77.75     0.4858    Yes
+12    [LEAKAGE]   Little interest or pleasure in doing t       354.15     2.23e-75      74.65     0.4705    Yes
+13    [LEAKAGE]   You have been so unhappy that you have       321.79     1.75e-66      65.76     0.4485    Yes
+14    [LEAKAGE]   You have felt scared or panicky for no       308.12     1.49e-63      62.83     0.4388    Yes
+15    [LEAKAGE]   Trouble falling or staying asleep, or        201.82     7.79e-41      40.11     0.3552    Yes
+16    [LEAKAGE]   You have been so unhappy that you have       201.82     7.79e-41      40.11     0.3552    Yes
+17    [LEAKAGE]   Feeling tired or having little energy        197.87     5.38e-40      39.27     0.3517    Yes
+18    [SAFE]      Angry after latest child birth               176.91     3.85e-39      38.41     0.4702    Yes
+19    [LEAKAGE]   Thoughts that you would be better off        182.01     1.27e-36      35.90     0.3373    Yes
+20    [LEAKAGE]   The thought of harming yourself has oc       182.01     1.27e-36      35.90     0.3373    Yes
+21    [SAFE]      Abuse                                        116.44     5.18e-26      25.29     0.3815    Yes
+22    [SAFE]      Relationship with the in-laws                104.74     4.57e-19      18.34     0.2559    Yes
+23    [SAFE]      Relationship with husband                     97.90     1.14e-17      16.94     0.2474    Yes
+24    [SAFE]      Need for Support                              86.86     1.36e-16      15.87     0.2330    Yes
+25    [SAFE]      Feeling for regular activities                82.90     8.99e-16      15.05     0.2276    Yes
+26    [LEAKAGE]   Poor appetite or overeating                   82.68     9.98e-16      15.00     0.2273    Yes
+27    [LEAKAGE]   Moving or speaking or restlessness            80.83     2.41e-15      14.62     0.2248    Yes
+28    [SAFE]      Received Support                              72.17     7.89e-15      14.10     0.2124    Yes
+29    [SAFE]      Feeling about motherhood                      71.28     1.22e-14      13.91     0.2111    Yes
+30    [SAFE]      Major changes or losses during pregnan        47.54     4.76e-11      10.32     0.2438    Yes
+31    [SAFE]      Relax/sleep when the newborn is asleep        46.23     9.16e-11      10.04     0.2404    Yes
+32    [SAFE]      Depression during pregnancy (PHQ2)            36.03     1.50e-08       7.82     0.2122    Yes
+33    [SAFE]      Fear of pregnancy                             35.30     2.16e-08       7.67     0.2101    Yes
+34    [SAFE]      Relationship between father and newbor        46.34     2.53e-08       7.60     0.1702    Yes
+35    [SAFE]      Trust and share feelings                      29.91     3.19e-07       6.50     0.1934    Yes
+36    [SAFE]      Depression before pregnancy (PHQ2)            27.04     1.35e-06       5.87     0.1838    Yes
+37    [SAFE]      Relationship with the newborn                 30.96     2.58e-05       4.59     0.1391    Yes
+38    [SAFE]      Education Level                               30.32     3.41e-05       4.47     0.1377    Yes
+39    [SAFE]      Disease before pregnancy                      24.37     6.73e-05       4.17     0.1234    Yes
+40    [SAFE]      Worry about newborn                           19.04     7.35e-05       4.13     0.1543    Yes
+41    [SAFE]      Diseases during pregnancy                     23.35     1.08e-04       3.97     0.1208    Yes
+42    [SAFE]      Pregnancy plan                                14.26     7.99e-04       3.10     0.1335    Yes
+43    [SAFE]      Family type                                   12.41     2.02e-03       2.69     0.1245    Yes
+44    [SAFE]      Age of immediate older children               23.13     3.20e-03       2.49     0.1202    Yes
+45    [SAFE]      Birth complications                           11.18     3.74e-03       2.43     0.1182    Yes
+46    [SAFE]      Husband's education level                     18.11     5.96e-03       2.23     0.1064    Yes
+47    [SAFE]      Relax/sleep when newborn is tended             8.64     1.33e-02       1.88     0.1039    Yes
+48    [SAFE]      Number of the latest pregnancy                24.28     1.86e-02       1.73     0.1232    Yes
+49    [SAFE]      Number of household members                   11.51     2.14e-02       1.67     0.0848    Yes
+50    [SAFE]      Total children                                 8.80     6.63e-02       1.18     0.0742     No
+51    [SAFE]      Breastfeed                                     4.20     1.23e-01       0.91     0.0725     No
+52    [SAFE]      Regular checkups                               3.54     1.70e-01       0.77     0.0665     No
+53    [SAFE]      Pregnancy length                              13.93     1.76e-01       0.75     0.0933     No
+54    [SAFE]      Age of newborn                                 8.82     1.84e-01       0.74     0.0742     No
+55    [SAFE]      Marital status                                 3.14     2.08e-01       0.68     0.0626     No
+56    [SAFE]      Current monthly income                        12.87     2.31e-01       0.64     0.0897     No
+57    [SAFE]      Mode of delivery                               2.81     2.45e-01       0.61     0.0593     No
+58    [SAFE]      Monthly income before latest pregnancy        12.20     2.72e-01       0.57     0.0873     No
+59    [SAFE]      Husband's monthly income                       9.62     2.93e-01       0.53     0.0775     No
+60    [SAFE]      Age                                           51.35     3.44e-01       0.46     0.1792     No
+61    [SAFE]      Occupation before latest pregnancy            13.19     3.55e-01       0.45     0.0908     No
+62    [SAFE]      Residence                                      1.18     5.56e-01       0.26     0.0383     No
+63    [SAFE]      Education Level_was_missing                    1.05     5.92e-01       0.23     0.0362     No
+64    [SAFE]      Occupation After Your Latest Childbirt         9.56     6.55e-01       0.18     0.0773     No
+65    [SAFE]      Addiction                                      3.75     7.10e-01       0.15     0.0484     No
+66    [SAFE]      Gender of newborn                              0.60     7.43e-01       0.13     0.0273     No
+67    [SAFE]      Newborn illness                                0.51     7.75e-01       0.11     0.0253     No
+68    [SAFE]      History of pregnancy loss                      1.25     8.70e-01       0.06     0.0280     No

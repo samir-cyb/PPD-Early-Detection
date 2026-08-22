@@ -1,0 +1,37 @@
+Dynamic Ablation Summary (Chi-Square Ranking)
+===========================================================================
+Starting original features: 68
+CV method: 10-fold Stratified
+Model: Random Forest (n_estimators=300, class_weight=balanced)
+Ranking: Chi-Square + Cramer's V (dynamic re-ranking each step)
+Exclusions: 4 '_was_missing' flags + index-like columns
+
+Best F1: 1.0000
+  Step 32 | 37 original features
+  Top feature: EPDS Score ([LEAKAGE])
+
+Top 10 steps by F1:
+ step  n_original_features  n_encoded_features  cv_f1_mean  cv_accuracy_mean  cv_roc_auc_mean top_feature  top_type
+   32                   37                  90         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   50                   19                  50         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   52                   17                  46         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   54                   15                  40         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   55                   14                  37         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   59                   10                  26         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   61                    8                  20         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   62                    7                  17         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   63                    6                  14         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+   64                    5                  11         1.0               1.0              1.0  EPDS Score [LEAKAGE]
+
+Last 10 steps:
+ step  n_original_features  n_encoded_features  cv_f1_mean  cv_accuracy_mean  cv_roc_auc_mean top_feature  top_type
+   59                   10                  26    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
+   60                    9                  23    0.998592           0.99875              1.0  EPDS Score [LEAKAGE]
+   61                    8                  20    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
+   62                    7                  17    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
+   63                    6                  14    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
+   64                    5                  11    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
+   65                    4                  10    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
+   66                    3                   7    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
+   67                    2                   4    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
+   68                    1                   1    1.000000           1.00000              1.0  EPDS Score [LEAKAGE]
