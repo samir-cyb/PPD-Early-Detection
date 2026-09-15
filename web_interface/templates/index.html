@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PPD Risk Assessment — AI-Powered Screening Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & Variables ──────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #050812;
+    --bg2:         #0a0e1a;
+    --card:        rgba(255,255,255,0.04);
+    --card-border: rgba(255,255,255,0.09);
+    --glass:       rgba(255,255,255,0.06);
+    --text:        #e8eaf2;
+    --muted:       #7c84a0;
+    --accent:      #7c6ef7;
+    --accent2:     #5bdbf7;
+    --high:        #ff4757;
+    --high-glow:   rgba(255,71,87,0.25);
+    --medium:      #ffa502;
+    --medium-glow: rgba(255,165,2,0.25);
+    --low:         #2ed573;
+    --low-glow:    rgba(46,213,115,0.25);
+    --epds:        #7c6ef7;
+    --phq:         #5bdbf7;
+    --r: .75rem;
+    --r2: 1.25rem;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated background ────────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(124,110,247,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 60% at 80% 80%, rgba(91,219,247,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,71,87,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    animation: bgPulse 12s ease-in-out infinite alternate;
+  }
+  @keyframes bgPulse {
+    0%   { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+
+  /* ── Layout ─────────────────────────────────────────────────── */
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────── */
+  .site-header {
+    text-align: center;
+    padding: 3rem 0 2.5rem;
+    animation: fadeDown .7s ease both;
+  }
+  .logo-ring {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent), var(--accent2), var(--accent));
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 0 32px rgba(124,110,247,0.4);
+    animation: spin 20s linear infinite;
+  }
+  .logo-ring::after {
+    content: '🩺';
+    font-size: 28px;
+    display: flex; align-items: center; justify-content: center;
+    width: 60px; height: 60px;
+    background: var(--bg);
+    border-radius: 50%;
+    animation: spinRev 20s linear infinite;
+  }
+  @keyframes spin    { to { transform: rotate(360deg); } }
+  @keyframes spinRev { to { transform: rotate(-360deg); } }
+
+  .site-header h1 {
+    font-size: 2rem; font-weight: 700; letter-spacing: -.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .site-header p {
+    color: var(--muted); margin-top: .5rem; font-size: .95rem;
+  }
+
+  /* ── Progress bar ────────────────────────────────────────────── */
+  .progress-wrap {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    height: 6px; overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .progress-label {
+    text-align: right; font-size: .8rem; color: var(--muted);
+    margin-top: .4rem; margin-bottom: 1.5rem;
+  }
+
+  /* ── Section labels ──────────────────────────────────────────── */
+  .section-label {
+    display: flex; align-items: center; gap: .75rem;
+    margin-bottom: 1.25rem;
+    animation: fadeUp .5s ease both;
+  }
+  .section-label .badge {
+    padding: .25rem .8rem;
+    border-radius: 999px;
+    font-size: .75rem; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .badge-epds { background: rgba(124,110,247,0.15); color: var(--epds); border: 1px solid rgba(124,110,247,0.3); }
+  .badge-phq  { background: rgba(91,219,247,0.12);  color: var(--phq);  border: 1px solid rgba(91,219,247,0.3); }
+  .section-label h2 { font-size: 1rem; color: var(--muted); font-weight: 500; }
+
+  /* ── Question cards ──────────────────────────────────────────── */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--r2);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: .85rem;
+    transition: border-color .3s, transform .2s, box-shadow .3s;
+    animation: fadeUp .4s ease both;
+  }
+  .q-card:hover {
+    border-color: rgba(124,110,247,0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(124,110,247,0.1);
+  }
+  .q-card.answered {
+    border-color: rgba(46,213,115,0.3);
+    box-shadow: 0 0 12px rgba(46,213,115,0.06);
+  }
+
+  .q-num {
+    font-size: .75rem; font-weight: 700; letter-spacing: .1em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: .5rem;
+  }
+  .q-text {
+    font-size: .95rem; margin-bottom: .35rem; line-height: 1.5;
+  }
+  .q-text-bn {
+    font-size: .88rem; color: var(--muted); margin-bottom: .85rem; line-height: 1.7;
+    font-family: 'Noto Sans Bengali', 'SolaimanLipi', 'Kalpurush', sans-serif;
+  }
+  .q-warn { color: #ffbd59; font-size: .8rem; margin-top: -.3rem; margin-bottom: .75rem; }
+
+  /* ── Option buttons ──────────────────────────────────────────── */
+  .options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: .5rem;
+  }
+  @media (max-width: 500px) { .options { grid-template-columns: 1fr; } }
+
+  .opt-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--r);
+    padding: .6rem 1rem;
+    color: var(--text);
+    font-size: .85rem;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: left;
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .opt-btn:hover {
+    background: rgba(124,110,247,0.1);
+    border-color: rgba(124,110,247,0.4);
+  }
+  .opt-btn.selected {
+    background: rgba(124,110,247,0.18);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(124,110,247,0.25);
+  }
+  .opt-btn .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    border: 2px solid currentColor; flex-shrink: 0;
+    transition: background .2s;
+  }
+  .opt-btn.selected .dot { background: var(--accent); border-color: var(--accent); }
+  .opt-en { display: block; font-size: .85rem; }
+  .opt-bn { display: block; font-size: .78rem; color: var(--muted);
+            font-family: 'Noto Sans Bengali', sans-serif; margin-top: .1rem; }
+  .opt-btn.selected .opt-bn { color: rgba(255,255,255,.7); }
+
+  /* ── Submit button ───────────────────────────────────────────── */
+  .btn-submit {
+    display: block; width: 100%; max-width: 380px;
+    margin: 2rem auto 0;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 999px;
+    color: #fff; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; letter-spacing: .02em;
+    box-shadow: 0 4px 24px rgba(124,110,247,0.45);
+    transition: all .3s;
+    position: relative; overflow: hidden;
+  }
+  .btn-submit::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background .2s;
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(124,110,247,0.55); }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+  /* ── Loading spinner ─────────────────────────────────────────── */
+  .spinner {
+    display: none;
+    width: 40px; height: 40px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    margin: 2rem auto;
+  }
+
+  /* ── Results panel ───────────────────────────────────────────── */
+  #results {
+    display: none;
+    animation: fadeUp .6s ease both;
+    margin-top: 3rem;
+  }
+
+  /* ── Risk gauge ──────────────────────────────────────────────── */
+  .gauge-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2.5rem 1.5rem 2rem;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--r2);
+    margin-bottom: 1.5rem;
+    position: relative; overflow: hidden;
+  }
+  .gauge-wrap::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, var(--risk-glow,transparent) 0%, transparent 70%);
+    pointer-events: none;
+    transition: background .8s;
+  }
+
+  .gauge-svg { width: 220px; height: 120px; }
+
+  .gauge-label {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -.5px;
+    margin-top: .75rem;
+    transition: color .5s;
+  }
+  .gauge-sub {
+    font-size: .9rem; color: var(--muted); margin-top: .25rem;
+  }
+
+  /* ── Probability bars ────────────────────────────────────────── */
+  .prob-section {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--r2);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .prob-section h3 { font-size: .9rem; color: var(--muted); margin-bottom: 1.2rem; }
+  .prob-row { display: flex; align-items: center; gap: 1rem; margin-bottom: .85rem; }
+  .prob-row:last-child { margin-bottom: 0; }
+  .prob-name { width: 65px; font-size: .85rem; font-weight: 600; }
+  .prob-track { flex: 1; height: 10px; background: rgba(255,255,255,0.07); border-radius: 999px; overflow: hidden; }
+  .prob-fill  { height: 100%; border-radius: 999px; width: 0%; transition: width 1s cubic-bezier(.4,0,.2,1) .3s; }
+  .prob-val  { width: 40px; text-align: right; font-size: .8rem; color: var(--muted); }
+
+  /* ── SHAP section ────────────────────────────────────────────── */
+  .shap-header {
+    font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .shap-header .icon { font-size: 1.3rem; }
+
+  .top3-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 650px) { .top3-grid { grid-template-columns: 1fr; } }
+
+  .top3-card {
+    background: var(--glass);
+    border: 1px solid var(--card-border);
+    border-radius: var(--r2);
+    padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: transform .25s, box-shadow .25s;
+    animation: fadeUp .5s ease both;
+  }
+  .top3-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(124,110,247,0.15); }
+  .top3-card::before {
+    content: attr(data-rank);
+    position: absolute; top: -8px; right: 10px;
+    font-size: 5rem; font-weight: 900; opacity: .05;
+    line-height: 1; pointer-events: none;
+  }
+
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    font-size: .7rem; font-weight: 800;
+    margin-bottom: .75rem;
+  }
+  .rank-1 { background: rgba(255,215,0,.15);  color: #ffd700; border: 1px solid rgba(255,215,0,.3); }
+  .rank-2 { background: rgba(192,192,192,.15); color: #c0c0c0; border: 1px solid rgba(192,192,192,.3); }
+  .rank-3 { background: rgba(205,127,50,.15);  color: #cd7f32; border: 1px solid rgba(205,127,50,.3); }
+
+  .top3-short { font-size: .95rem; font-weight: 700; margin-bottom: .4rem; line-height: 1.3; }
+  .top3-scale {
+    display: inline-block;
+    font-size: .65rem; font-weight: 700; letter-spacing: .08em;
+    padding: .15rem .5rem; border-radius: 999px;
+    text-transform: uppercase; margin-bottom: .75rem;
+  }
+  .scale-epds { background: rgba(124,110,247,.15); color: var(--epds); border: 1px solid rgba(124,110,247,.3); }
+  .scale-phq  { background: rgba(91,219,247,.12);  color: var(--phq);  border: 1px solid rgba(91,219,247,.3); }
+
+  .top3-answer {
+    font-size: .8rem; color: var(--muted);
+    margin-bottom: .6rem;
+  }
+  .top3-answer span { color: var(--text); font-weight: 600; }
+
+  .shap-bar-wrap {
+    background: rgba(255,255,255,0.05);
+    border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: .75rem;
+  }
+  .shap-bar {
+    height: 100%; border-radius: 999px; width: 0%;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1) .5s;
+  }
+
+  .shap-val { font-size: .75rem; color: var(--muted); margin-bottom: .75rem; }
+  .shap-val b { color: var(--text); }
+
+  .top3-meaning {
+    font-size: .8rem; color: var(--muted); line-height: 1.55;
+    border-top: 1px solid var(--card-border);
+    padding-top: .75rem; margin-top: .25rem;
+  }
+
+  /* ── Per-class SHAP bars ─────────────────────────────────────── */
+  .cls-bars { margin-top: .6rem; }
+  .cls-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; font-size: .72rem; }
+  .cls-name { width: 52px; color: var(--muted); }
+  .cls-track { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+  .cls-fill  { height: 100%; border-radius: 999px; width: 0%; transition: width 1.2s ease .7s; }
+  .cls-val   { width: 40px; text-align: right; color: var(--muted); font-size: .72rem; }
+
+  /* ── Clinical insight box ────────────────────────────────────── */
+  .insight-box {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--r2);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    position: relative; overflow: hidden;
+  }
+  .insight-box::before {
+    content: '🔬';
+    position: absolute; right: 1.5rem; top: 1.5rem;
+    font-size: 1.8rem; opacity: .3;
+  }
+  .insight-box h3 { font-size: .95rem; margin-bottom: .85rem; }
+  .insight-box p  { font-size: .88rem; color: var(--muted); line-height: 1.65; }
+
+  /* ── Disclaimer ──────────────────────────────────────────────── */
+  .disclaimer {
+    background: rgba(255,189,89,.06);
+    border: 1px solid rgba(255,189,89,.2);
+    border-radius: var(--r);
+    padding: .9rem 1.1rem;
+    font-size: .8rem; color: #ffbd59;
+    margin-top: 1.5rem; line-height: 1.6;
+  }
+
+  /* ── Reset button ────────────────────────────────────────────── */
+  .btn-reset {
+    display: block; width: 100%; max-width: 280px;
+    margin: 1.75rem auto 0;
+    padding: .75rem 1.5rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 999px;
+    color: var(--muted); font-size: .9rem;
+    cursor: pointer; transition: all .2s;
+  }
+  .btn-reset:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ── Animations ──────────────────────────────────────────────── */
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(16px);  } to { opacity:1; transform:translateY(0); } }
+
+  /* ── Stagger card delays ─────────────────────────────────────── */
+  .q-card:nth-child(1)  { animation-delay: .05s }
+  .q-card:nth-child(2)  { animation-delay: .10s }
+  .q-card:nth-child(3)  { animation-delay: .15s }
+  .q-card:nth-child(4)  { animation-delay: .20s }
+  .q-card:nth-child(5)  { animation-delay: .25s }
+  .q-card:nth-child(6)  { animation-delay: .30s }
+  .q-card:nth-child(7)  { animation-delay: .35s }
+  .q-card:nth-child(8)  { animation-delay: .40s }
+  .q-card:nth-child(9)  { animation-delay: .45s }
+  .q-card:nth-child(10) { animation-delay: .50s }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- ── Header ────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="logo-ring"></div>
+    <h1>PPD ঝুঁকি মূল্যায়ন / PPD Risk Assessment</h1>
+    <p>প্রসবোত্তর বিষণ্নতা স্ক্রিনিং · EPDS &amp; PHQ-9 · Gradient Boosting · SHAP Explainability</p>
+  </header>
+
+  <!-- ── Progress ──────────────────────────────────────────────── -->
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="progress-label"><span id="progressText">০ / ১৭ টি প্রশ্নের উত্তর দেওয়া হয়েছে &nbsp;|&nbsp; 0 / 17 answered</span></div>
+
+  <!-- ── Form ──────────────────────────────────────────────────── -->
+  <form id="assessForm" onsubmit="return false;">
+    <div id="questionsContainer"></div>
+    <button class="btn-submit" id="submitBtn" disabled>
+      ঝুঁকি বিশ্লেষণ করুন / Analyse Risk →
+    </button>
+  </form>
+
+  <!-- ── Spinner ───────────────────────────────────────────────── -->
+  <div class="spinner" id="spinner"></div>
+
+  <!-- ── Results ───────────────────────────────────────────────── -->
+  <section id="results">
+
+    <!-- Risk gauge -->
+    <div class="gauge-wrap" id="gaugeWrap">
+      <svg class="gauge-svg" viewBox="0 0 220 120">
+        <defs>
+          <linearGradient id="gaugeGradLow" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#2ed573"/>
+            <stop offset="100%" stop-color="#7bed9f"/>
+          </linearGradient>
+          <linearGradient id="gaugeGradMed" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#ffa502"/>
+            <stop offset="100%" stop-color="#ffd32a"/>
+          </linearGradient>
+          <linearGradient id="gaugeGradHigh" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#ff4757"/>
+            <stop offset="100%" stop-color="#ff6b81"/>
+          </linearGradient>
+        </defs>
+        <!-- track -->
+        <path d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="14" stroke-linecap="round"/>
+        <!-- fill -->
+        <path id="gaugeFill" d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="url(#gaugeGradLow)" stroke-width="14" stroke-linecap="round"
+              stroke-dasharray="283" stroke-dashoffset="283" style="transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1) .2s, stroke .5s;"/>
+        <!-- needle -->
+        <line id="gaugeNeedle" x1="110" y1="108" x2="110" y2="30"
+              stroke="white" stroke-width="3" stroke-linecap="round"
+              style="transform-origin:110px 108px; transform:rotate(-90deg); transition:transform 1.4s cubic-bezier(.4,0,.2,1) .2s;"/>
+        <circle cx="110" cy="108" r="6" fill="white" opacity=".9"/>
+      </svg>
+      <div class="gauge-label" id="gaugeLabel">—</div>
+      <div class="gauge-sub" id="gaugeSub">Analysing responses…</div>
+    </div>
+
+    <!-- Probability bars -->
+    <div class="prob-section">
+      <h3>Prediction Probability by Class</h3>
+      <div class="prob-row">
+        <span class="prob-name" style="color:var(--high)">High</span>
+        <div class="prob-track"><div class="prob-fill" id="probHigh" style="background:var(--high);"></div></div>
+        <span class="prob-val" id="probHighVal">—</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-name" style="color:var(--medium)">Medium</span>
+        <div class="prob-track"><div class="prob-fill" id="probMedium" style="background:var(--medium);"></div></div>
+        <span class="prob-val" id="probMediumVal">—</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-name" style="color:var(--low)">Low</span>
+        <div class="prob-track"><div class="prob-fill" id="probLow" style="background:var(--low);"></div></div>
+        <span class="prob-val" id="probLowVal">—</span>
+      </div>
+    </div>
+
+    <!-- Top-3 SHAP features -->
+    <div class="shap-header">
+      <span class="icon">🔍</span>
+      Top 3 Drivers — Why This Prediction?
+    </div>
+
+    <div class="top3-grid" id="top3Grid"></div>
+
+    <!-- Clinical insight -->
+    <div class="insight-box" id="insightBox"></div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      ⚠ এটি শুধুমাত্র গবেষণা ও শিক্ষামূলক উদ্দেশ্যে তৈরি। এটি কোনো ক্লিনিক্যাল ডায়াগনস্টিক যন্ত্র নয়।
+      মিডিয়াম বা হাই ঝুঁকির মায়েদের একজন যোগ্য মানসিক স্বাস্থ্য বিশেষজ্ঞের কাছে পাঠানো উচিত।<br>
+      This tool is for research and educational purposes only. Any mother showing Medium or High risk should be referred to a qualified mental health professional.
+    </div>
+
+    <!-- Reset -->
+    <button class="btn-reset" onclick="resetForm()">↩ আবার শুরু করুন / Start Over</button>
+
+  </section>
+</div>
+
+<script>
+// ── Feature definitions (mirrors backend exactly — note trailing space on last item) ──
+const FEATURES = [
+  "You have been so unhappy that you have been crying",
+  "You have felt scared or panicky for no good reason",
+  "You have felt sad or miserable",
+  "Little interest or pleasure in doing things",
+  "You have been anxious or worried for no good reason",
+  "Feeling down, depressed, or hopeless",
+  "Trouble concentrating on things",
+  "Feeling bad about yourself or that you are a failure or have let yourself or your family down",
+  "Things have been getting to you",
+  "Trouble falling or staying asleep, or sleeping too much",
+  "You have blamed myself unnecessarily when things went wrong",
+  "You have been so unhappy that you have had difficulty sleeping",
+  "You have looked forward with enjoyment to things",
+  "You have been able to laugh and see the funny side of things",
+  "Feeling tired or having little energy",
+  "Thoughts that you would be better off dead, or of hurting yourself",
+  "The thought of harming yourself has occurred "   // trailing space — matches CSV column
+];
+
+// ── Bengali translations ───────────────────────────────────────────────────────
+const BANGLA = {
+  "You have been so unhappy that you have been crying":
+    "আপনি এতটাই দুঃখী ছিলেন যে কাঁদছিলেন",
+  "You have felt scared or panicky for no good reason":
+    "কোনো কারণ ছাড়াই আপনি ভয় পেয়েছেন বা আতঙ্কিত হয়েছেন",
+  "You have felt sad or miserable":
+    "আপনি দুঃখী বা বিষণ্ণ অনুভব করেছেন",
+  "Little interest or pleasure in doing things":
+    "কোনো কাজে আগ্রহ বা আনন্দ কমে যাওয়া",
+  "You have been anxious or worried for no good reason":
+    "কোনো কারণ ছাড়াই আপনি উদ্বিগ্ন বা চিন্তিত ছিলেন",
+  "Feeling down, depressed, or hopeless":
+    "মন খারাপ, বিষণ্ণ বা হতাশ অনুভব করা",
+  "Trouble concentrating on things":
+    "কোনো কাজে মনোযোগ দিতে কষ্ট হওয়া",
+  "Feeling bad about yourself or that you are a failure or have let yourself or your family down":
+    "নিজেকে ব্যর্থ মনে হওয়া বা পরিবারকে হতাশ করেছেন বলে মনে হওয়া",
+  "Things have been getting to you":
+    "জিনিসগুলো আপনার উপর ভার হয়ে উঠছিল",
+  "Trouble falling or staying asleep, or sleeping too much":
+    "ঘুমাতে সমস্যা, ঘুম না হওয়া বা অতিরিক্ত ঘুমানো",
+  "You have blamed myself unnecessarily when things went wrong":
+    "কিছু ভুল হলে আপনি অকারণে নিজেকে দোষ দিয়েছেন",
+  "You have been so unhappy that you have had difficulty sleeping":
+    "আপনি এতটাই দুঃখী ছিলেন যে ঘুমাতে কষ্ট হয়েছে",
+  "You have looked forward with enjoyment to things":
+    "আপনি আনন্দের সাথে বিভিন্ন বিষয়ের দিকে তাকিয়ে থাকতেন",
+  "You have been able to laugh and see the funny side of things":
+    "আপনি হাসতে এবং জিনিসগুলোর মজার দিক দেখতে পেরেছেন",
+  "Feeling tired or having little energy":
+    "ক্লান্ত অনুভব করা বা শক্তি কম থাকা",
+  "Thoughts that you would be better off dead, or of hurting yourself":
+    "মৃত্যু হলে ভালো হতো বা নিজেকে আঘাত করার চিন্তা",
+  "The thought of harming yourself has occurred ":
+    "নিজেকে আঘাত করার চিন্তা আপনার মনে এসেছে"
+};
+
+// ── Answer options (English + Bengali) ────────────────────────────────────────
+const OPTIONS = ["Not at all", "Several days", "Around half the days", "Nearly every day"];
+const OPTIONS_BN = {
+  "Not at all":           "একদমই না",
+  "Several days":         "কয়েক দিন",
+  "Around half the days": "প্রায় অর্ধেক দিন",
+  "Nearly every day":     "প্রায় প্রতিদিন"
+};
+
+// Which features belong to EPDS vs PHQ-9
+const EPDS_SET = new Set([
+  "You have been so unhappy that you have been crying",
+  "You have felt scared or panicky for no good reason",
+  "You have felt sad or miserable",
+  "You have been anxious or worried for no good reason",
+  "Things have been getting to you",
+  "You have blamed myself unnecessarily when things went wrong",
+  "You have been so unhappy that you have had difficulty sleeping",
+  "You have looked forward with enjoyment to things",
+  "You have been able to laugh and see the funny side of things",
+  "The thought of harming yourself has occurred "   // trailing space
+]);
+
+const WARN_SET = new Set([
+  "Thoughts that you would be better off dead, or of hurting yourself",
+  "The thought of harming yourself has occurred "   // trailing space
+]);
+
+// Map for SHAP importance bar max (use mean of top feature = 0.0585)
+const SHAP_MAX = 0.065;
+
+// ── Build questions ───────────────────────────────────────────────────────────
+const answers = {};
+let answered = 0;
+
+function buildQuestions() {
+  const container = document.getElementById('questionsContainer');
+
+  // EPDS section
+  const epdsFeats = FEATURES.filter(f => EPDS_SET.has(f));
+  const phqFeats  = FEATURES.filter(f => !EPDS_SET.has(f));
+
+  container.innerHTML = '';
+
+  // EPDS block
+  appendSection(container, 'EPDS', 'Edinburgh Postnatal Depression Scale', epdsFeats, 'epds');
+  // PHQ-9 block
+  appendSection(container, 'PHQ-9', 'Patient Health Questionnaire', phqFeats, 'phq');
+}
+
+function appendSection(container, badge, title, feats, type) {
+  const label = document.createElement('div');
+  label.className = 'section-label';
+  label.innerHTML = `<span class="badge badge-${type}">${badge}</span><h2>${title} Items</h2>`;
+  container.appendChild(label);
+
+  feats.forEach((feat, idx) => {
+    const globalIdx = FEATURES.indexOf(feat) + 1;
+    const warn = WARN_SET.has(feat);
+    const bn   = BANGLA[feat] || '';
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `card-${globalIdx}`;
+    card.innerHTML = `
+      <div class="q-num">প্রশ্ন ${globalIdx} &nbsp;/&nbsp; Question ${globalIdx}</div>
+      <div class="q-text">${feat}</div>
+      ${bn ? `<div class="q-text-bn">${bn}</div>` : ''}
+      ${warn ? '<div class="q-warn">⚠ এই ধরনের চিন্তা থাকলে অনুগ্রহ করে অবিলম্বে সাহায্য নিন। / If you have these thoughts, please seek support immediately.</div>' : ''}
+      <div class="options" data-feat="${feat}">
+        ${OPTIONS.map(opt => `
+          <button type="button" class="opt-btn" data-val="${opt}" onclick="selectOpt(this)">
+            <span class="dot"></span>
+            <span class="opt-en">${opt}</span>
+            <span class="opt-bn">${OPTIONS_BN[opt] || ''}</span>
+          </button>`).join('')}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function selectOpt(btn) {
+  const group = btn.closest('.options');
+  const feat  = group.dataset.feat;
+  const card  = btn.closest('.q-card');
+
+  // deselect sibling
+  group.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const wasAnswered = feat in answers;
+  answers[feat] = btn.dataset.val;
+  if (!wasAnswered) {
+    answered++;
+    card.classList.add('answered');
+  }
+
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = (answered / FEATURES.length) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+  const bn_nums = ['০','১','২','৩','৪','৫','৬','৭','৮','৯','১০','১১','১২','১৩','১৪','১৫','১৬','১৭'];
+  document.getElementById('progressText').textContent =
+    `${bn_nums[answered] || answered} / ১৭ টি প্রশ্নের উত্তর দেওয়া হয়েছে  |  ${answered} / ${FEATURES.length} answered`;
+  document.getElementById('submitBtn').disabled = (answered < FEATURES.length);
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+async function submitForm() {
+  if (answered < FEATURES.length) return;
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+
+  try {
+    const resp = await fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers })
+    });
+    const data = await resp.json();
+    renderResults(data);
+  } catch(e) {
+    alert('Error connecting to the server. Make sure the FastAPI app is running on port 8000.');
+    document.getElementById('submitBtn').disabled = false;
+  }
+
+  document.getElementById('spinner').style.display = 'none';
+}
+
+document.getElementById('submitBtn').addEventListener('click', submitForm);
+
+// ── Render results ────────────────────────────────────────────────────────────
+function renderResults(data) {
+  const pred  = data.prediction;        // "High" | "Medium" | "Low"
+  const proba = data.probabilities;
+  const top3  = data.top3_features;
+  const classes = data.classes;
+
+  // ── colours
+  const colorMap = { High: 'var(--high)', Medium: 'var(--medium)', Low: 'var(--low)' };
+  const glowMap  = { High: 'var(--high-glow)', Medium: 'var(--medium-glow)', Low: 'var(--low-glow)' };
+  const gradMap  = {
+    High:   'url(#gaugeGradHigh)',
+    Medium: 'url(#gaugeGradMed)',
+    Low:    'url(#gaugeGradLow)'
+  };
+  const angleMap = { Low: -90, Medium: 0, High: 90 };   // -90=far left, 0=top, 90=far right
+  const fillMap  = { Low: 47, Medium: 141, High: 236 };  // dashoffset for 1/6, 3/6, 5/6 fill
+
+  // ── gauge
+  document.getElementById('gaugeLabel').textContent = pred + ' Risk';
+  document.getElementById('gaugeLabel').style.color = colorMap[pred];
+  document.getElementById('gaugeSub').textContent =
+    pred === 'High'   ? 'EPDS Score likely 13–30 — clinical referral recommended' :
+    pred === 'Medium' ? 'EPDS Score likely 10–12 — monitoring advised' :
+                        'EPDS Score likely 0–9 — within normal range';
+
+  document.getElementById('gaugeFill').setAttribute('stroke', gradMap[pred]);
+  document.getElementById('gaugeFill').style.strokeDashoffset = fillMap[pred];
+  document.getElementById('gaugeNeedle').style.transform =
+    `rotate(${angleMap[pred]}deg)`;
+  document.getElementById('gaugeWrap').style.setProperty('--risk-glow', glowMap[pred]);
+
+  // ── prob bars
+  const classKeys = ['High','Medium','Low'];
+  classKeys.forEach(cls => {
+    // find key in proba (case-insensitive)
+    const key = Object.keys(proba).find(k => k.toLowerCase() === cls.toLowerCase()) || cls;
+    const pct = Math.round((proba[key] || 0) * 100);
+    document.getElementById(`prob${cls}`).style.width = pct + '%';
+    document.getElementById(`prob${cls}Val`).textContent = pct + '%';
+  });
+
+  // ── top-3 cards
+  const grid = document.getElementById('top3Grid');
+  grid.innerHTML = '';
+  const maxShap = Math.max(...top3.map(f => Math.abs(f.shap_value)));
+
+  top3.forEach((feat, i) => {
+    const scale = feat.scale.toUpperCase();
+    const scaleClass = scale === 'EPDS' ? 'scale-epds' : 'scale-phq';
+    const shapPct  = Math.min(100, (Math.abs(feat.shap_value) / SHAP_MAX) * 100).toFixed(1);
+    const rankCls  = ['rank-1','rank-2','rank-3'][i];
+    const barColor = ['#ffd700','#c0c0c0','#cd7f32'][i];
+
+    // per-class bars
+    let clsBarsHTML = '';
+    if (feat.shap_all_cls) {
+      const allMax = Math.max(...Object.values(feat.shap_all_cls).map(Math.abs));
+      ['High','Medium','Low'].forEach(cls => {
+        const key = Object.keys(feat.shap_all_cls).find(k => k.toLowerCase() === cls.toLowerCase()) || cls;
+        const v   = feat.shap_all_cls[key] || 0;
+        const pct = Math.min(100, (Math.abs(v) / (allMax || 1)) * 100).toFixed(1);
+        const col = cls === 'High' ? 'var(--high)' : cls === 'Medium' ? 'var(--medium)' : 'var(--low)';
+        clsBarsHTML += `
+          <div class="cls-row">
+            <span class="cls-name">${cls}</span>
+            <div class="cls-track"><div class="cls-fill" style="background:${col};width:${pct}%"></div></div>
+            <span class="cls-val">${v.toFixed(4)}</span>
+          </div>`;
+      });
+    }
+
+    const card = document.createElement('div');
+    card.className = 'top3-card';
+    card.dataset.rank = i + 1;
+    card.style.animationDelay = (i * 0.12) + 's';
+    card.innerHTML = `
+      <div class="rank-badge ${rankCls}">#${i+1}</div>
+      <div class="top3-short">${feat.short}</div>
+      <span class="top3-scale ${scaleClass}">${scale}</span>
+      <div class="top3-answer">Patient answered: <span>${feat.answer}</span></div>
+      <div class="shap-bar-wrap">
+        <div class="shap-bar" style="background:${barColor};width:${shapPct}%"></div>
+      </div>
+      <div class="shap-val">SHAP impact: <b>${Math.abs(feat.shap_value).toFixed(5)}</b></div>
+      <div class="cls-bars">${clsBarsHTML}</div>
+      <div class="top3-meaning">${feat.meaning}</div>`;
+    grid.appendChild(card);
+  });
+
+  // ── Clinical insight box
+  const insight = buildInsight(pred, top3, proba);
+  document.getElementById('insightBox').innerHTML = insight;
+
+  // ── Show results
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function buildInsight(pred, top3, proba) {
+  const f1 = top3[0] ? top3[0].short : '—';
+  const f2 = top3[1] ? top3[1].short : '—';
+  const f3 = top3[2] ? top3[2].short : '—';
+  const a1 = top3[0] ? top3[0].answer : '';
+  const byLine = pred === 'High'
+    ? `The model classifies this patient as <strong>High risk</strong> (EPDS Score likely 13–30). This is the most serious PPD risk category.`
+    : pred === 'Medium'
+    ? `The model classifies this patient as <strong>Medium risk</strong> (EPDS Score likely 10–12). Clinical monitoring is recommended.`
+    : `The model classifies this patient as <strong>Low risk</strong> (EPDS Score likely 0–9). Routine follow-up is still advised.`;
+
+  return `
+    <h3>🩺 Clinical Interpretation</h3>
+    <p>${byLine}</p>
+    <p style="margin-top:.75rem">
+      The three features that drove this prediction most strongly were
+      <strong>${f1}</strong>, <strong>${f2}</strong>, and <strong>${f3}</strong>.
+      The patient answered <em>"${a1}"</em> to the top-ranked item, which carries the highest SHAP contribution
+      toward the predicted class. EPDS questionnaire items collectively outweigh PHQ-9 items in
+      this model's feature importance, consistent with the Edinburgh scale being specifically
+      validated for postnatal populations.
+    </p>
+    ${pred !== 'Low' ? `<p style="margin-top:.75rem;color:#ffbd59">
+      ⚠ Based on these responses, referral to a mental health professional is strongly advised
+      for a full clinical assessment before any diagnosis or treatment decision is made.
+    </p>` : ''}`;
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+function resetForm() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  answered = 0;
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.q-card').forEach(c => c.classList.remove('answered'));
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('submitBtn').disabled = true;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildQuestions();
+</script>
+</body>
+</html>

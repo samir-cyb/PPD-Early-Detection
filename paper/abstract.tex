@@ -5,27 +5,29 @@
 \vspace{3\baselineskip}
 \noindent
 %----------------------------------------------------------
-Postpartum depression (PPD) affects a significant proportion of mothers worldwide and remains under-screened in Bangladesh.
-Several recent machine learning studies on Bangladeshi and South Asian survey datasets report accuracy figures of 99\% or higher.
-These figures are the result of data leakage: the models use Edinburgh Postnatal Depression Scale (EPDS) or Patient Health Questionnaire (PHQ-9) questionnaire items as input features while predicting a label computed from those same items.
-Such models cannot generalise to a real patient who has not yet been screened.
+Postpartum depression (PPD) is a serious mental health condition affecting up to 47.78\% of new mothers in some Bangladeshi healthcare settings, yet most cases go undetected because of social stigma, a shortage of trained professionals, and the absence of community-level screening tools.
+Existing machine learning studies on Bangladeshi datasets report accuracy figures of 97\%--99\%, but these studies apply models to raw EPDS or PHQ-9 questionnaire items without any feature selection, and many predict labels derived from those same items.
+A 2026 reference study by Chowdhury and Sultana demonstrated that questionnaire-based ML for PPD is viable in Bangladesh, yet that work did not apply systematic feature selection, did not compare ML and deep learning models side by side, and did not include explainability analysis.
 
-This thesis presents the first large-scale, leakage-free machine learning framework for PPD prediction in Bangladesh, built on a dataset of 800 Bangladeshi mothers.
-All 23 EPDS and PHQ-9 columns are excluded from the input feature set before any model is trained.
-Four chi-square weighted composite risk indices are engineered from groups of related raw survey answers: Economic Stability (ESI), Social and Family Support (SSI), Maternal Mental Health Risk (MHRI), and Neonatal and Delivery Stress (NSI).
-A three-arm ablation study evaluates raw features alone, raw features plus composite indices, and a leakage-safe selected subset across five model families and three prediction targets.
+This thesis addresses these gaps.
+The dataset contains responses from \textbf{800 Bangladeshi postpartum mothers} across 70 columns.
+A systematic \textbf{Chi-square ranking combined with backward elimination} was applied to all 65 candidate features, identifying \textbf{17 optimal features} --- 10 EPDS questionnaire items and 7 PHQ-9 items --- as the most predictive subset for classifying \textbf{EPDS Result}, the three-class target variable defined as Low (score 0--9), Medium (10--12), and High (13--30).
 
-Random Forest on Arm~B (raw features plus composite indices) is adopted for binary PPD classification and three-class EPDS severity prediction, achieving a holdout AUC of 0.826 and macro F1 of 0.736 for binary PPD.
-Linear Regression with clinical threshold mapping is adopted for five-class PHQ9 severity prediction (macro F1 = 0.426, QWK = 0.602), outperforming all direct classifiers.
-A Stacking Ensemble is tested but not adopted after McNemar's test ($p = 0.228$) finds no statistically significant advantage over Random Forest.
+\textbf{Fifteen machine learning and deep learning models} were trained and compared using 5-fold stratified cross-validation on these 17 selected features.
+\textbf{Gradient Boosting} achieved the highest cross-validation accuracy of \textbf{0.926}, outperforming all deep learning models (MLP, Deep MLP, 1D CNN), confirming that tree-based ensemble methods are the best fit for this small-sample survey dataset.
 
-SHAP analysis identifies ``angry after latest childbirth'' as the strongest raw predictor across all targets, and all four composite indices appear in every SHAP top-10 list.
-Unsupervised K-Means clustering of the composite space, without any depression label, produces a 3.6-fold PPD prevalence gap between clusters ($p = 3.73 \times 10^{-28}$), confirming that the composite indices capture genuine clinical structure.
+\textbf{SHAP analysis} using a Permutation Explainer on the trained Gradient Boosting model identified the specific items that drive predictions for each risk class.
+The top features by mean absolute SHAP value are EPDS items related to crying, feeling scared or panicky, and feeling sad or miserable, followed by items about self-blame, anxiety, inability to cope, and difficulty concentrating.
+This provides an interpretable, item-level explanation of which screening questions are most informative for each risk category.
 
-The honest AUC of 0.826 is competitive with the best leakage-free international studies and demonstrates that a clinically useful PPD screening tool can be built without touching a single screening instrument item.
+For comparison, each of the four background feature categories was also tested independently:
+Neonatal Health achieves the highest background-only accuracy at 61\%, followed by Personal Health (52\%), Familial (47\%), and Demographic (40\%).
+Risk factor analysis using Kendall's tau identified \textit{anger after latest child birth} as the strongest background predictor ($\tau = +0.418$, $p = 1.4 \times 10^{-45}$), followed by feelings about motherhood ($\tau = +0.280$) and depression during pregnancy ($\tau = +0.195$).
+
+A \textbf{web interface} was developed to deploy the trained Gradient Boosting model, allowing healthcare workers to input the 17 selected screening items and receive an immediate EPDS risk classification (Low, Medium, or High).
 %----------------------------------------------------------
 \vspace{\baselineskip}
 \noindent
 %----------------------------------------------------------
-\textbf{Keywords}: postpartum depression, machine learning, data leakage, composite risk index, SHAP explainability, Bangladesh
+\textbf{Keywords}: postpartum depression, feature selection, SHAP explainability, machine learning, EPDS Result, Kendall's tau, Gradient Boosting, Bangladesh
 %----------------------------------------------------------

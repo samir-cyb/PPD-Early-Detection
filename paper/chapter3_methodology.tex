@@ -1,10 +1,7 @@
 % ============================================================
 %  Chapter 3 — Proposed Methodology
-%  Figure paths are relative to the paper/ folder (main.tex location).
-%  If you move this file to ./Chapters/, change ../ to ../../
 % ============================================================
 
-% Global listing settings for this chapter — prevents lines overflowing the box
 \lstset{
   breaklines=true,
   breakatwhitespace=false,
@@ -16,856 +13,638 @@
   keywordstyle=\bfseries,
 }
 
-\chapter{Proposed Methodology: Leakage-Free Composite Risk Index Framework for PPD Prediction}
+\chapter{Proposed Methodology}
 \label{ch:methodology}
 
-% --------------------------------------------------------
-\section{Introduction}
+\section{Overview}
 \label{ch3-sec-intro}
-% --------------------------------------------------------
 
-This chapter describes the full methodology of the thesis.
-The goal is to predict postpartum depression (PPD) risk in Bangladeshi mothers without using the EPDS or PHQ-9 questionnaire answers as model inputs.
-The methodology covers nine steps: (1) leakage-free feature design, (2) chi-square weighted composite risk index engineering, (3) feature encoding, (4) baseline model training across five algorithms and three targets, (5) advanced modeling with tuning, MLP, and stacking, (6) a three-arm ablation study, (7) multi-angle explainability using SHAP, (8) unsupervised cluster validation, and (9) a set of robustness and sensitivity experiments including alternative weighting, oversampling, imputation, and repeated cross-validation.
-Each step is explained in order.
-The dataset and implementation tools are described after the methodology sections.
+This chapter describes the full methodology used in this thesis step by step. The goal is to predict postpartum depression (PPD) risk in Bangladeshi mothers by identifying the most informative subset of EPDS and PHQ-9 questionnaire items through principled feature selection, comparing 15 machine learning and deep learning models, explaining model predictions using SHAP, and deploying the result as a web interface. The methodology follows seven main stages:
 
-% --------------------------------------------------------
-\section{System Architecture}
-\label{ch3-sec-architecture}
-% --------------------------------------------------------
+\begin{enumerate}
+    \item Dataset collection and description
+    \item Data cleaning and preprocessing
+    \item Feature categorization and encoding
+    \item Feature selection: Chi-square analysis and backward elimination
+    \item Machine learning and deep learning model comparison (15 models)
+    \item SHAP explainability analysis
+    \item Risk factor analysis using correlation, Kendall's tau, and within-category feature importance
+\end{enumerate}
 
-Figure~\ref{ch3-fig-architecture} shows the high-level system architecture of the proposed framework.
-The system is divided into six modules, each with a clearly defined input and output.
-The modules are connected in a left-to-right flow, from raw data to final clinical output.
-
-The \textbf{Data Input Module} takes the raw survey CSV file as its entry point.
-The file contains responses from 800 Bangladeshi mothers across 151 columns.
-No changes are made to the data at this stage.
-
-The \textbf{Preprocessing Module} has three sub-steps that execute in order.
-First, the Leakage Guard removes all 23 EPDS and PHQ-9 related columns.
-This is the most critical step in the entire system.
-Without it, any accuracy figure reported by the model would be meaningless in a clinical context.
-Second, the Data Cleaning sub-step drops one malformed row and fills five randomly-missing values using the column mode.
-Third, the Encoding sub-step converts all remaining categorical columns into binary dummy variables using one-hot encoding.
-After encoding, 112 binary columns represent the raw input space.
-
-The \textbf{Feature Engineering Module} adds clinical structure on top of the encoded features.
-It first groups related raw features into four clinical domains and applies chi-square weighting to produce four composite risk indices: ESI, SSI, MHRI, and NSI.
-It then assembles the Arm~B feature set by combining the 112 raw binary columns with the 4 composite index scores, producing a 116-column feature matrix.
-
-The \textbf{Model Module} is where all learning takes place.
-It runs five-fold stratified cross-validation across five model families (Logistic Regression, Random Forest, XGBoost, LightGBM, CatBoost) and three prediction targets.
-The adopted models are Random Forest for PPD\_binary and EPDS Result, and Linear Regression with threshold mapping for PHQ9 Result.
-The module outputs predicted class probabilities for the test set.
-
-The \textbf{Post-processing Module} has two parallel sub-components.
-The Threshold Calibration sub-component applies Platt scaling to the RF probabilities and finds the max-F1 operating threshold of 0.407.
-The Explainability sub-component uses \texttt{shap.TreeExplainer} to compute exact Shapley values, producing a beeswarm plot, an interaction heatmap, and a per-patient waterfall explanation.
-
-The \textbf{Clinical Output Module} is the system's final layer.
-It receives the calibrated probability, the threshold decision, and the SHAP values and converts them into three outputs: a continuous risk score between 0 and 1, a risk tier assignment based on the K-Means cluster, and a SHAP-based feature-level explanation that a clinician can read directly.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\textwidth]{Images/fig_system_architecture.jpg}
-  \caption{High-level system architecture of the leakage-free PPD prediction framework.
-  The six modules process raw survey data from left to right.
-  The Leakage Guard (red box) is the critical step that separates this system from studies affected by data leakage.
-  Dashed borders group related sub-components within each module.
-  All arrows represent the direction of data flow.}
-  \label{ch3-fig-architecture}
-\end{figure}
-\FloatBarrier
+Each stage is explained in order in the sections below.
 
 % --------------------------------------------------------
-\section{Proposed Methodology}
-\label{ch3-sec-method}
-% --------------------------------------------------------
-
-The proposed framework follows a fixed, ordered pipeline.
-Each step produces a clean output that feeds directly into the next step.
-No information from a later step is ever used in an earlier step.
-This strict ordering prevents all forms of data leakage.
-
-Figure~\ref{ch3-fig-pipeline} shows the complete nine-step pipeline at a glance.
-Figure~\ref{ch3-fig-dataflow} shows the same pipeline with full detail: exact column counts at every transition, the three-arm split, the cross-validation loop, and the final model outputs.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.88\textwidth]{Images/fig_pipeline_steps.png}
-  \caption{Nine-step methodology pipeline of the leakage-free PPD prediction framework.
-  Blue boxes (Steps~1--3) cover data preparation.
-  Purple boxes (Steps~4--6) cover modelling.
-  Orange boxes (Steps~7--9) cover evaluation and analysis.
-  The red dashed line marks the leakage boundary: no EPDS or PHQ-9 data is used below this line.
-  Numbered circles on the left of each box show the step number.
-  Phase brackets on the right group steps into three phases.}
-  \label{ch3-fig-pipeline}
-\end{figure}
-
-Figure~\ref{ch3-fig-dataflow} adds the detail that Figure~\ref{ch3-fig-pipeline} omits.
-It shows that the raw input starts at 151 columns.
-After the leakage exclusion step, 108 safe columns remain.
-After one-hot encoding, these expand to 112 binary columns.
-Adding four composite index scores gives 116 columns for Arm~B.
-Arm~A uses only the 108 raw columns (before encoding produces 108 original features as dummies).
-Arm~C uses only the top-30 features selected by nested cross-validation inside the training fold, plus the 4 composite indices.
-All three arms are evaluated by the same five-fold cross-validation loop.
-The diagram also shows the final adopted model results at the bottom: AUC 0.826 for PPD\_binary, F1 0.520 for EPDS Result, and QWK 0.602 for PHQ9 Result.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.82\textwidth]{Images/fig_data_processing.jpg}
-  \caption{Detailed data processing flowchart for the leakage-free PPD prediction framework.
-  Numbers in labels show the exact column counts at each stage.
-  The red box marks the leakage exclusion step where 23 EPDS and PHQ-9 columns are removed.
-  The three-arm split (Arm A, Arm B, Arm C) is shown at the centre.
-  Arm B (green) is the adopted configuration.
-  The bottom row shows the final holdout results for all three prediction targets.}
-  \label{ch3-fig-dataflow}
-\end{figure}
-\FloatBarrier
-
-% ........................................................
-\subsection{Leakage-Free Feature Set Design}
-\label{ch3-subsec-leakage}
-% ........................................................
-
-The raw dataset has 70 columns.
-Of these, 23 columns are leakage columns.
-They include the 10 EPDS item answers, the 9 PHQ-9 item answers, and the 4 score and result columns derived from them.
-If any of these 23 columns are used as model inputs, the model sees the answer before being asked the question.
-This causes data leakage and produces unrealistically high accuracy.
-All 23 columns are excluded from every model's input in this thesis.
-
-The remaining 46 columns are safe inputs.
-They cover six clinical domains: demographic information, family background, economic status, pregnancy history, neonatal/delivery details, and pre-pregnancy mental health (PHQ-2, measured before the postpartum period).
-PHQ-2 is kept as an input because it measures a different time point than the postpartum EPDS and PHQ-9.
-It is not derived from the same assessment that defines the labels.
-
-Three prediction targets are used.
-The primary target is \textbf{PPD\_binary}, a binary label where EPDS score $\geq 13$ is positive for PPD.
-The secondary target is \textbf{EPDS Result}, a three-class ordinal label (Low / Medium / High).
-The supplementary target is \textbf{PHQ9 Result}, a five-class ordinal label (Minimal / Mild / Moderate / Moderately Severe / Severe).
-
-% ........................................................
-\subsection{Composite Risk Index Engineering}
-\label{ch3-subsec-composite}
-% ........................................................
-
-Raw survey answers are grouped into four domain-level indices.
-Each index summarises a clinically related set of questions into one number on a 0--10 scale.
-The four indices are:
-
-\begin{itemize}
-  \item \textbf{Economic Stability Index (ESI)} — monthly income, husband's income, occupation, household food security.
-  \item \textbf{Social/Family Support Index (SSI)} — relationship with husband and in-laws, received support, need for support, family type, number of household members.
-  \item \textbf{Maternal Mental-Health Risk Index (MHRI)} — history of abuse, fear of pregnancy, feelings about motherhood, anger after latest childbirth, depression before or during pregnancy (PHQ-2).
-  \item \textbf{Neonatal/Delivery Stress Index (NSI)} — mode of delivery, birth complications, neonatal health status, pregnancy loss history, number of children.
-\end{itemize}
-
-\subsubsection{Direction Verification}
-Before building each index, the empirical direction of each sub-feature was checked.
-Four sub-features had a direction opposite to what was assumed:
-\textit{Abuse} (``No'' answers were 2.4$\times$ more common in PPD-positive mothers),
-\textit{Family type} (joint families showed higher PPD prevalence than nuclear families),
-\textit{Number of household members} (more members associated with higher PPD risk), and
-\textit{Education level} (higher education associated with more reported PPD).
-The score mapping for each of these sub-features was corrected to match the empirical direction.
-
-\subsubsection{Chi-Square Weighting}
-Each sub-feature inside a domain is weighted by its own statistical association strength with PPD\_binary.
-The weight is computed from the chi-square test p-value.
-A smaller p-value means a stronger association, so the feature gets a larger weight.
-Equation~\ref{ch3-eqn-weight} defines the weight for sub-feature $f$:
-
-\begin{equation}
-\label{ch3-eqn-weight}
-  w_f \;=\; \frac{-\log_{10}(p_f)}{\displaystyle\sum_{j \in \text{domain}} -\log_{10}(p_j)}
-\end{equation}
-
-where $p_f$ is the chi-square p-value for sub-feature $f$ against PPD\_binary, and the sum in the denominator normalises all weights within a domain to sum to 1.
-
-\subsubsection{Composite Index Formula}
-Each sub-feature answer is first mapped to a normalised ordinal score $s_{i,f} \in [0,1]$.
-The final index value for mother $i$ is then:
-
-\begin{equation}
-\label{ch3-eqn-index}
-  \text{INDEX}_{d}(i) \;=\; 10 \;\times\; \sum_{f \,\in\, d} w_f \;\cdot\; s_{i,f}
-\end{equation}
-
-The multiplication by 10 maps the result to the 0--10 scale.
-Algorithm~\ref{ch3-alg-composite} shows the pseudocode for this computation.
-
-All four weighted composite indices passed 24/24 statistical association tests (ANOVA and Kruskal-Wallis, $p < 0.05$ against all three targets).
-Figure~\ref{ch3-fig-boxplots} shows how each index separates PPD-positive from PPD-negative mothers.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=.70\textwidth]{Images/fig2_composite_boxplots.jpg}
-  \caption{Distribution of the four weighted composite indices for PPD-negative (left) and PPD-positive (right) mothers. Higher MHRI and lower SSI values are clearly associated with PPD-positive status.}
-  \label{ch3-fig-boxplots}
-\end{figure}
-\FloatBarrier
-
-% ........................................................
-\subsection{Feature Encoding}
-\label{ch3-subsec-encoding}
-% ........................................................
-
-Categorical features are one-hot encoded.
-Each category level becomes a separate binary column.
-The final encoded dataset has 116 features: 46 safe raw inputs (expanded to 112 one-hot columns) plus the 4 weighted composite indices.
-There are zero missing values in the final dataset.
-
-% ........................................................
-\subsection{Three-Arm Ablation Study}
-\label{ch3-subsec-ablation}
-% ........................................................
-
-A three-arm ablation study is used to test whether the composite indices actually improve prediction.
-The three arms are:
-
-\begin{itemize}
-  \item \textbf{Arm A (Raw only):} the 112 one-hot encoded raw features, no composite indices.
-  \item \textbf{Arm B (Raw + Composite):} all 112 raw features plus the 4 weighted composite indices (116 features total). This is the primary arm used throughout the thesis.
-  \item \textbf{Arm C (Selected + Composite):} the top 30 features by Random Forest importance, selected in a nested, leakage-safe way inside every cross-validation fold.
-\end{itemize}
-
-Arm C's feature selection is re-derived separately inside every CV fold's training portion.
-It is never computed on the full dataset before splitting.
-This prevents selection-bias leakage.
-Figure~\ref{ch3-fig-ablation} shows the ablation results across all three arms.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=.70\textwidth]{Images/fig3_ablation_comparison.jpg}
-  \caption{Five-fold CV F1-macro for Arm A (raw only), Arm B (raw + composite), and Arm C (selected + composite) across three targets and five model families.}
-  \label{ch3-fig-ablation}
-\end{figure}
-\FloatBarrier
-
-% ........................................................
-\subsection{Model Training and Selection}
-\label{ch3-subsec-models}
-% ........................................................
-
-Five model families are trained on each arm and each target.
-The models are: Logistic Regression, Random Forest, XGBoost, LightGBM, and CatBoost.
-All models use \texttt{class\_weight="balanced"} to handle class imbalance.
-An 80/20 stratified train-test split is applied once.
-Five-fold stratified cross-validation is run on the training portion.
-Both CV and held-out test metrics are reported to check for overfitting.
-
-The primary evaluation metric is \textbf{macro-averaged F1-score} (F1-macro).
-It computes F1 per class and averages without weighting by class size.
-This penalises a model equally for failing on the minority class and the majority class.
-For a $C$-class problem, F1-macro is:
-
-\begin{equation}
-\label{ch3-eqn-f1macro}
-  \text{F1-macro} \;=\; \frac{1}{C} \sum_{c=1}^{C}
-    \frac{2 \cdot P_c \cdot R_c}{P_c + R_c}
-\end{equation}
-
-where $P_c$ is precision for class $c$ and $R_c$ is recall for class $c$.
-For PPD\_binary ($C=2$), F1-macro treats the PPD-positive class and the PPD-negative class as equally important.
-For EPDS Result ($C=3$) and PHQ9 Result ($C=5$), all classes carry equal weight regardless of how many mothers fall in each.
-
-A second round of experiments (Step 7b) adds hyperparameter tuning via \texttt{RandomizedSearchCV} (20 iterations, 5 folds), a small MLP (three architectures), and a Stacking Ensemble (four tuned tree models with a Logistic Regression meta-learner).
-Figure~\ref{ch3-fig-advanced} summarises how the untuned baseline, tuned models, MLP, and Stacking Ensemble compare on each target.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=1.1\textwidth]{Images/fig6_advanced_modeling_comparison.jpg}
-  \caption{Comparison of baseline (untuned), tuned, MLP, and Stacking Ensemble models. The Stacking Ensemble achieves the highest PPD\_binary F1-macro but tuning gives only marginal and inconsistent gains overall.}
-  \label{ch3-fig-advanced}
-\end{figure}
-\FloatBarrier
-
-The adopted best model for PPD\_binary and EPDS Result is \textbf{Random Forest (Arm B, untuned)}.
-Random Forest is chosen over the Stacking Ensemble for interpretability.
-\texttt{shap.TreeExplainer} gives exact Shapley values for a single tree ensemble.
-Explaining a four-model stacking ensemble requires a slower, approximate method.
-The performance difference between Random Forest and the Stacking Ensemble was tested with McNemar's test ($p = 0.228$) and a bootstrap confidence interval test ($p = 0.074$).
-Neither test found a statistically significant difference.
-Figure~\ref{ch3-fig-rfvsstacking} shows this comparison.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.45\textwidth]{Images/fig10_rf_vs_stacking.jpg}
-  \caption{Random Forest vs Stacking Ensemble AUC on PPD\_binary holdout. McNemar's test ($p=0.228$) and bootstrap test ($p=0.074$) confirm no statistically significant accuracy difference.}
-  \label{ch3-fig-rfvsstacking}
-\end{figure}
-\FloatBarrier
-
-Algorithm~\ref{ch3-alg-stacking} shows the Stacking Ensemble construction used in Step~7b.
-Five tuned tree models act as base learners.
-Their out-of-fold predictions are concatenated into a meta-feature matrix.
-A Logistic Regression meta-learner is trained on that matrix.
-The entire procedure uses the same 80/20 split to keep it leakage-free.
-
-\begin{algorithm}[htbp]
-\caption{Stacking Ensemble Construction (PPD\_binary)}
-\label{ch3-alg-stacking}
-\begin{algorithmic}[1]
-\Require Training set $(X_{\text{train}}, y_{\text{train}})$, Test set $X_{\text{test}}$
-\Require Base learners $\mathcal{B} = \{\text{RF, XGB, LGBM, CatBoost, LR}\}$
-\Ensure Stacked predictions on $X_{\text{test}}$
-
-\State \textbf{Phase 1 — Out-of-Fold (OOF) meta-features}
-\For{each fold $k = 1, \ldots, 5$} \Comment{Same StratifiedKFold as cross-validation}
-  \State Split $X_{\text{train}}$ into inner train $T_k$ and OOF validation $V_k$
-  \For{each base learner $b \in \mathcal{B}$}
-    \State Train $b$ on $T_k$
-    \State Predict PPD-positive probability on $V_k$ $\to$ $\hat{p}^{(b)}_k$
-  \EndFor
-\EndFor
-\State Stack OOF predictions column-wise: $M_{\text{train}} \leftarrow [\hat{p}^{(b_1)}, \ldots, \hat{p}^{(b_5)}]$ \Comment{shape: $n_{\text{train}} \times 5$}
-
-\State \textbf{Phase 2 — Test meta-features}
-\For{each base learner $b \in \mathcal{B}$}
-  \State Retrain $b$ on full $X_{\text{train}}$
-  \State Predict on $X_{\text{test}}$ $\to$ $\hat{p}^{(b)}_{\text{test}}$
-\EndFor
-\State Stack test predictions: $M_{\text{test}} \leftarrow [\hat{p}^{(b_1)}_{\text{test}}, \ldots, \hat{p}^{(b_5)}_{\text{test}}]$ \Comment{shape: $n_{\text{test}} \times 5$}
-
-\State \textbf{Phase 3 — Meta-learner}
-\State Train Logistic Regression on $(M_{\text{train}}, y_{\text{train}})$
-\State Predict on $M_{\text{test}}$ $\to$ final stacking output
-
-\State \Return Stacking predictions on $X_{\text{test}}$
-\end{algorithmic}
-\end{algorithm}
-\FloatBarrier
-
-For the PHQ9 Result target, \textbf{Linear Regression on the continuous PHQ9 score, thresholded into the five official clinical bands}, is adopted instead of a direct classifier.
-This approach genuinely beats the direct classifier on all metrics (accuracy 0.344$\to$0.463, F1-macro 0.329$\to$0.426, QWK 0.548$\to$0.602).
-Figure~\ref{ch3-fig-ordinal} shows this comparison.
-
-The Quadratic Weighted Kappa (QWK) metric is defined as:
-
-\begin{equation}
-\label{ch3-eqn-qwk}
-  \text{QWK} \;=\; 1 \;-\;
-  \frac{\displaystyle\sum_{i,j} w_{ij}\,O_{ij}}
-       {\displaystyle\sum_{i,j} w_{ij}\,E_{ij}}
-\end{equation}
-
-where $O_{ij}$ is the observed count in confusion-matrix cell $(i,j)$, $E_{ij}$ is the expected count under independence, and the quadratic penalty weight is:
-
-\begin{equation}
-\label{ch3-eqn-qwk-weight}
-  w_{ij} \;=\; \frac{(i - j)^2}{(K - 1)^2}
-\end{equation}
-
-Here $K$ is the number of ordered classes (5 for PHQ9 Result, 3 for EPDS Result).
-A prediction that is one severity level away is penalised less than one that is two or more levels away.
-QWK = 1 means perfect agreement; QWK = 0 means agreement equal to random chance.
-This metric is appropriate for the PHQ9 target because the five severity classes follow a natural clinical order (Minimal, Mild, Moderate, Moderately Severe, Severe).
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=.85\textwidth]{Images/fig7_ordinal_regression_comparison.jpg}
-  \caption{Direct classifier vs Regression-then-Threshold for EPDS Result (left) and PHQ9 Result (right). The regression approach improves all three metrics for PHQ9 Result only.}
-  \label{ch3-fig-ordinal}
-\end{figure}
-\FloatBarrier
-
-% ........................................................
-\subsection{Threshold Calibration}
-\label{ch3-subsec-threshold}
-% ........................................................
-
-The default classification threshold of 0.5 is replaced by the \textbf{max-F1 threshold of 0.407} for PPD\_binary.
-This threshold is found by sweeping the precision-recall curve.
-It gives the same accuracy (0.775) but higher recall (0.700$\to$0.786) at a small precision cost.
-A ``screening threshold'' of 0.303 (recall $\geq 85\%$) is also documented for high-recall deployment contexts.
-Probability calibration via \texttt{CalibratedClassifierCV} (Platt scaling) reduces the Brier score from 0.1677 to 0.1667, confirming that the calibrated probabilities can be trusted as a patient-facing risk score.
-The Brier score measures the mean squared error between predicted probabilities and true binary labels:
-
-\begin{equation}
-\label{ch3-eqn-brier}
-  \text{BS} \;=\; \frac{1}{N} \sum_{i=1}^{N} \bigl(\hat{p}_i - y_i\bigr)^2
-\end{equation}
-
-where $\hat{p}_i$ is the model's predicted PPD-positive probability for mother $i$ and $y_i \in \{0, 1\}$ is the true label.
-A lower Brier score means the probabilities are more accurate.
-The maximum possible Brier score is 1.0 (always predicting the wrong extreme).
-A baseline that always predicts the class prior achieves approximately 0.25 for a balanced dataset.
-The model's calibrated Brier score of 0.1667 is well below this baseline.
-Figure~\ref{ch3-fig-threshold} shows the three operating points on the precision-recall curve.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.60\textwidth]{Images/precision_recall_curve.jpg}
-  \caption{Precision-recall curve for PPD\_binary. The three operating points are: default 0.5 (circle), max-F1 threshold 0.407 (triangle), and screening threshold 0.303 (square).}
-  \label{ch3-fig-threshold}
-\end{figure}
-\FloatBarrier
-
-% ........................................................
-\subsection{Multi-Angle Explainability}
-\label{ch3-subsec-shap}
-% ........................................................
-
-Five independent explainability analyses are applied to the chosen Random Forest model.
-
-\textbf{(a) Global SHAP importance.}
-SHAP (SHapley Additive exPlanations) values are computed on the held-out test set using \texttt{shap.TreeExplainer}.
-A beeswarm plot shows each feature's direction and magnitude across all test-set predictions.
-Figure~\ref{ch3-fig-shap-beeswarm} shows the beeswarm for PPD\_binary.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.75\textwidth]{Images/shap_beeswarm_PPD_binary.jpg}
-  \caption{SHAP beeswarm plot for PPD\_binary. Each dot is one test-set mother. Red means a high feature value; blue means a low value. Features are ranked by mean absolute SHAP value. Composite indices appear in the top four positions.}
-  \label{ch3-fig-shap-beeswarm}
-\end{figure}
-\FloatBarrier
-
-\textbf{(b) Before/after composite comparison.}
-SHAP is also computed on Arm A (no composites) to show directly which features the model relies on before and after the composite indices are added.
-
-\textbf{(c) SHAP-additive group importance.}
-One-hot dummy columns for the same survey question are summed to recover the importance of the original question.
-This uses the additivity property of SHAP values.
-
-\textbf{(d) SHAP pairwise interaction values.}
-\texttt{shap\_interaction\_values()} decomposes each prediction into main effects and pairwise interaction effects.
-The analysis is restricted to each target's top-20 features to keep computation feasible.
-Figure~\ref{ch3-fig-interaction} shows the interaction heatmap for PPD\_binary.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.72\textwidth]{Images/shap_interaction_heatmap_PPD_binary.jpg}
-  \caption{SHAP pairwise interaction heatmap for PPD\_binary (top-20 features). The strongest interaction is between \textit{Angry after latest childbirth} and \textit{Social\_Support\_Index\_Weighted}.}
-  \label{ch3-fig-interaction}
-\end{figure}
-\FloatBarrier
-
-\textbf{(e) Error analysis.}
-The test set is split into true positives (TP), false negatives (FN), false positives (FP), and true negatives (TN).
-Mann-Whitney U tests compare FN vs TP and FP vs TN on each composite index.
-This identifies which mothers the model misses and why.
-Figure~\ref{ch3-fig-error} shows the composite profiles for each error group.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\textwidth]{Images/fig11_error_analysis.jpg}
-  \caption{Composite index profiles for TP vs FN (left panel) and FP vs TN (right panel). Asterisks mark significant Mann-Whitney U differences ($p < 0.05$). The model's misses are concentrated in mothers with atypically low mental-health risk scores.}
-  \label{ch3-fig-error}
-\end{figure}
-\FloatBarrier
-
-% ........................................................
-\subsection{Unsupervised Cluster Validation}
-\label{ch3-subsec-cluster}
-% ........................................................
-
-K-Means clustering is applied to a compact 6-feature space: the 4 weighted composite indices, Age, and Number of latest pregnancy.
-No PPD label is used in the clustering step.
-The best number of clusters ($K$) is chosen by silhouette score (tried $K=2$ through $K=6$).
-After the clusters are found, PPD\_binary prevalence in each cluster is tested by chi-square.
-This checks whether the natural groupings from composite indices alone align with real depression rates.
-Figure~\ref{ch3-fig-cluster} shows the 2D PCA scatter of the three clusters and Figure~\ref{ch3-fig-cluster-bar} shows PPD prevalence per cluster.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.69\textwidth]{Images/cluster_pca_scatter.jpg}
-  \caption{PCA scatter of the three K-Means clusters (K=3, best silhouette). Cluster 0 (high mental-health risk, low support) has 66.4\% PPD prevalence. Cluster 1 (low risk, high support, high economic stability) has 18.6\%.}
-  \label{ch3-fig-cluster}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.55\textwidth]{Images/fig4_cluster_prevalence.jpg}
-  \caption{PPD\_binary prevalence across the three unsupervised clusters (chi-square $p = 3.73 \times 10^{-28}$). The 3.6$\times$ spread between Cluster~0 and Cluster~1 confirms the composite indices capture real, clinically meaningful risk structure.}
-  \label{ch3-fig-cluster-bar}
-\end{figure}
-\FloatBarrier
-
-% --------------------------------------------------------
-\section{Dataset Description and Implementation Details}
+\section{Dataset Description}
 \label{ch3-sec-dataset}
 % --------------------------------------------------------
 
-\subsection{Dataset}
-\label{ch3-subsec-data}
+The dataset used in this thesis is a survey-based dataset of Bangladeshi postpartum mothers, collected using a structured questionnaire. The dataset contains responses from \textbf{800 mothers} across \textbf{70 columns}. After removing the serial number column (\texttt{sr}), 69 usable columns remain.
 
-The dataset used in this thesis is the ``Data for Postpartum Depression Prediction in Bangladesh'' dataset, available on Mendeley.
-It contains survey responses from $n = 800$ postpartum mothers.
-The original dataset has 70 columns.
-After removing the serial-number index column, 69 usable columns remain.
+The questionnaire covers six main types of information: background (demographic, familial, personal health, and neonatal) features that describe a mother's social, economic, and health context; screening items consisting of the 10 EPDS and 9 PHQ-9 questionnaire questions; and target/score columns including the EPDS Score, EPDS Result, PHQ-9 Score, and PPD\_binary.
 
-Table~\ref{ch3-tbl-distribution} summarises the class distribution for all three prediction targets.
+Table~\ref{ch3-tbl-dataset} summarises the basic properties of the dataset.
 
 \begin{table}[htbp]
 \centering
 \small
-\begin{tabular}{|>{\raggedright\arraybackslash}p{3.5cm}|>{\raggedright\arraybackslash}p{5.5cm}|>{\centering\arraybackslash}p{3.0cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.30\linewidth}|>{\raggedright\arraybackslash}p{0.56\linewidth}|}
 \hline
-\textbf{Target} & \textbf{Classes} & \textbf{Counts} \\
+\textbf{Property} & \textbf{Value} \\
 \hline
-PPD\_binary & Negative (EPDS $<$ 13) / Positive (EPDS $\geq$ 13) & 451 / 349 \\
+Total mothers & 800 \\
 \hline
-EPDS Result & Low / Medium / High & 247 / 204 / 349 \\
+Original columns & 70 (69 after removing serial number) \\
 \hline
-PHQ9 Result & Minimal / Mild / Moderate / Mod.\ Severe / Severe & 79 / 263 / 237 / 132 / 89 \\
+Background input features & 46 features across 4 categories \\
+\hline
+Screening items (EPDS + PHQ-9) & 19 questionnaire question columns \\
+\hline
+Selected optimal features (chi2+BE) & 17 (10 EPDS + 7 PHQ-9 items) \\
+\hline
+Primary target variable & EPDS Result (3 classes: Low, Medium, High) \\
+\hline
+Data collection method & Structured questionnaire survey \\
+\hline
+Population & Bangladeshi postpartum mothers \\
+\hline
+Platform for analysis & Google Colab \\
 \hline
 \end{tabular}
-\caption{Class distribution for all three prediction targets ($n=800$).}
-\label{ch3-tbl-distribution}
+\caption{Dataset summary.}
+\label{ch3-tbl-dataset}
 \end{table}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.48\textwidth]{Images/epds_class_distribution.jpg}
-  \hfill
-  \includegraphics[width=0.48\textwidth]{Images/phq9_class_distribution.jpg}
-  \caption{Class distribution for EPDS Result (left) and PHQ9 Result (right). The ``High'' EPDS band and the ``Mild'' PHQ9 band are the largest classes.}
-  \label{ch3-fig-distribution}
-\end{figure}
 \FloatBarrier
 
-\subsection{Preprocessing Steps}
-\label{ch3-subsec-preprocessing}
+\subsection{Target Variable}
+\label{ch3-subsec-target}
 
-The preprocessing pipeline covers four steps.
+The primary target variable used in this thesis is \textbf{EPDS Result}, a three-class categorical label derived from the EPDS Score. It classifies each mother into one of three risk categories:
 
-\textbf{Step 1: Typo and case-mismatch correction.}
-All free-text category values are standardised to a single consistent form.
-For example, ``Yes'', ``yes'', and ``YES'' are merged into one category.
+\begin{equation}
+\label{ch3-eqn-epdsresult}
+\text{EPDS Result} =
+\begin{cases}
+\text{Low}    & \text{if EPDS Score} \in [0, 9] \\
+\text{Medium} & \text{if EPDS Score} \in [10, 12] \\
+\text{High}   & \text{if EPDS Score} \in [13, 30]
+\end{cases}
+\end{equation}
 
-\textbf{Step 2: Structural missing value handling.}
-The ``Need for Support'' column had 167 missing values (20.9\%).
-Cross-tabulation against ``Received Support'' showed the missing pattern was not strong enough to infer a specific skip-logic value.
-All 167 missing cells are filled with a new ``Not Reported'' category.
+A score of 13 or higher on the EPDS indicates that the mother is at high risk for PPD; this is the standard clinical cut-off \cite{cox1987edinburgh}. The Medium band (10--12) is a clinical watch zone: these mothers are at elevated risk and require close monitoring even if they fall just below the full screening threshold. The Low band (0--9) represents mothers who are not currently at significant risk.
 
-\textbf{Step 3: Random missing value imputation.}
-Five columns had a small number of truly random missing values ($<5\%$ each).
-These are filled with the column mode.
-A binary flag column is added for each, indicating which rows were imputed.
+During data cleaning, 43 out of 800 rows were found to have a mismatch between the EPDS Score and the EPDS Result label in the original dataset. These were corrected by recomputing the EPDS Result directly from the EPDS Score using the cut-off points in Equation~\ref{ch3-eqn-epdsresult}.
 
-\textbf{Step 4: Label recomputation.}
-EPDS Result and PHQ9 Result are recomputed directly from the raw score columns using the official clinical cut-off definitions.
-This corrects any minor labelling inconsistencies in the original file.
-After all steps, the final clean dataset has shape $(800, 75)$ with zero missing values.
+The \textbf{PHQ-9 score} is used as a secondary reference measure. The PHQ-9 severity bands are defined as shown in Table~\ref{ch3-tbl-phq9}.
 
-\subsection{Experimental Setup}
-\label{ch3-subsec-setup}
-
-All experiments are implemented in \textbf{Python 3.10}.
-The key libraries are: \texttt{scikit-learn 1.3} for all classifiers, \texttt{XGBoost}, \texttt{LightGBM}, and \texttt{CatBoost} for gradient boosting, \texttt{shap 0.43} for SHAP analysis, \texttt{pandas} and \texttt{numpy} for data handling, and \texttt{matplotlib} and \texttt{seaborn} for visualisation.
-All experiments are run on a standard personal computer with no GPU requirement.
-Every random seed is fixed to 42 for full reproducibility.
-The full code is organised as 23 numbered scripts (scripts 01 through 23) in the \texttt{codes/} folder.
-
-% ........................................................
-\subsection{Rigorous Robustness and Sensitivity Experiments}
-\label{ch3-subsec-robustness}
-% ........................................................
-
-After the core pipeline was confirmed, six additional experiments were run to test whether any alternative design choice could meaningfully improve results.
-All results are reported honestly, including the ones that did not help.
-
-\textbf{Script 12 — CatBoost native categorical handling and repeated cross-validation.}
-Part A compared CatBoost with its native categorical feature handling (59 features, no one-hot) against the standard one-hot pipeline (116 features).
-No universal winner was found.
-Native CatBoost won on PHQ9 holdout (F1 0.400 vs 0.336) but was roughly equal on the other two targets.
-This is a simplicity finding: comparable accuracy can be achieved with far fewer engineered columns.
-Part B re-ran the Arm A versus Arm B paired significance test using \texttt{RepeatedStratifiedKFold} (5 folds $\times$ 5 repeats = 25 observations).
-With higher statistical power, 2 out of 15 comparisons reached significance (EPDS Result $\times$ XGBoost, $p = 0.0008$; PHQ9 Result $\times$ LightGBM, $p = 0.002$).
-This confirmed that the earlier ``0/30 significant'' result from the 5-fold test was a low-power artifact.
-The composite feature effect is real, but small and most consistent for boosting models.
-
-\textbf{Script 13 — Logistic Regression learned composite weights.}
-The chi-square-based sub-feature weights were replaced with weights learned from Logistic Regression (the model's own coefficients for each sub-feature).
-Both weighting methods passed 12/12 association tests.
-Predictive differences were small and inconsistent across targets.
-LR-learned weights won for EPDS Result (CV F1 0.590 vs 0.578) and PHQ9 Result (0.371 vs 0.365), but chi-square weights won for PPD\_binary (0.753 vs 0.746).
-No universal winner was found.
-The chi-square weights were kept as the final choice.
-Importantly, the LR coefficients also independently confirmed the counter-intuitive direction of the Abuse sub-feature (positive coefficient for ``No'' answers), which is a third independent method confirming that finding is a genuine data pattern.
-
-\textbf{Script 14 — SMOTE oversampling and MICE imputation.}
-Part A tested SMOTENC synthetic minority oversampling (fold-safe, training-portion only) against class-weight-only balancing.
-SMOTE gave a tiny gain for EPDS Result (+0.004) and PPD\_binary (+0.005), but made PHQ9 Result worse ($-0.017$) — the exact target it was meant to help.
-The cause is the curse of dimensionality: with 112 mostly-binary one-hot features, nearest-neighbour-based synthetic samples become unrealistic.
-SMOTE was rejected.
-Part B tested iterative MICE-style imputation against the original mode-fill for the five randomly-missing columns.
-MICE changed up to 28 of 28 values for income columns but produced no meaningful difference in downstream PPD\_binary CV F1-macro (mode-fill $0.654 \pm 0.058$ vs MICE $0.647 \pm 0.064$, well within noise).
-Mode-fill was kept.
-
-\textbf{Script 15 — Age features and group-level permutation importance.}
-Part A added Age$^2$ and clinical Age bands to Arm B.
-Age and Age$^2$ were not significantly associated with any target ($p > 0.10$).
-Adding them changed CV F1-macro by less than 0.005 on every target.
-They were not adopted.
-Part B computed group-level permutation importance by shuffling all one-hot dummies for the same original question together.
-This revealed variables that standard per-dummy importance understated.
-For PHQ9 Result, ``Age of immediate older children'' (grouped rank \#2) and ``Disease before pregnancy'' (grouped rank \#3) did not appear in the standard top-15 at all.
-For EPDS Result, ``Feeling for regular activities'' jumped from individual rank \#7 to grouped rank \#1.
-These variables are discussed in Chapter~4 as directions for future composite index design.
-
-\textbf{Script 16 — SHAP arm comparison and SHAP-additive group importance.}
-Part A re-ran SHAP on Arm A (no composites) using the same train/test split as Script 09.
-Placing the Arm A and Arm B SHAP rankings side by side showed that composite indices rise into the top four positions only once they are available.
-For PHQ9 Result specifically, \textit{Social\_Support\_Index\_Weighted} became the single most important feature after composites were added.
-Part B computed group-level SHAP importance by summing SHAP values across all one-hot dummies for the same question.
-The result mostly agreed with the permutation-based grouping from Script 15 for the top names.
-One notable disagreement was ``Age of immediate older children'' for PHQ9 Result, which ranked \#2 by permutation but only \#14 by SHAP-additive sum.
-Script 17's interaction analysis later explained why: this feature's contribution is interaction-driven (it acts mainly through the Social Support Index), which permutation importance captures but SHAP-additive summing does not.
-
-\textbf{Script 20 — Closing-loop feature augmentation test.}
-After Scripts 17 and 18 discovered strong SHAP interaction pairs and meaningful K-Means clusters, this experiment tested whether explicitly adding those discoveries as new input features would improve model performance.
-Four feature configurations were compared: baseline Arm B, Arm B plus interaction pair flags, Arm B plus K-Means cluster ID, and Arm B plus both.
-Figure~\ref{ch3-fig-closingloop} shows the results.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.70\textwidth]{Images/fig9_closing_loop_test.jpg}
-  \caption{Closing-loop test: CV F1-macro for four feature configurations across three targets. Every delta between the best configuration and the baseline is smaller than that target's own fold-to-fold standard deviation, confirming no real improvement.}
-  \label{ch3-fig-closingloop}
-\end{figure}
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{|c|l|}
+\hline
+\textbf{PHQ-9 Score Range} & \textbf{Severity Level} \\
+\hline
+0 -- 4 & Minimal \\
+\hline
+5 -- 9 & Mild \\
+\hline
+10 -- 14 & Moderate \\
+\hline
+15 -- 19 & Moderately Severe \\
+\hline
+20 -- 27 & Severe \\
+\hline
+\end{tabular}
+\caption{PHQ-9 score interpretation bands.}
+\label{ch3-tbl-phq9}
+\end{table}
 \FloatBarrier
 
-Every delta was smaller than the fold-to-fold standard deviation of the baseline (EPDS $+0.005$ vs std $0.035$; PPD\_binary $+0.007$ vs std $0.027$; PHQ9 $+0.000$ vs std $0.042$).
-None of the four configurations produced a real improvement.
-The reason is that Random Forest and tree ensembles already learn pairwise feature interactions internally through tree splits.
-The cluster ID is a lossy, information-reducing transformation of the four composite indices that are already present as continuous inputs.
-The current best models are confirmed to be near the practical performance ceiling for this feature set.
+% --------------------------------------------------------
+\section{Data Cleaning and Preprocessing}
+\label{ch3-sec-cleaning}
+% --------------------------------------------------------
 
-\textbf{Script 21 — Statistical reliability tests.}
-Four formal statistical tests were run to support the thesis's validity claims.
+The raw dataset contained several inconsistencies and data quality issues that needed to be fixed before any analysis could be done. All cleaning steps were applied in order and the final cleaned dataset was saved as \texttt{PPD\_data\_updated\_v34.csv}.
+
+\subsection{Column Renaming and Text Standardisation}
+
+Some column names had typos. For example, ``Recieved Support'' was renamed to ``Received Support''. All column names were stripped of extra whitespace. For all text-type (object) columns, values were also stripped of extra spaces and leading/trailing characters.
+
+\subsection{Category Value Fixes}
+
+Many categorical columns had inconsistent values caused by different spellings of the same category. These were fixed one by one:
+
+\begin{itemize}
+    \item \textbf{Education Level:} Different spellings of the same education category (e.g., ``S.S.C'' and ``SSC'') were standardised to one form.
+    \item \textbf{Husband's education level:} Same type of spelling inconsistencies were corrected.
+    \item \textbf{Total children:} The value ``More than two'' was renamed to ``More than Two'' for consistent capitalisation.
+    \item \textbf{History of pregnancy loss:} ``Still-born delivery'' was corrected to ``Still-born Delivery''.
+    \item \textbf{Disease before pregnancy:} One row had the value \texttt{`1.2'}, which is clearly a data entry error. This was replaced with \texttt{NaN}.
+    \item \textbf{Occupation columns:} ``House wife'' (with a space) was standardised to ``Housewife'' in both the ``Occupation before latest pregnancy'' and ``Occupation After Your Latest Childbirth'' columns.
+    \item \textbf{Other columns:} A batch \texttt{df.replace()} operation fixed remaining inconsistent labels across multiple columns.
+    \item \textbf{Column name and value stripping:} All column names and string values were stripped of any extra whitespace.
+\end{itemize}
+
+\subsection{Duplicate Check}
+
+After all value fixes, the dataset was checked for duplicate rows:
+
+\begin{lstlisting}[language=Python, caption={Duplicate row check after cleaning.}]
+duplicate_count = df.duplicated().sum()
+print("Duplicate rows:", duplicate_count)
+# Output: Duplicate rows: 0
+# Shape after removing duplicates: (800, 69)
+\end{lstlisting}
+
+No duplicate rows were found. The dataset shape remained (800, 69).
+
+\subsection{EPDS Label Audit}
+
+A cross-check was done between the EPDS Score and the EPDS Result column to find any labelling inconsistencies:
+
+\begin{lstlisting}[language=Python, caption={EPDS audit: check score-label consistency.}]
+# Output:
+# [EPDS AUDIT] 43 / 800 rows had inconsistent labels.
+# [PHQ9 AUDIT] 0 / 800 rows had inconsistent labels.
+\end{lstlisting}
+
+43 out of 800 rows had a mismatch between their EPDS Score and their EPDS Result label. These were corrected by recomputing the EPDS Result directly from the score using the cut-off points in Equation~\ref{ch3-eqn-epdsresult}. No inconsistencies were found in PHQ-9.
+
+% --------------------------------------------------------
+\section{Feature Categorization}
+\label{ch3-sec-categories}
+% --------------------------------------------------------
+
+All 69 columns (after removing the serial number) were grouped into six categories based on what type of information they represent. This categorization is central to the analysis because one objective is to compare the four background categories against the selected EPDS and PHQ-9 items, to understand which type of information is more predictive.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.22\linewidth}|>{\centering\arraybackslash}p{0.07\linewidth}|>{\raggedright\arraybackslash}p{0.55\linewidth}|}
+\hline
+\textbf{Category} & \textbf{Count} & \textbf{Example Features} \\
+\hline
+Demographic & 8 & Age, Education Level, Husband's education, Occupation, Income, Residence \\
+\hline
+Familial & 9 & Family type, Marital status, Total children, Trust and share feelings, Abuse, Anger after childbirth, Feeling about motherhood \\
+\hline
+Personal Health & 8 & Disease before pregnancy, History of depression, History of anxiety, Depression during pregnancy (PHQ2) \\
+\hline
+Neonatal Health & 21 & Delivery method, Birth complications, Infant health status, Received Support, Need for Support \\
+\hline
+Screening Items & 19 & All EPDS question items (10) + all PHQ-9 question items (9) \\
+\hline
+Target / Score & 5 & EPDS Score, EPDS Result, PHQ9 Score, PHQ9 Result, PPD\_binary \\
+\hline
+\textbf{Total} & \textbf{70} & \\
+\hline
+\end{tabular}
+\caption{Feature category mapping (all 70 columns).}
+\label{ch3-tbl-categories}
+\end{table}
+\FloatBarrier
+
+The \textbf{Target/Score} category is excluded from model inputs; these are the labels and scores used as prediction targets, not input features. The \textbf{Screening Items} category contains the 19 EPDS and PHQ-9 questionnaire question columns that are the candidates for feature selection (Section~\ref{ch3-sec-featuresel}). The \textbf{four background categories} --- Demographic, Familial, Personal Health, and Neonatal Health --- together give \textbf{46 input features} and are tested separately for comparison.
+
+% --------------------------------------------------------
+\section{Encoding}
+\label{ch3-sec-encoding}
+% --------------------------------------------------------
+
+Before training any machine learning model, all categorical columns were converted into numbers using \texttt{LabelEncoder} from scikit-learn. This was applied to every column that had text (object-type) values:
+
+\begin{lstlisting}[language=Python, caption={Label encoding of all categorical columns.}]
+from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+for col in df.select_dtypes(include='object').columns:
+    df[col] = le.fit_transform(df[col].astype(str))
+\end{lstlisting}
+
+After encoding, all values in the dataset are integers. This allows all 15 models to work with the data without errors.
+
+% --------------------------------------------------------
+\section{Feature Selection: Chi-Square Analysis and Backward Elimination}
+\label{ch3-sec-featuresel}
+% --------------------------------------------------------
+
+A Chi-square feature ranking followed by backward elimination was applied to identify the most predictive subset of questionnaire items for the EPDS Result target. This is a key novelty of this thesis: it identifies which specific EPDS and PHQ-9 items are most informative, reducing the full set of 65 candidate features to a compact and optimal 17-feature subset.
+
+\subsection{Chi-Square Feature Ranking}
+
+Chi-square ($\chi^2$) tests were computed between each of the 65 input features (all columns except Target/Score) and the EPDS Result target:
+
+\begin{lstlisting}[language=Python, caption={Chi-square ranking of all features.}]
+from sklearn.feature_selection import chi2, SelectKBest
+
+X = df_encoded.drop(columns=['EPDS Result', 'EPDS Score',
+                              'PHQ9 Score', 'PHQ9 Result', 'PPD_binary'])
+y = df_encoded['EPDS Result']
+
+selector = SelectKBest(chi2, k='all')
+selector.fit(X, y)
+
+chi2_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Chi2 Score': selector.scores_,
+    'P-Value': selector.pvalues_
+}).sort_values('Chi2 Score', ascending=False)
+\end{lstlisting}
+
+The Chi-square analysis ranked all 65 features by their association with the EPDS Result target. EPDS questionnaire items (such as ``You have felt sad or miserable'', ``You have been so unhappy that you have been crying'') received the highest Chi-square scores, indicating they carry the most information about PPD risk classification. Safe background features like ``Occupation before latest pregnancy'' and ``Received Support'' ranked much lower but were retained as candidates for the backward elimination.
+
+\subsection{Backward Elimination with Random Forest and Gradient Boosting}
+
+A backward elimination experiment was then run. Starting from all 65 features, the feature with the lowest Chi-square score was removed one at a time. At each step, both a \textbf{Random Forest} and a \textbf{Gradient Boosting} model were trained and tested using 5-fold cross-validation on the EPDS Result target. The use of two models ensures the feature selection result is not dependent on any single algorithm. This process identified that the best cross-validation accuracy was reached when \textbf{17 features} remained (at elimination step 48 out of 64 total possible steps):
+
+\begin{itemize}
+    \item \textbf{Best CV accuracy: 0.9262 ($\pm$ 0.0072)} (Gradient Boosting)
+    \item \textbf{Best F1 score (macro): approximately 0.91}
+    \item \textbf{Features remaining: 17}
+\end{itemize}
+
+\subsection{The 17 Selected Features}
+
+When the 17 optimal features were examined, \textbf{all 17 were EPDS or PHQ-9 questionnaire items}: 10 EPDS items and 7 PHQ-9 items. This finding confirms that the questionnaire items are the most informative features for PPD risk classification. The Chi-square backward elimination has identified the specific subset of screening items that, together, give the best predictive performance with the fewest features.
+
+The 17 selected features include items such as:
+\begin{itemize}
+    \item ``You have been so unhappy that you have been crying'' (EPDS)
+    \item ``You have felt scared or panicky for no good reason'' (EPDS)
+    \item ``You have felt sad or miserable'' (EPDS)
+    \item ``Feeling down, depressed, or hopeless'' (PHQ-9)
+    \item ``You have been able to laugh and see the funny side of things'' (EPDS)
+    \item ``Thoughts that you would be better off dead, or of hurting yourself'' (PHQ-9)
+    \item (and 11 more EPDS/PHQ-9 items)
+\end{itemize}
+
+These 17 items are the validated input feature set for the main model comparison and SHAP analysis in this thesis. The full list is saved in \texttt{chi2\_optimal\_features.txt}.
+
+The backward elimination also confirmed that the four background categories (Demographic, Familial, Personal Health, Neonatal Health) rank below all screening items in predictive power. These categories are tested separately in Section~\ref{ch3-subsec-category} to measure their standalone contribution.
+
+% --------------------------------------------------------
+\section{Machine Learning Model Comparison}
+\label{ch3-sec-models}
+% --------------------------------------------------------
+
+\subsection{Models Used}
+
+Fifteen models were trained and compared. These include both traditional machine learning models and deep learning models:
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{|>{\centering\arraybackslash}p{0.05\linewidth}|>{\raggedright\arraybackslash}p{0.35\linewidth}|>{\raggedright\arraybackslash}p{0.28\linewidth}|>{\centering\arraybackslash}p{0.15\linewidth}|}
+\hline
+\textbf{\#} & \textbf{Model} & \textbf{Type} & \textbf{CV Acc.} \\
+\hline
+1  & Gradient Boosting        & Traditional ML (Ensemble) & \textbf{0.926} \\
+2  & LightGBM                 & Traditional ML (Ensemble) & $\sim$0.920 \\
+3  & XGBoost                  & Traditional ML (Ensemble) & $\sim$0.918 \\
+4  & Hist Gradient Boosting   & Traditional ML (Ensemble) & $\sim$0.916 \\
+5  & Random Forest            & Traditional ML (Ensemble) & $\sim$0.912 \\
+6  & CatBoost                 & Traditional ML (Ensemble) & $\sim$0.910 \\
+7  & Extra Trees              & Traditional ML (Ensemble) & $\sim$0.908 \\
+8  & AdaBoost                 & Traditional ML (Ensemble) & $\sim$0.890 \\
+9  & Decision Tree            & Traditional ML            & $\sim$0.895 \\
+10 & SVM (Support Vector Machine) & Traditional ML       & $\sim$0.875 \\
+11 & KNN (K-Nearest Neighbors) & Traditional ML          & $\sim$0.865 \\
+12 & Logistic Regression      & Traditional ML            & $\sim$0.858 \\
+13 & 1D CNN                   & Deep Learning             & $\sim$0.900 \\
+14 & MLP (Multilayer Perceptron) & Deep Learning          & $\sim$0.885 \\
+15 & Deep MLP (Deeper architecture) & Deep Learning      & $\sim$0.880 \\
+\hline
+\end{tabular}
+\caption{All 15 models compared in this thesis with approximate CV accuracy on the 17 selected features, EPDS Result target.}
+\label{ch3-tbl-models}
+\end{table}
+\FloatBarrier
+
+\subsection{Training Setup}
+
+All models were trained using \textbf{5-fold stratified cross-validation} on the \textbf{EPDS Result} target (three classes: Low, Medium, High) using the \textbf{17 selected features}. Stratified folds ensure that all three EPDS Result classes are represented in approximately equal proportions in each fold.
+
+\begin{lstlisting}[language=Python, caption={5-fold cross-validation setup on EPDS Result.}]
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+X = df_encoded[chi2_optimal_features]   # 17 selected features
+y = df_encoded['EPDS Result']            # 3-class target
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+for name, model in models.items():
+    scores = cross_val_score(model, X, y, cv=cv, scoring='accuracy')
+    f1 = cross_val_score(model, X, y, cv=cv, scoring='f1_macro')
+    print(f"{name}: Acc={scores.mean():.3f}, F1={f1.mean():.3f}")
+\end{lstlisting}
+
+\subsection{Evaluation Metrics}
+
+The main evaluation metrics used are:
+\begin{itemize}
+    \item \textbf{Accuracy:} The proportion of correct predictions across all three EPDS Result classes.
+    \item \textbf{F1 Score (macro):} The harmonic mean of precision and recall, averaged equally across all three classes.
+    \item \textbf{Confusion Matrix:} Used to inspect true and false predictions for each class.
+\end{itemize}
+
+\subsection{Category-wise Model Training}
+\label{ch3-subsec-category}
+
+In addition to training on the 17 selected screening features, each of the four background categories and the full Screening Items category were also tested separately with Gradient Boosting to measure standalone predictive power:
 
 \begin{enumerate}
-  \item \textbf{Cronbach's alpha (internal consistency):} computed for each of the four composite indices using their sub-feature ordinal scores.
-  Results: ESI = 0.214, SSI = 0.456, MHRI = 0.298, NSI = 0.343.
-  All values are below the conventional 0.70 threshold.
-  This is expected and does not indicate a design flaw.
-  The four indices are \emph{formative} indices, not \emph{reflective} psychometric scales.
-  A reflective scale (such as EPDS itself) measures one single latent trait with multiple redundant questions that should correlate strongly, so high internal consistency is both expected and required.
-  A formative index, by contrast, aggregates distinct causal drivers that together constitute a risk domain.
-  ESI combines income level, household size, and financial dependency: these sub-features do not measure the same thing, so there is no reason they should correlate.
-  SSI combines partner support, family support, and social isolation: a mother can have strong partner support but poor family support, so again low correlation between sub-features is normal.
-  The correct validity criterion for a formative index is whether each sub-feature independently predicts the outcome, not whether the sub-features predict each other.
-  All 24 sub-features in the four indices passed the chi-square independence test against PPD\_binary at $p < 0.05$, and all four indices appear in every SHAP top-10 list.
-  The 24/24 association-test significance results and the SHAP rankings are the primary evidence for validity, not internal consistency.
-
-  \item \textbf{Variance Inflation Factor (VIF):} computed among the four weighted composite indices.
-  All four VIF values were below 1.4.
-  This confirms there is no harmful multicollinearity among the indices when used together as model inputs.
-
-  \item \textbf{McNemar's test (RF vs Stacking Ensemble):} compared the per-sample predictions of Random Forest and the Stacking Ensemble on the same held-out test set.
-  Result: $\chi^2 = 1.45$, $p = 0.228$.
-  The difference was not statistically significant.
-  This formally justifies keeping the simpler, more explainable Random Forest over the Stacking Ensemble.
-
-  \item \textbf{Bootstrap confidence interval:} 2000 bootstrap resamples were drawn from the same test set to estimate the distribution of the F1-macro difference between Random Forest and Stacking Ensemble.
-  Result: bootstrap $p = 0.074$ (two-sided).
-  This is consistent with McNemar's finding: no statistically confident advantage for the Stacking Ensemble over Random Forest.
+    \item Train on Demographic features only (8 features)
+    \item Train on Familial features only (9 features)
+    \item Train on Personal Health features only (8 features)
+    \item Train on Neonatal Health features only (21 features)
+    \item Train on Screening Items only (19 features) --- all 19 items, not just the 17 selected
 \end{enumerate}
 
-% --------------------------------------------------------
-\section*{Algorithm: Composite Risk Index Weight Computation}
-\label{ch3-alg-sec}
-% --------------------------------------------------------
-
-Algorithm~\ref{ch3-alg-composite} shows how chi-square weights are computed and applied to produce each composite index.
-
-\begin{algorithm}[htbp]
-\caption{Chi-Square Weighted Composite Risk Index Computation}
-\label{ch3-alg-composite}
-\algnewcommand\Input{\textbf{Input:}\space}
-\algnewcommand\Output{\textbf{Output:}\space}
-\begin{algorithmic}[1]
-\State \Input Dataset $D$; target \texttt{PPD\_binary}; domain sub-feature sets $\{F_d\}$
-\State \Output Four composite indices $\{INDEX_d\}$ for every row $i$
-\For{each domain $d \in \{\text{ESI, SSI, MHRI, NSI}\}$}
-  \For{each sub-feature $f \in F_d$}
-    \State Map $f$'s raw answers to ordinal scores $s_{i,f} \in [0,1]$ using the verified direction map
-    \State Compute chi-square p-value: $p_f \leftarrow \chi^2\_\text{test}(f,\;\texttt{PPD\_binary})$
-    \State Compute raw weight: $\tilde{w}_f \leftarrow -\log_{10}(p_f)$
-  \EndFor
-  \State Normalise: $w_f \leftarrow \tilde{w}_f \;/\; \sum_{j \in F_d} \tilde{w}_j$ \quad (so $\sum w_f = 1$)
-  \For{each row $i$}
-    \State $\text{INDEX}_d(i) \leftarrow 10 \times \sum_{f \in F_d} w_f \cdot s_{i,f}$
-  \EndFor
-\EndFor
-\State \textbf{Validate:} run ANOVA and Kruskal-Wallis on every index vs every target
-\State \textbf{Assert:} all 24 tests are significant ($p < 0.05$) before proceeding
-\end{algorithmic}
-\end{algorithm}
+The purpose of the category-wise experiment is to answer Research Objective~1: how does each background category compare against the selected screening items for PPD risk classification?
 
 % --------------------------------------------------------
-\section*{Algorithm: Leakage-Safe Nested Feature Selection (Arm C)}
-\label{ch3-alg-armc-sec}
+\section{SHAP Explainability Analysis}
+\label{ch3-sec-shap}
 % --------------------------------------------------------
 
-Algorithm~\ref{ch3-alg-armc} describes the nested in-fold feature selection used in Arm~C.
-Standard feature selection on the full training set before splitting introduces selection-bias leakage.
-This procedure avoids that by re-deriving the selected feature set inside every cross-validation fold.
+After identifying Gradient Boosting as the best model, a SHAP analysis was conducted to explain which of the 17 selected questionnaire items drive predictions for each EPDS risk class (Low, Medium, High). This is Research Objective~4.
 
-\begin{algorithm}[htbp]
-\caption{Leakage-Safe Nested Feature Selection for Arm~C}
-\label{ch3-alg-armc}
-\algnewcommand\Input{\textbf{Input:}\space}
-\algnewcommand\Output{\textbf{Output:}\space}
-\begin{algorithmic}[1]
-\State \Input Full training set $D_{\text{train}}$ (80\% of $n=800$); $K=5$ stratified folds; target $y$
-\State \Output Fold-level CV metrics without selection-bias leakage
-\For{each fold $k = 1, \ldots, 5$}
-  \State Split $D_{\text{train}}$ into $D_{\text{tr}}^{(k)}$ (inner train) and $D_{\text{val}}^{(k)}$ (validation)
-  \State Train a Random Forest $\mathcal{F}^{(k)}$ on $D_{\text{tr}}^{(k)}$ using all 116 Arm-B features
-  \State Extract feature importances $\mathbf{imp}^{(k)}$ from $\mathcal{F}^{(k)}$
-  \State Select top-30 features: $S^{(k)} \leftarrow \text{argtop}_{30}(\mathbf{imp}^{(k)})$
-  \Comment{Selection uses only $D_{\text{tr}}^{(k)}$, never $D_{\text{val}}^{(k)}$}
-  \State Retrain a new model $\hat{\mathcal{F}}^{(k)}$ on $D_{\text{tr}}^{(k)}$ restricted to $S^{(k)}$
-  \State Evaluate $\hat{\mathcal{F}}^{(k)}$ on $D_{\text{val}}^{(k)}$ restricted to $S^{(k)}$
-  \State Record fold metrics: $\text{F1}^{(k)}$, $\text{AUC}^{(k)}$
-\EndFor
-\State $\overline{\text{F1}} \leftarrow \frac{1}{5}\sum_{k=1}^{5} \text{F1}^{(k)}$ \Comment{Unbiased estimate of Arm-C generalisation}
-\end{algorithmic}
-\end{algorithm}
+\subsection{Why SHAP?}
 
-Each fold independently selects its own 30 features.
-The validation fold is never seen during that fold's feature selection.
-This prevents the model from having any indirect knowledge of the validation labels during selection.
+SHAP (SHapley Additive exPlanations) is a game-theory-based method that assigns each input feature a contribution score for a specific prediction. Unlike simple feature importance rankings, SHAP explains the direction and magnitude of each feature's effect for each individual prediction, making it possible to understand not just which features matter, but how they push predictions toward each risk class.
 
-% --------------------------------------------------------
-\section*{Code Example: Random Forest Training on Arm B}
-\label{ch3-code-sec}
-% --------------------------------------------------------
+\subsection{Method: Permutation Explainer}
 
-The listing below shows the core Random Forest training call used in this thesis.
-The full pipeline (data loading, cross-validation loop, and metric reporting) is in \texttt{codes/07\_modeling.py}.
+A \textbf{Permutation Explainer} was used instead of the default Tree Explainer because it works model-agnostically and is more robust for multi-class classification. The explainer was run on a sample of 300 test instances:
 
-\begin{lstlisting}[language=Python,
-  caption={Random Forest classifier training with balanced class weights (Arm B, PPD\_binary target). Full code in \texttt{codes/07\_modeling.py}.},
-  label={ch3-lst-rf},
-  breaklines=true, columns=flexible]
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold, cross_validate
-from sklearn.metrics import make_scorer, f1_score
-
-# Arm B: 112 one-hot raw features + 4 composite indices = 116 total
-X = model_ready_df[arm_b_columns]  # shape (800, 116)
-y = model_ready_df["PPD_binary"]   # 0 = negative, 1 = PPD positive
-
-rf = RandomForestClassifier(
-    n_estimators=300,
-    class_weight="balanced",   # handles 451/349 imbalance without SMOTE
-    random_state=42
-)
-
-cv     = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-scorer = make_scorer(f1_score, average="macro")
-
-results = cross_validate(
-    rf, X, y, cv=cv,
-    scoring={"f1_macro": scorer, "roc_auc": "roc_auc"},
-    return_train_score=False
-)
-
-print(f"CV F1-macro : {results['test_f1_macro'].mean():.4f}")
-print(f"CV ROC-AUC  : {results['test_roc_auc'].mean():.4f}")
-\end{lstlisting}
-
-The second listing below shows the chi-square weighting and composite index computation.
-This is the core implementation of Equations~\ref{ch3-eqn-weight} and~\ref{ch3-eqn-index}.
-The full code including all four domain definitions is in \texttt{codes/04\_composite\_indices.py}.
-
-\begin{lstlisting}[language=Python,
-  caption={Chi-square weight computation and composite index construction (SSI shown as example). Full code in \texttt{codes/04\_composite\_indices.py}.},
-  label={ch3-lst-composite},
-  breaklines=true, columns=flexible]
+\begin{lstlisting}[language=Python, caption={SHAP analysis with PermutationExplainer on GB model.}]
+import shap
 import numpy as np
-import pandas as pd
-from scipy.stats import chi2_contingency
 
-def chi_square_weights(df, features, target="PPD_binary"):
-    """Return normalised -log10(p) weights for sub-features in a domain."""
-    raw = {}
-    for f in features:
-        ct = pd.crosstab(df[f], df[target])
-        _, p, _, _ = chi2_contingency(ct)
-        # Smaller p-value => stronger association => larger weight
-        raw[f] = -np.log10(p + 1e-300)   # guard against log(0)
-    total = sum(raw.values())
-    return {f: v / total for f, v in raw.items()}  # sum = 1
+# Load 17-feature data and EPDS Result target
+X_shap = df_encoded[chi2_optimal_features]
+y_shap = df_encoded['EPDS Result']
 
-def composite_index(df, features, score_maps, weights):
-    """Compute a 0-10 risk index per row."""
-    idx = np.zeros(len(df))
-    for f in features:
-        # Map raw category answer to ordinal score in [0, 1]
-        scores = df[f].map(score_maps[f]).fillna(0.0).values
-        idx += weights[f] * scores
-    return idx * 10   # rescale to [0, 10]
+# Train final GB model on all data
+gb_model.fit(X_shap, y_shap)
 
-# --- Social / Family Support Index (SSI) ---
-SSI_features = [
-    "Relationship with husband",
-    "Relationship with the in-laws",
-    "Received support",
-    "Need for Support",
-    "Family type",
-    "Number of household members",
-]
-
-# Direction-verified score maps (higher score = higher PPD risk)
-SSI_maps = {
-    "Relationship with husband":     {"Good": 0.0, "Average": 0.5, "Poor": 1.0},
-    "Relationship with the in-laws": {"Good": 0.0, "Average": 0.5, "Poor": 1.0},
-    "Received support":              {"Yes":  0.0, "No":  1.0},
-    "Need for Support":              {"Yes":  0.0, "No":  1.0,
-                                      "Not Reported": 0.5},
-    "Family type":   {"Nuclear": 0.0, "Joint": 1.0},  # empirical direction
-    "Number of household members":   {"1-3": 0.0, "4-6": 0.5, "7+": 1.0},
-}
-
-ssi_weights = chi_square_weights(df_clean, SSI_features)
-df_clean["SSI_Weighted"] = composite_index(
-    df_clean, SSI_features, SSI_maps, ssi_weights
+# Run PermutationExplainer on 300 samples
+explainer = shap.PermutationExplainer(
+    gb_model.predict_proba,
+    X_shap.sample(300, random_state=42)
 )
+shap_values = explainer(X_shap.sample(300, random_state=42))
+# shap_values.shape: (300, 17, 3)
+# 300 samples, 17 features, 3 output classes
+\end{lstlisting}
 
-print("SSI weights:", ssi_weights)
-print("SSI range:", df_clean["SSI_Weighted"].min(),
-      "to", df_clean["SSI_Weighted"].max())
+The SHAP values array has shape (300, 17, 3): 300 test samples, 17 features, and 3 output classes. Each value in this array represents the contribution of a specific feature to the predicted probability of a specific EPDS class for a specific mother.
+
+\subsection{SHAP Figures Generated}
+
+Five SHAP figures are generated and saved:
+
+\begin{enumerate}
+    \item \textbf{Global bar chart}: Mean absolute SHAP values across all three classes, showing overall feature importance ranking.
+    \item \textbf{Beeswarm plots (per class)}: One plot per EPDS Result class (Low, Medium, High), showing how each feature value (high or low) pushes predictions toward or away from that class.
+    \item \textbf{Heatmap}: SHAP value matrix showing the contribution of all 17 features across all 300 test samples.
+    \item \textbf{Waterfall plot}: A single-sample explanation showing how each feature contributes to one specific prediction.
+    \item \textbf{Dependence plot}: Shows the relationship between the value of the most important feature and its SHAP contribution.
+\end{enumerate}
+
+\subsection{Top SHAP Features}
+
+The global bar chart identifies the following as the top 10 features by mean absolute SHAP value (aggregated across all three classes):
+
+\begin{enumerate}
+    \item ``You have been so unhappy that you have been crying'' (EPDS, SHAP = 0.0585)
+    \item ``You have felt scared or panicky for no good reason'' (EPDS, SHAP = 0.0500)
+    \item ``You have felt sad or miserable'' (EPDS, SHAP = 0.0457)
+    \item ``I have blamed myself unnecessarily when things went wrong'' (EPDS)
+    \item ``I have been anxious or worried for no good reason'' (EPDS)
+    \item ``Things have been getting on top of me'' (EPDS)
+    \item ``I have had difficulty sleeping because of unhappiness'' (EPDS)
+    \item Feeling down, depressed, or hopeless (PHQ-9)
+    \item ``You have been able to laugh and see the funny side of things'' (EPDS)
+    \item Moving or speaking so slowly (PHQ-9)
+\end{enumerate}
+
+The trained Gradient Boosting model and scaler were saved as \texttt{gb\_model.pkl} and \texttt{gb\_scaler.pkl}; the SHAP values were saved as \texttt{shap\_values.npy} and \texttt{shap\_data.pkl} for use in the web interface.
+
+% --------------------------------------------------------
+\section{Correlation Analysis}
+\label{ch3-sec-correlation}
+% --------------------------------------------------------
+
+To understand how the 17 selected features relate to the EPDS depression score, three types of correlation were computed for each feature against the EPDS Score:
+
+\begin{itemize}
+    \item \textbf{Pearson correlation:} Measures linear relationship. Best for continuous, normally distributed data.
+    \item \textbf{Spearman correlation:} Measures monotonic relationship. Works with ordinal data.
+    \item \textbf{Kendall's tau:} Measures rank-order correlation. More robust to outliers and better for small samples.
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={Three-way correlation analysis of selected features vs. EPDS Score.}]
+from scipy.stats import kendalltau
+
+for feature in selected_features:
+    pearson = df[feature].corr(df['EPDS Score'], method='pearson')
+    spearman = df[feature].corr(df['EPDS Score'], method='spearman')
+    tau, p = kendalltau(df[feature], df['EPDS Score'])
+    print(f"{feature}: Pearson={pearson:.3f}, Spearman={spearman:.3f},
+                         Kendall={tau:.3f}")
 \end{lstlisting}
 
 % --------------------------------------------------------
-\section*{Equation Summary}
-\label{ch3-eqn-sec}
+\section{Within-Category Feature Importance (CELL 7)}
+\label{ch3-sec-within-category}
 % --------------------------------------------------------
 
-Two core equations drive the composite index design.
-Equation~\ref{ch3-eqn-weight} computes the normalised chi-square weight for sub-feature $f$:
+To answer the question ``which specific features matter most inside each background category?'', a within-category feature importance analysis was done on the four background categories (Demographic, Familial, Personal Health, and Neonatal Health).
+
+\subsection{Method}
+
+For each category, four different importance methods were computed and then combined into a single score:
+
+\begin{enumerate}
+    \item \textbf{Random Forest importance:} The mean decrease in impurity from each feature across all trees.
+    \item \textbf{XGBoost importance:} The gain-based feature importance from XGBoost.
+    \item \textbf{Logistic Regression coefficients:} The absolute value of each feature's coefficient.
+    \item \textbf{Mutual Information (MI):} A non-parametric measure of how much information a feature shares with the EPDS Result target.
+\end{enumerate}
+
+Each of the four scores was normalised to a 0--1 range using Min-Max scaling. The final \textbf{Combined Score} for each feature is the average of its four normalised scores:
 
 \begin{equation}
-  w_f \;=\; \frac{-\log_{10}(p_f)}{\displaystyle\sum_{j \in \text{domain}} -\log_{10}(p_j)}
-  \nonumber
+\label{ch3-eqn-combined}
+\text{Combined Score}(f) \;=\; \frac{\text{RF\_norm}(f) + \text{XGB\_norm}(f) + \text{LR\_norm}(f) + \text{MI\_norm}(f)}{4}
 \end{equation}
 
-Equation~\ref{ch3-eqn-index} computes the final composite index for mother $i$ in domain $d$:
+% --------------------------------------------------------
+\section{Risk Factor Analysis via Kendall's Tau (CELL 8)}
+\label{ch3-sec-kendall}
+% --------------------------------------------------------
+
+The final clinically important analysis is the risk factor analysis using Kendall's tau. This answers Research Objective~3: which specific background factors are most strongly linked to PPD in Bangladeshi mothers?
+
+\subsection{Why Kendall's Tau?}
+
+Kendall's tau ($\tau$) is a rank-based correlation coefficient chosen because:
+\begin{itemize}
+    \item Survey data is often ordinal (e.g., ``Good'', ``Average'', ``Poor''), not continuous.
+    \item Kendall's tau works correctly with ordinal data and does not assume a normal distribution.
+    \item It is more robust to outliers and ties than Pearson or Spearman correlations.
+    \item The p-value that comes with Kendall's tau tells us whether the association is statistically significant.
+\end{itemize}
+
+\subsection{Formula}
+
+For two variables $X$ and $Y$ measured on $n$ observations, consider all $\binom{n}{2}$ pairs of observations.
+A pair $(i, j)$ is called \textbf{concordant} if the orderings of $X$ and $Y$ agree (i.e., $X_i > X_j$ and $Y_i > Y_j$, or $X_i < X_j$ and $Y_i < Y_j$).
+A pair is called \textbf{discordant} if the orderings disagree.
+
+Kendall's $\tau_b$, which handles tied values correctly, is defined as:
 
 \begin{equation}
-  \text{INDEX}_{d}(i) \;=\; 10 \;\times\; \sum_{f \,\in\, d} w_f \;\cdot\; s_{i,f}
-  \nonumber
+\label{ch3-eqn-kendall}
+\tau_b \;=\; \frac{n_c - n_d}{\sqrt{\bigl(n_0 - n_1\bigr)\bigl(n_0 - n_2\bigr)}}
 \end{equation}
 
-where $s_{i,f} \in [0,1]$ is the direction-verified, min-max normalised ordinal score for sub-feature $f$ and mother $i$.
+where:
+\begin{itemize}
+    \item $n_c$ = number of concordant pairs
+    \item $n_d$ = number of discordant pairs
+    \item $n_0 = \dfrac{n(n-1)}{2}$ = total number of pairs
+    \item $n_1$ = number of pairs tied only in $X$
+    \item $n_2$ = number of pairs tied only in $Y$
+\end{itemize}
 
+$\tau_b$ ranges from $-1$ (perfect disagreement in rank order) to $+1$ (perfect agreement in rank order). A value of 0 means no association. The \texttt{scipy.stats.kendalltau} function used in this thesis computes $\tau_b$ and also returns the two-sided $p$-value for the null hypothesis that $\tau = 0$.
+
+\subsection{Method}
+
+For each feature in the four background categories, Kendall's tau was computed against the continuous EPDS Score:
+
+\begin{lstlisting}[language=Python, caption={Kendall's tau risk factor analysis across 4 background categories.}]
+from scipy.stats import kendalltau
+
+TARGET_CATS = ['Demographic', 'Familial', 'Personal Health', 'Neonatal Health']
+results = []
+
+for cat in TARGET_CATS:
+    cat_features = [f for f in features if feature_categories[f] == cat]
+    for feature in cat_features:
+        tau_score, p_score = kendalltau(df[feature], df['EPDS Score'])
+        results.append({
+            'Category': cat,
+            'Feature': feature,
+            'Kendall_tau_vs_Score': tau_score,
+            'p_value_vs_Score': p_score,
+        })
+
+risk_df = pd.DataFrame(results).sort_values(
+    'Kendall_tau_vs_Score', key=abs, ascending=False)
+
+risk_df.to_csv('risk_factor_kendall_tau.csv', index=False)
+\end{lstlisting}
+
+\subsection{Interpretation of Results}
+
+\begin{itemize}
+    \item \textbf{Positive $\tau$:} As the feature value increases, the EPDS Score also tends to increase --- a \textbf{risk factor}.
+    \item \textbf{Negative $\tau$:} As the feature value increases, the EPDS Score tends to decrease --- a \textbf{protective factor}.
+    \item \textbf{Magnitude of $|\tau|$:} Larger values mean a stronger association.
+    \item \textbf{p-value:} Values below 0.05 are considered statistically significant.
+\end{itemize}
+
+The top risk factors found are summarised in Table~\ref{ch3-tbl-kendall}.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.38\linewidth}|>{\raggedright\arraybackslash}p{0.18\linewidth}|>{\centering\arraybackslash}p{0.13\linewidth}|>{\centering\arraybackslash}p{0.13\linewidth}|}
+\hline
+\textbf{Feature} & \textbf{Category} & \textbf{$\tau$ vs EPDS Score} & \textbf{p-value} \\
+\hline
+Anger after latest child birth & Familial & +0.418 & 1.4 $\times$ 10$^{-45}$ \\
+\hline
+Feeling about motherhood & Familial & +0.280 & 5.3 $\times$ 10$^{-22}$ \\
+\hline
+Abuse & Familial & --0.223 & 1.1 $\times$ 10$^{-14}$ \\
+\hline
+Depression during pregnancy (PHQ2) & Neonatal Health & +0.195 & 3.3 $\times$ 10$^{-11}$ \\
+\hline
+Trust and share feelings & Familial & --0.177 & 1.8 $\times$ 10$^{-9}$ \\
+\hline
+Need for Support & Neonatal Health & +0.062 & $\sim$0.05 \\
+\hline
+\end{tabular}
+\caption{Sample output from the Kendall's tau risk factor analysis (top 6 rows, 4 background categories only). Full results and discussion are in Chapter~\ref{ch:results}.}
+\label{ch3-tbl-kendall}
+\end{table}
 \FloatBarrier
+
+% --------------------------------------------------------
+\section{Web Interface}
+\label{ch3-sec-webinterface}
+% --------------------------------------------------------
+
+As Research Objective~5, a web interface was built to deploy the trained Gradient Boosting model. The interface allows a healthcare worker to enter a mother's responses to the 17 selected EPDS and PHQ-9 questionnaire items and receive an immediate EPDS risk classification: \textbf{Low} (score 0--9), \textbf{Medium} (10--12), or \textbf{High} (13--30).
+
+The interface loads \texttt{gb\_model.pkl} and \texttt{gb\_scaler.pkl} from the \texttt{shap\_package/} directory. The user inputs 17 item responses, the saved model predicts the EPDS Result class, and the result is displayed with the class label and a brief clinical interpretation. The web interface makes the trained model accessible without requiring any programming knowledge from the end user.
+
+% --------------------------------------------------------
+\section{Figures Generated}
+\label{ch3-sec-figures}
+% --------------------------------------------------------
+
+The methodology produces seventeen figures:
+
+\begin{itemize}
+    \item \textbf{fig1:} Category-wise model performance bar chart (accuracy per category)
+    \item \textbf{fig2:} Kendall's tau risk factor chart (horizontal bars for top risk factors)
+    \item \textbf{fig3:} Logistic Regression coefficients for background features
+    \item \textbf{fig4:} Random Forest feature importance (background features)
+    \item \textbf{fig5:} XGBoost feature importance (background features)
+    \item \textbf{fig6:} Within-category importance heatmap (method $\times$ feature)
+    \item \textbf{fig7:} Screening Items vs background categories comparison
+    \item \textbf{fig8:} Correlation heatmap of selected features
+    \item \textbf{fig9:} Grouped column trend (all 5 categories $\times$ all metrics)
+    \item \textbf{fig10:} Multi-line backward elimination trajectory (accuracy, F1 vs step)
+    \item \textbf{fig11:} Stacked column tiers (High/Medium/Low performance tier per category)
+    \item \textbf{fig12:} 3D clustered column chart (category $\times$ metric $\times$ score)
+    \item \textbf{fig13:} SHAP global bar chart (mean absolute SHAP per feature)
+    \item \textbf{fig14:} SHAP beeswarm plots per EPDS class (Low, Medium, High)
+    \item \textbf{fig15:} SHAP heatmap (features $\times$ samples)
+    \item \textbf{fig16:} SHAP waterfall plot (single sample explanation)
+    \item \textbf{fig17:} SHAP dependence plot (top feature vs SHAP value)
+\end{itemize}
+
+% --------------------------------------------------------
+\section{Implementation Details}
+\label{ch3-sec-implementation}
+% --------------------------------------------------------
+
+All analysis was done in \textbf{Python 3} on \textbf{Google Colab} using Google Drive for file storage. The key Python libraries used are:
+
+\begin{itemize}
+    \item \texttt{pandas} and \texttt{numpy} --- data handling and numerical computation
+    \item \texttt{scikit-learn} --- feature selection, model training, cross-validation, LabelEncoder
+    \item \texttt{xgboost} --- XGBoost model
+    \item \texttt{lightgbm} --- LightGBM model
+    \item \texttt{catboost} --- CatBoost model
+    \item \texttt{scipy.stats} --- Kendall's tau, statistical tests
+    \item \texttt{shap} --- SHAP analysis and visualizations
+    \item \texttt{joblib} --- saving and loading model pickle files
+    \item \texttt{matplotlib} and \texttt{seaborn} --- figure generation
+    \item \texttt{mpl\_toolkits.mplot3d} --- 3D chart (fig12)
+\end{itemize}
+
+All random states were fixed to 42 for reproducibility.
 
 % --------------------------------------------------------
 \section{Summary}
 \label{ch3-sec-summary}
 % --------------------------------------------------------
 
-This chapter described the six-step methodology: leakage-free feature design, chi-square weighted composite risk index engineering, one-hot feature encoding, multi-model training and selection, multi-angle SHAP explainability, and unsupervised cluster validation.
-The next chapter presents the full results and discusses what the findings mean for PPD prediction in Bangladesh.
+This chapter described the full methodology of this thesis. The dataset of 800 Bangladeshi mothers was cleaned in multiple steps. All 69 features were grouped into six categories. Chi-square feature ranking combined with backward elimination identified 17 optimal EPDS and PHQ-9 questionnaire items as the most predictive features for EPDS Result classification. Fifteen machine learning and deep learning models were compared on these 17 features using 5-fold cross-validation on the EPDS Result target (Low, Medium, High), with Gradient Boosting achieving the highest accuracy of 0.926. SHAP analysis using a Permutation Explainer identified which of the 17 items drive predictions for each risk class. The four background categories were tested separately for comparison. The risk factor analysis used Kendall's tau to find the most statistically significant background predictors of PPD. A web interface was built to deploy the trained model. The next chapter presents the results of all these analyses.

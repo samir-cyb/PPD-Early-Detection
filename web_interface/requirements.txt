@@ -1,0 +1,26 @@
+# PPD Risk Assessment — Web Interface Dependencies
+# Tested on Python 3.11 (Windows 11)
+#
+# HOW TO INSTALL:
+#   pip install -r requirements.txt
+#
+# HOW TO RUN:
+#   python -m uvicorn app:app --port 8080
+#   Then open: http://localhost:8080
+
+# ── Web framework ──────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
+pydantic>=2.7.0
+
+# ── ML / model loading ─────────────────────────────────────────────────────────
+scikit-learn==1.9.0        # MUST match the version used to train gb_model.pkl
+joblib>=1.4.0
+numpy>=1.24.0,<3.0
+
+# ── SHAP explainability ────────────────────────────────────────────────────────
+shap>=0.45.0
+
+# ── Utilities ──────────────────────────────────────────────────────────────────
+scipy>=1.10.0

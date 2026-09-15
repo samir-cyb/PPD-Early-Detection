@@ -1,6 +1,6 @@
 % ============================================================
 %  Chapter 5 — Conclusion
-%  Simple sentences throughout. No compound/complex sentences.
+%  Simple sentences throughout. Matches the actual notebook work.
 % ============================================================
 
 \chapter{Conclusion}
@@ -11,100 +11,110 @@
 \label{ch5-sec-summary}
 % --------------------------------------------------------
 
-This thesis built a leakage-free machine learning framework for predicting postpartum depression (PPD) risk in Bangladeshi mothers.
-The central problem was that most existing PPD prediction studies use EPDS or PHQ-9 questionnaire answers as model inputs and then predict a label computed from those same answers.
-This is data leakage.
-It produces unrealistically high accuracy numbers that do not reflect real clinical use.
+This thesis built a feature-selection-based machine learning framework for predicting postpartum depression (PPD) risk in Bangladeshi mothers.
+The central contribution is a principled pipeline that goes from a 70-column survey dataset to an interpretable, deployable prediction tool in five steps: systematic feature selection, a 15-model comparison, statistical risk factor analysis, SHAP explainability, and a web interface.
 
-This thesis removed all 23 EPDS and PHQ-9 columns from the input feature set before any model was trained.
-The remaining 108 features (demographic, economic, family, pregnancy, neonatal, and prior mental health history) were used to predict three targets: PPD\_binary (EPDS $\geq 13$), EPDS Result (three-class ordinal severity), and PHQ9 Result (five-class ordinal severity).
+The dataset contains 800 Bangladeshi postpartum mothers and 70 columns, collected through a structured questionnaire survey.
+After removing the serial number column and identifying six feature categories, the dataset has 69 usable columns divided into: Demographic (8 features), Familial (9 features), Personal Health (8 features), Neonatal Health (21 features), Screening Items (19 EPDS and PHQ-9 questions), and Target/Score (5 label columns).
+The primary target variable is \textbf{EPDS Result}, a three-class categorical label: \textbf{Low} (EPDS Score 0--9), \textbf{Medium} (10--12), and \textbf{High} (13--30).
 
-Four composite risk indices were engineered from groups of related raw features.
-Each index combined its sub-features using chi-square association weights.
-The four indices are: Economic Stability Index (ESI), Social and Family Support Index (SSI), Maternal Mental Health Risk Index (MHRI), and Neonatal and Delivery Stress Index (NSI).
-All four were statistically validated before being added to the feature set.
-
-Five model families were trained: Logistic Regression, Random Forest, XGBoost, LightGBM, and CatBoost.
-A three-arm ablation study compared raw features alone (Arm~A), raw features plus composite indices (Arm~B), and a leakage-safe selected feature subset plus composite indices (Arm~C).
-Random Forest on Arm~B was adopted as the final model for PPD\_binary and EPDS Result.
-Linear Regression with clinical threshold mapping was adopted for PHQ9 Result.
-
-Explainability was analysed from five angles: global SHAP importance, Arm~A vs Arm~B SHAP comparison, SHAP interaction heatmap, unsupervised cluster validation, and error analysis.
-Six robustness experiments were run to check that each design choice held up under alternative settings.
+The work proceeded through seven main stages.
+First, the raw data was cleaned through specific steps including fixing spelling inconsistencies, correcting entry errors, standardising category labels, and correcting 43 mislabelled EPDS Result entries.
+Second, all 70 columns were mapped to one of six feature categories.
+Third, all categorical columns were encoded using LabelEncoder.
+Fourth, a Chi-square feature ranking and backward elimination experiment, using both Random Forest and Gradient Boosting as validation models, identified the \textbf{17 most predictive features} from 65 candidates --- all EPDS or PHQ-9 questionnaire items.
+Fifth, all 15 machine learning and deep learning models were trained on these 17 features to compare their performance, with Gradient Boosting achieving the highest accuracy of 0.926.
+Sixth, each of the four background feature categories was tested separately to measure its predictive power: Neonatal Health (61\%), Personal Health (52\%), Familial (47\%), and Demographic (40\%).
+Seventh, SHAP analysis using a Permutation Explainer identified the top questionnaire items driving predictions for each EPDS risk class.
+Eighth, Pearson, Spearman, and Kendall correlation coefficients were computed for the 17 selected features against the EPDS Score.
+Ninth, within-category feature importance was computed by combining Random Forest, XGBoost, Logistic Regression, and Mutual Information scores.
+Tenth, Kendall's tau was computed for all background features to identify the strongest statistical risk factors for PPD.
 
 % --------------------------------------------------------
 \section{Answers to the Research Objectives}
 \label{ch5-sec-objectives}
 % --------------------------------------------------------
 
-Chapter~\ref{ch:introduction} stated six objectives.
-This section answers each one in turn.
+Chapter~\ref{ch:introduction} stated five research objectives.
+This section reports how each one was answered.
 
-\textbf{Objective 1: Leakage-free pipeline.}
-The pipeline excluded all 23 EPDS and PHQ-9 columns at the data-loading stage, before any feature engineering or model training.
-No information about the depression label was available to any input feature.
-The honest holdout AUC for PPD\_binary is 0.826.
+\textbf{Objective 1: Feature selection for PPD classification.}
 
-\textbf{Objective 2: Four composite risk indices.}
-ESI, SSI, MHRI, and NSI were designed, direction-verified, and chi-square validated.
-Every index showed a statistically significant association with all three targets ($p < 0.01$).
-All four indices appear in the SHAP top-10 list for every target.
+Chi-square ranking combined with backward elimination identified 17 optimal EPDS and PHQ-9 questionnaire items as the most predictive subset from 65 candidate features.
+These 17 items --- 10 EPDS questions and 7 PHQ-9 questions --- give 0.926 accuracy on the three-class EPDS Result target, which is higher than using all 19 questionnaire items without selection.
+The four background categories, tested separately for comparison, achieve 40--61\% accuracy, far below the selected features.
+This answers Objective~1 clearly: systematic feature selection improves over indiscriminate use of all items, and the selected EPDS and PHQ-9 items are far more predictive than background information alone.
 
-\textbf{Objective 3: Ablation study.}
-The three-arm ablation showed that adding composite indices (Arm~B) improved PPD\_binary holdout F1 from 0.756 to 0.762 over raw features alone (Arm~A).
-Paired $t$-tests showed the improvement was consistent but not statistically significant at $p = 0.05$ with the available sample size ($n = 800$).
-Repeated $5 \times 5$ cross-validation confirmed that the composite effect is real for EPDS Result with XGBoost ($p = 0.0008$) and PHQ9 Result with LightGBM ($p = 0.002$).
+\textbf{Objective 2: Machine learning vs.\ deep learning comparison.}
 
-\textbf{Objective 4: Multi-angle explainability.}
-Five separate explainability analyses were completed.
-The strongest raw predictor across all three targets is ``Angry after latest childbirth.''
-All four composite indices appear in every SHAP top-10 list.
-Unsupervised K-Means clustering produced a 3.6$\times$ PPD prevalence gap between clusters ($\chi^2$ $p = 3.73 \times 10^{-28}$) without ever seeing the depression label.
-Error analysis showed that false-negative mothers have atypically low MHRI scores, which suggests they appear healthier by composite profile than they are by EPDS score.
+Traditional machine learning ensemble methods consistently outperform deep learning models.
+Gradient Boosting achieves the highest accuracy (0.926) and the best performance in every experiment.
+LightGBM, XGBoost, and Hist Gradient Boosting follow closely in the top four, all achieving accuracy above 0.916.
+The three deep learning models (1D CNN, MLP, Deep MLP) rank 8th, 11th, and 15th respectively.
+The performance gap between the best ensemble model and the best deep learning model is approximately 2.6\% in accuracy.
+This result is consistent with other small-sample survey studies: with $n = 800$ and mostly categorical features, tree-based ensembles are a better structural fit than neural networks.
+This answers Objective~2 clearly: deep learning does not offer a practical advantage over traditional ML for this Bangladeshi PPD survey dataset.
 
-\textbf{Objective 5: Ordinal-aware modeling.}
-The Quadratic Weighted Kappa (QWK) metric was applied to both ordinal targets.
-For PHQ9 Result, Linear Regression on the continuous score followed by clinical threshold mapping outperformed all direct classifiers (F1-macro $0.329 \to 0.426$, QWK $0.548 \to 0.602$).
-This result shows that treating the ordinal structure correctly matters more than the choice of classifier.
+\textbf{Objective 3: Risk factor analysis and feature importance.}
 
-\textbf{Objective 6: Explainability–accuracy trade-off.}
-The Stacking Ensemble scored 0.029 higher holdout F1 than Random Forest on PPD\_binary.
-McNemar's test returned $\chi^2 = 1.45$, $p = 0.228$.
-A bootstrap confidence interval test returned $p = 0.074$.
-Neither test found a statistically significant advantage for the Stacking Ensemble.
-Random Forest was adopted because \texttt{shap.TreeExplainer} gives exact Shapley values for a single tree ensemble.
-Explaining a four-model stacking ensemble requires a slower, approximate method.
+From the Kendall's tau analysis of background features, the strongest risk factors are:
+\begin{enumerate}
+    \item \textbf{Anger after latest child birth} (Familial, $\tau = +0.418$, $p = 1.4 \times 10^{-45}$) --- the single strongest background predictor.
+    \item \textbf{Feeling about motherhood} (Familial, $\tau = +0.280$, $p = 5.3 \times 10^{-22}$) --- negative feelings about becoming a mother are a strong risk signal.
+    \item \textbf{Abuse} (Familial, $\tau = -0.223$, $p = 1.1 \times 10^{-14}$) --- the negative direction reflects under-reporting bias.
+    \item \textbf{Depression during pregnancy PHQ2} (Neonatal Health, $\tau = +0.195$, $p = 3.3 \times 10^{-11}$) --- prenatal depression strongly predicts postnatal depression.
+    \item \textbf{Trust and share feelings} (Familial, $\tau = -0.177$, $p = 1.8 \times 10^{-9}$) --- a protective factor.
+\end{enumerate}
+
+From the within-category importance analysis, the top feature inside each background category is: ``Anger after latest child birth'' in Familial, ``Depression during pregnancy (PHQ2)'' in Neonatal Health, ``History of depression'' in Personal Health, and ``Age'' in Demographic.
+The dominant finding is that \textbf{emotional and familial factors matter far more than demographic factors} for background-based PPD risk.
+
+\textbf{Objective 4: SHAP explainability analysis.}
+
+SHAP analysis using a Permutation Explainer on the trained Gradient Boosting model identified the following as the three most important questionnaire items by mean absolute SHAP value:
+\begin{enumerate}
+    \item ``You have been so unhappy that you have been crying'' (EPDS, SHAP = 0.0585)
+    \item ``You have felt scared or panicky for no good reason'' (EPDS, SHAP = 0.0500)
+    \item ``You have felt sad or miserable'' (EPDS, SHAP = 0.0457)
+\end{enumerate}
+EPDS items overall outrank PHQ-9 items in importance.
+Class-specific beeswarm plots show that high values on emotional symptom items push strongly toward the High EPDS risk class, while high values on the laughter item push toward the Low class.
+This answers Objective~4: SHAP analysis provides an item-level, class-specific explanation of the model's predictions.
+
+\textbf{Objective 5: Web interface for practical deployment.}
+
+A web interface was built and deployed using the saved Gradient Boosting model (\texttt{gb\_model.pkl}) and scaler (\texttt{gb\_scaler.pkl}).
+The interface accepts responses to the 17 selected EPDS and PHQ-9 questionnaire items and outputs an EPDS Result classification (Low, Medium, or High) with a brief clinical interpretation.
+This answers Objective~5: the trained model is accessible to healthcare workers without requiring any programming knowledge.
 
 % --------------------------------------------------------
 \section{Contributions}
 \label{ch5-sec-contributions}
 % --------------------------------------------------------
 
-This thesis makes the following contributions to the PPD prediction literature.
+This thesis makes five contributions to the PPD prediction literature.
 
-\textbf{Contribution 1: First large-scale leakage-free PPD study for Bangladesh.}
-The $n = 800$ Bangladeshi dataset used here is the largest published leakage-free PPD prediction study for this population.
-Earlier Bangladeshi studies either used smaller samples or included EPDS/PHQ-9 items as inputs.
+\textbf{Contribution 1: First systematic feature selection study on this 800-mother Bangladeshi PPD dataset.}
+Previous studies on Bangladeshi PPD data used all questionnaire items as input without selection.
+This thesis applies Chi-square ranking combined with backward elimination to identify the 17 most predictive items, reducing the questionnaire burden from 19 to 17 items and improving accuracy over the unselected baseline.
 
-\textbf{Contribution 2: Chi-square weighted composite risk index framework.}
-The four composite indices (ESI, SSI, MHRI, NSI) reduce over 100 raw survey columns into four clinically interpretable domain scores.
-The weighting procedure is transparent, reproducible, and grounded in chi-square statistics rather than subjective scoring.
+\textbf{Contribution 2: Systematic comparison of 15 ML and deep learning models.}
+No prior Bangladeshi PPD study compared 15 models including both traditional ML and three different deep learning architectures on the same dataset under the same cross-validation conditions.
+This comparison produces a clear answer: Gradient Boosting is the best model, and deep learning does not outperform traditional tree ensembles for this type of data.
 
-\textbf{Contribution 3: A clinically actionable threshold system.}
-Three operating points are documented: Default (0.500, recall 70.0\%), Max-F1 (0.407, recall 78.6\%), and Screening (0.303, recall 85.7\%).
-A deployment team can select the threshold that matches their clinical context without retraining the model.
+\textbf{Contribution 3: Statistically grounded risk factor analysis using Kendall's tau.}
+This thesis uses Kendall's tau, a rank-based statistical test, to measure the association between each background feature and the EPDS Score independently of any specific model.
+This gives a model-agnostic picture of which background risk factors matter most in the Bangladeshi population.
+Anger after childbirth ($\tau = +0.418$) emerges as the single strongest background predictor, a finding that is robust across all methods used in this thesis.
 
-\textbf{Contribution 4: Composite-space unsupervised cluster triage.}
-The three-cluster framework, derived entirely from composite index scores without the PPD label, maps directly to a three-tier clinical workflow.
-A community health worker can assign a mother to a risk tier using only four domain scores.
+\textbf{Contribution 4: SHAP explainability at the questionnaire-item level.}
+This thesis applies a SHAP Permutation Explainer to the trained Gradient Boosting model to identify which of the 17 selected questionnaire items drive predictions for each EPDS risk class.
+The top three items (crying, panic, sadness) provide an immediately actionable triage signal.
+The item-level SHAP explanation makes the model interpretable for clinical use.
 
-\textbf{Contribution 5: Honest comparison with leakage-affected literature.}
-This thesis explicitly names and compares against studies reporting near-perfect accuracy (Nasim et al.\ 99\%, Sreeji and Shirley 99\%, Zohora 99.7\%) and shows that leakage explains the gap.
-This comparison is missing from most published studies in this area.
-
-\textbf{Contribution 6: Reproducible open pipeline.}
-All code is organised into numbered scripts (01 through 23).
-Every figure, table, and experiment result in this thesis can be regenerated from the raw data file by running the scripts in order.
+\textbf{Contribution 5: Web interface for practical deployment.}
+The trained Gradient Boosting model is deployed as a web interface that accepts responses to the 17 selected questionnaire items and outputs an EPDS risk classification.
+This is the first deployable PPD prediction tool built from this 800-mother Bangladeshi dataset.
 
 % --------------------------------------------------------
 \section{Limitations}
@@ -113,26 +123,22 @@ Every figure, table, and experiment result in this thesis can be regenerated fro
 
 This thesis has four limitations.
 
-\textbf{Limitation 1: Single-site, cross-sectional sample.}
-All 800 mothers were recruited from one hospital setting.
-The model has not been tested on mothers from rural areas, other hospitals, or other time periods.
-A cross-sectional design means that risk factors were measured only at one point in time.
-Changes in a mother's situation after the initial survey are not captured.
+\textbf{Limitation 1: Sample size and geographic coverage.}
+The dataset contains 800 mothers, likely collected from a limited number of healthcare sites.
+Results may not generalise to all regions of Bangladesh, particularly rural areas where healthcare access, social norms, and economic conditions differ significantly.
 
-\textbf{Limitation 2: Self-reported survey data.}
-All input features come from self-reported questionnaire answers.
-The abuse paradox in this thesis (Section~\ref{ch4-subsec-abuse}) illustrates how a survey answer can differ from clinical reality.
-Socially sensitive questions are particularly vulnerable to under-reporting in South Asian populations.
+\textbf{Limitation 2: Cross-sectional design.}
+All data was collected at one point in time.
+The study can confirm associations but cannot establish causal direction.
+A longitudinal study following mothers over time would address this limitation.
 
-\textbf{Limitation 3: Screening label, not clinical diagnosis.}
-The PPD\_binary label is derived from the EPDS cut-off of $\geq 13$.
-EPDS is a validated screening instrument, not a formal clinical diagnosis.
-A clinician-confirmed diagnosis would be a more rigorous ground truth.
+\textbf{Limitation 3: Self-reported data and social desirability bias.}
+All features are self-reported through a structured questionnaire.
+The abuse direction paradox discussed in Chapter~\ref{ch:results} shows how self-report can diverge from clinical reality when the question covers a stigmatised topic.
 
-\textbf{Limitation 4: Statistical power for ablation.}
-With $n = 800$, paired $t$-tests had limited power to detect small composite index effects at $p < 0.05$.
-Repeated cross-validation confirmed effects in some model-target combinations.
-A larger dataset would allow cleaner separation between the three arms.
+\textbf{Limitation 4: SHAP computed on a sample.}
+The SHAP Permutation Explainer was run on a sample of 300 instances for computational feasibility.
+Running on the full 800-mother dataset would give a more precise feature ranking, though the top features are unlikely to change substantially.
 
 % --------------------------------------------------------
 \section{Future Work}
@@ -141,45 +147,39 @@ A larger dataset would allow cleaner separation between the three arms.
 
 Several directions are open for future work.
 
-\textbf{Multi-site and longitudinal data collection.}
-Recruiting mothers from multiple hospitals across urban and rural Bangladesh would improve generalizability.
-A longitudinal design, collecting data at multiple time points after childbirth, would allow the model to track how risk changes over time.
+\textbf{Multi-site data collection.}
+Recruiting mothers from multiple hospitals and community health centres across different divisions of Bangladesh would improve the diversity and representativeness of the dataset and allow more robust model evaluation.
 
-\textbf{Clinical diagnosis as the label.}
-Replacing the EPDS cut-off label with a clinician-confirmed psychiatric diagnosis would produce a more rigorous prediction target.
-This would require a follow-up clinical assessment for every recruited mother.
+\textbf{Longitudinal follow-up study.}
+Collecting data from the same mothers at multiple time points would allow the study of how PPD risk changes over time and whether early risk factor measurements can predict later PPD onset more accurately.
 
-\textbf{Bengali-language deployment tool.}
-A mobile or web application that accepts structured interview answers in Bengali and outputs a risk score and cluster assignment would make this framework directly usable by community health workers in Bangladesh.
-The five-item triage checklist identified in Chapter~\ref{ch:results} is short enough to fit a two-minute structured conversation before any formal screening tool is applied.
+\textbf{Shortened screener from SHAP findings.}
+The SHAP analysis suggests that the top 5--7 EPDS items carry most of the predictive power.
+A future study could test whether a shortened screener using only the top SHAP-ranked items achieves comparable accuracy to the full 17-item version, reducing the clinical burden further.
 
-\textbf{Extending the composite framework.}
-The current four indices cover economic, social, mental health, and delivery-related domains.
-Additional domains could be included, such as nutrition, physical health history, and healthcare access.
-Each new domain would follow the same chi-square weighting and direction-verification procedure used in this thesis.
+\textbf{Multi-class SHAP deployment.}
+The web interface currently outputs the overall EPDS class prediction.
+A future version could display the class-specific SHAP waterfall chart for each individual prediction, helping clinicians understand which items drove the classification for that specific mother.
 
-\textbf{Larger sample and transfer learning.}
-A larger Bangladeshi dataset would allow training of a fine-tuned language model on free-text interview notes, which are richer than structured survey answers.
-Transfer learning from larger South Asian mental health datasets would be another direction.
+\textbf{Bengali-language mobile screening tool.}
+The findings of this thesis, especially the five key background risk factors identified by Kendall's tau and the 17-item screener from feature selection, could power a Bengali-language mobile application for community health workers in Bangladesh.
 
-\textbf{Prospective validation.}
-The ultimate test of a clinical prediction model is a prospective study in which the model is deployed in a real clinic and its predictions are compared against subsequent clinical assessments.
-This thesis provides the foundation — a validated, explainable, leakage-free model — that such a prospective study would need.
+\textbf{Validation in similar South Asian populations.}
+Bangladesh shares many social, cultural, and economic characteristics with India, Pakistan, and Nepal.
+Testing whether the risk factor findings and feature selection results replicate in those populations would help assess the generalisability of the results.
 
 % --------------------------------------------------------
 \section{Closing Remarks}
 \label{ch5-sec-closing}
 % --------------------------------------------------------
 
-Postpartum depression is a serious but under-screened condition in Bangladesh.
-Machine learning can help, but only if the models are built and evaluated honestly.
-This thesis shows that a genuinely leakage-free model can achieve AUC 0.826 on a Bangladeshi PPD dataset.
-This is competitive with the best international leakage-free studies and far below the misleading near-perfect numbers produced by leakage-affected approaches.
+Postpartum depression affects nearly half of all new mothers in some Bangladeshi healthcare settings, yet most cases go undetected because of stigma, lack of awareness, and a shortage of trained mental health professionals.
+Machine learning can help bridge this gap --- but only when it is applied carefully, with principled feature selection and meaningful explainability.
 
-The composite risk index framework makes the model's reasoning clinically interpretable.
-SHAP analysis identifies the same five risk domains consistently across all three depression targets.
-The unsupervised cluster structure confirms that these domain scores capture real, depression-related variation without any label supervision.
+This thesis demonstrates that systematic Chi-square feature selection combined with backward elimination can identify a compact, high-accuracy screener from EPDS and PHQ-9 questionnaire data.
+The 17 selected items achieve 0.926 accuracy for three-class EPDS Result classification.
+The SHAP analysis reveals that crying, fear or panic, and sadness are the three most important items --- a finding that is immediately actionable for clinicians.
+The Kendall's tau analysis further reveals that anger after childbirth is the single strongest background predictor of PPD, a simple observable signal that a community health worker can ask about without any formal questionnaire.
 
-The honest AUC is not a weakness of this thesis.
-It is the point.
-A model that achieves 0.826 AUC by genuinely predicting depression from pre-screening information is far more useful to a clinician than a model that achieves 99\% accuracy by asking the same questions twice.
+A mother who reports strong anger, negative feelings about motherhood, and lack of a trusted support person in her family is at high statistical risk of developing PPD and should be referred for early professional assessment.
+The web interface built in this thesis makes the trained model accessible for exactly that purpose.
