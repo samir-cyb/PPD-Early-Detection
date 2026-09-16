@@ -95,13 +95,13 @@ Qi et al.~\cite{qi2025prediction} & China & Uses SHAP but on a different populat
 \FloatBarrier
 
 \textbf{Gap 1: Lack of systematic feature selection.}
-No Bangladeshi PPD study has applied Chi-square feature ranking combined with backward elimination to identify which specific EPDS and PHQ-9 questionnaire items are most predictive for PPD risk classification. Most studies feed all questionnaire items into the model without selecting the optimal subset. This thesis fills the gap by applying principled feature selection and showing which 17 items are most important out of the original 65 features.
+No Bangladeshi PPD study has applied Chi-square feature ranking combined with backward elimination to identify which specific EPDS and PHQ-9 questionnaire items are most predictive for PPD risk classification. Most studies feed all questionnaire items into the model without selecting the optimal subset. This thesis fills the gap by applying principled feature selection and showing which 16 items are most important out of the original 65 features.
 
 \textbf{Gap 2: No comprehensive ML vs.\ deep learning comparison.}
 Most Bangladeshi PPD studies use only one or two models. None of them compare a wide range of both traditional ML models and deep learning models side by side on the same dataset. Without such a comparison, it is impossible to know whether deep learning actually helps or whether a simpler model like Gradient Boosting performs just as well. This thesis compares 15 models and provides a clear answer.
 
 \textbf{Gap 3: Lack of SHAP explainability and a deployable tool.}
-Most existing studies report only overall accuracy without explaining which questionnaire items drive predictions for each risk class. The few studies that use SHAP (such as Qi et al.\ \cite{qi2025prediction}) do not build a deployable web interface. This thesis adds both: a SHAP analysis using Permutation Explainer that identifies item-level drivers for each EPDS risk class, and a web interface for practical deployment.
+Most existing studies report only overall accuracy without explaining which questionnaire items drive predictions for each risk class. The few studies that use SHAP (such as Qi et al.\ \cite{qi2025prediction}) do not build a deployable web interface. This thesis adds both: a SHAP analysis using LinearExplainer on Logistic Regression that computes exact item-level drivers for each EPDS risk class, and a bilingual web interface for practical deployment.
 
 \section{Comparative Summary of Prior Studies}
 \label{ch2-sec-comparison}
@@ -126,7 +126,7 @@ Table~\ref{ch2-tbl-comparison} summarises the most relevant prior studies alongs
 \hline
 \endlastfoot
 
-\textbf{This Study (2026)} & Bangladesh & 800 & EPDS Result (3-class) & 0.926 Acc.\ (GB, 17 feat.) & \textbf{Yes (chi2+BE)} & SHAP (PermExpl.) \\
+\textbf{This Study (2026)} & Bangladesh & 800 & EPDS Result (3-class) & 0.982 Acc.\ (CNN); 0.971 (LR, 16 feat.) & \textbf{Yes (chi2+BE)} & SHAP (LinearExpl.) \\
 \hline
 Chowdhury \& Sultana~\cite{chowdhury2026assessing} & Bangladesh & --- & PPD vs.\ age & XAI analysis & No & SHAP \\
 \hline
@@ -196,7 +196,7 @@ Bangladesh has one of the highest rates of PPD in the world, yet no study on the
 
 The reference paper (Chowdhury and Sultana, 2026) demonstrated that ML works in Bangladesh, but it did not tell us which EPDS and PHQ-9 items are most informative, how ML compares to deep learning models, or how to deploy the result as a practical tool.
 
-The feature selection finding in this thesis (17 optimal EPDS and PHQ-9 items identified from 65 features by Chi-square and backward elimination) is important because it reduces the questionnaire burden and identifies the specific items that matter most. The SHAP analysis adds a further layer: it shows which items drive predictions for Low, Medium, and High risk classes separately. The web interface makes the whole system usable in real clinical settings.
+The feature selection finding in this thesis (16 optimal EPDS and PHQ-9 items identified from 65 features by Chi-square and backward elimination) is important because it reduces the questionnaire burden and identifies the specific items that matter most. The SHAP analysis adds a further layer: it shows which items drive predictions for Low, Medium, and High risk classes separately. The web interface makes the whole system usable in real clinical settings.
 
 And finally, knowing \emph{that} a model can predict PPD is not enough. Healthcare workers also need to know \emph{which specific factors} put a mother at risk. The Kendall's tau analysis and within-category importance scores in this thesis provide exactly that: a clear, statistically grounded list of the most important background risk factors for PPD in Bangladeshi mothers, based on 800 real cases.
 

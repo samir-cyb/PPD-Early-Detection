@@ -174,6 +174,16 @@
   }
   .q-warn { color: #ffbd59; font-size: .8rem; margin-top: -.3rem; margin-bottom: .75rem; }
 
+  .instr-banner {
+    background: rgba(124,110,247,0.08);
+    border: 1px solid rgba(124,110,247,0.2);
+    border-radius: var(--r);
+    padding: .85rem 1.1rem;
+    font-size: .85rem; line-height: 1.65;
+    margin-bottom: 1.1rem; color: var(--text);
+    font-family: 'Noto Sans Bengali', 'Segoe UI', sans-serif;
+  }
+
   /* ── Option buttons ──────────────────────────────────────────── */
   .options {
     display: grid;
@@ -448,12 +458,12 @@
   <header class="site-header">
     <div class="logo-ring"></div>
     <h1>PPD ঝুঁকি মূল্যায়ন / PPD Risk Assessment</h1>
-    <p>প্রসবোত্তর বিষণ্নতা স্ক্রিনিং · EPDS &amp; PHQ-9 · Gradient Boosting · SHAP Explainability</p>
+    <p>প্রসবোত্তর বিষণ্নতা স্ক্রিনিং · EPDS &amp; PHQ-9 · Logistic Regression · SHAP Explainability</p>
   </header>
 
   <!-- ── Progress ──────────────────────────────────────────────── -->
   <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-  <div class="progress-label"><span id="progressText">০ / ১৭ টি প্রশ্নের উত্তর দেওয়া হয়েছে &nbsp;|&nbsp; 0 / 17 answered</span></div>
+  <div class="progress-label"><span id="progressText">০ / ১৬ টি প্রশ্নের উত্তর দেওয়া হয়েছে &nbsp;|&nbsp; 0 / 16 answered</span></div>
 
   <!-- ── Form ──────────────────────────────────────────────────── -->
   <form id="assessForm" onsubmit="return false;">
@@ -546,64 +556,159 @@
 </div>
 
 <script>
-// ── Feature definitions (mirrors backend exactly — note trailing space on last item) ──
+// ── Feature list — EXACT backend training column order (matches lr_model.pkl) ──
 const FEATURES = [
-  "You have been so unhappy that you have been crying",
-  "You have felt scared or panicky for no good reason",
-  "You have felt sad or miserable",
-  "Little interest or pleasure in doing things",
-  "You have been anxious or worried for no good reason",
-  "Feeling down, depressed, or hopeless",
-  "Trouble concentrating on things",
-  "Feeling bad about yourself or that you are a failure or have let yourself or your family down",
-  "Things have been getting to you",
-  "Trouble falling or staying asleep, or sleeping too much",
-  "You have blamed myself unnecessarily when things went wrong",
-  "You have been so unhappy that you have had difficulty sleeping",
-  "You have looked forward with enjoyment to things",
-  "You have been able to laugh and see the funny side of things",
-  "Feeling tired or having little energy",
-  "Thoughts that you would be better off dead, or of hurting yourself",
-  "The thought of harming yourself has occurred "   // trailing space — matches CSV column
+  "Feeling down, depressed, or hopeless",                                                         // [0]
+  "You have felt sad or miserable",                                                               // [1]
+  "You have been anxious or worried for no good reason",                                          // [2]
+  "Trouble concentrating on things",                                                              // [3]
+  "Things have been getting to you",                                                              // [4]
+  "Feeling bad about yourself or that you are a failure or have let yourself or your family down",// [5]
+  "You have blamed myself unnecessarily when things went wrong",                                  // [6]
+  "You have been so unhappy that you have been crying",                                           // [7]
+  "You have been able to laugh and see the funny side of things",                                 // [8] reversed
+  "You have looked forward with enjoyment to things",                                             // [9] reversed
+  "You have felt scared or panicky for no good reason",                                           // [10]
+  "Little interest or pleasure in doing things",                                                  // [11]
+  "Feeling tired or having little energy",                                                        // [12]
+  "Thoughts that you would be better off dead, or of hurting yourself",                           // [13]
+  "The thought of harming yourself has occurred",                                                 // [14]
+  "Trouble falling or staying asleep, or sleeping too much"                                       // [15]
 ];
 
-// ── Bengali translations ───────────────────────────────────────────────────────
-const BANGLA = {
-  "You have been so unhappy that you have been crying":
-    "আপনি এতটাই দুঃখী ছিলেন যে কাঁদছিলেন",
-  "You have felt scared or panicky for no good reason":
-    "কোনো কারণ ছাড়াই আপনি ভয় পেয়েছেন বা আতঙ্কিত হয়েছেন",
-  "You have felt sad or miserable":
-    "আপনি দুঃখী বা বিষণ্ণ অনুভব করেছেন",
-  "Little interest or pleasure in doing things":
-    "কোনো কাজে আগ্রহ বা আনন্দ কমে যাওয়া",
-  "You have been anxious or worried for no good reason":
-    "কোনো কারণ ছাড়াই আপনি উদ্বিগ্ন বা চিন্তিত ছিলেন",
+// ── Patient-friendly display wording ─────────────────────────────────────────
+const DISPLAY = {
   "Feeling down, depressed, or hopeless":
-    "মন খারাপ, বিষণ্ণ বা হতাশ অনুভব করা",
+    "Have you been feeling down, depressed, or hopeless about the future?",
+  "You have felt sad or miserable":
+    "Have you been feeling sad, low, or miserable?",
+  "You have been anxious or worried for no good reason":
+    "Have you been feeling anxious or worried for no clear reason?",
   "Trouble concentrating on things":
-    "কোনো কাজে মনোযোগ দিতে কষ্ট হওয়া",
-  "Feeling bad about yourself or that you are a failure or have let yourself or your family down":
-    "নিজেকে ব্যর্থ মনে হওয়া বা পরিবারকে হতাশ করেছেন বলে মনে হওয়া",
+    "Have you had trouble concentrating — for example, reading or making small decisions?",
   "Things have been getting to you":
-    "জিনিসগুলো আপনার উপর ভার হয়ে উঠছিল",
-  "Trouble falling or staying asleep, or sleeping too much":
-    "ঘুমাতে সমস্যা, ঘুম না হওয়া বা অতিরিক্ত ঘুমানো",
+    "Have everyday things been getting on top of you and feeling too hard to cope with?",
+  "Feeling bad about yourself or that you are a failure or have let yourself or your family down":
+    "Have you been feeling like a failure, or that you have let yourself or your family down?",
   "You have blamed myself unnecessarily when things went wrong":
-    "কিছু ভুল হলে আপনি অকারণে নিজেকে দোষ দিয়েছেন",
-  "You have been so unhappy that you have had difficulty sleeping":
-    "আপনি এতটাই দুঃখী ছিলেন যে ঘুমাতে কষ্ট হয়েছে",
-  "You have looked forward with enjoyment to things":
-    "আপনি আনন্দের সাথে বিভিন্ন বিষয়ের দিকে তাকিয়ে থাকতেন",
+    "Have you been blaming yourself when things go wrong, even when it is not your fault?",
+  "You have been so unhappy that you have been crying":
+    "Have you been crying a lot because you felt so unhappy?",
   "You have been able to laugh and see the funny side of things":
-    "আপনি হাসতে এবং জিনিসগুলোর মজার দিক দেখতে পেরেছেন",
+    "Have you been able to laugh or see the funny side of situations?",
+  "You have looked forward with enjoyment to things":
+    "Have you been able to look forward to things and feel excited about them?",
+  "You have felt scared or panicky for no good reason":
+    "Have you felt frightened or panicky without any clear reason?",
+  "Little interest or pleasure in doing things":
+    "Have you had little interest or pleasure in doing things you normally enjoy?",
   "Feeling tired or having little energy":
-    "ক্লান্ত অনুভব করা বা শক্তি কম থাকা",
+    "Have you been feeling tired or having very little energy?",
   "Thoughts that you would be better off dead, or of hurting yourself":
-    "মৃত্যু হলে ভালো হতো বা নিজেকে আঘাত করার চিন্তা",
-  "The thought of harming yourself has occurred ":
-    "নিজেকে আঘাত করার চিন্তা আপনার মনে এসেছে"
+    "Have you had thoughts that you would be better off dead, or of hurting yourself in some way?",
+  "The thought of harming yourself has occurred":
+    "Has the thought of harming yourself crossed your mind?",
+  "Trouble falling or staying asleep, or sleeping too much":
+    "Have you had trouble sleeping, or been sleeping much more than usual?"
 };
+
+// ── Bengali question translations ─────────────────────────────────────────────
+const BANGLA = {
+  "Feeling down, depressed, or hopeless":
+    "মন খারাপ, বিষণ্ণ বা ভবিষ্যৎ নিয়ে হতাশ অনুভব করেছেন?",
+  "You have felt sad or miserable":
+    "দুঃখী বা কষ্টে থাকার অনুভূতি হয়েছে?",
+  "You have been anxious or worried for no good reason":
+    "কোনো কারণ ছাড়াই উদ্বিগ্ন বা চিন্তিত ছিলেন?",
+  "Trouble concentrating on things":
+    "কোনো কাজে মনোযোগ দিতে কষ্ট হয়েছে?",
+  "Things have been getting to you":
+    "সাধারণ কাজগুলো সামলানো কঠিন মনে হয়েছে?",
+  "Feeling bad about yourself or that you are a failure or have let yourself or your family down":
+    "নিজেকে ব্যর্থ মনে হয়েছে, বা পরিবারকে হতাশ করেছেন বলে মনে হয়েছে?",
+  "You have blamed myself unnecessarily when things went wrong":
+    "কিছু ভুল হলে অকারণে নিজেকে দোষ দিয়েছেন?",
+  "You have been so unhappy that you have been crying":
+    "এতটাই দুঃখী ছিলেন যে কাঁদছিলেন?",
+  "You have been able to laugh and see the funny side of things":
+    "হাসতে এবং জিনিসের মজার দিক দেখতে পেরেছেন?",
+  "You have looked forward with enjoyment to things":
+    "আনন্দের সাথে ভবিষ্যতের দিকে তাকিয়ে থাকতে পেরেছেন?",
+  "You have felt scared or panicky for no good reason":
+    "কোনো কারণ ছাড়াই ভয় পেয়েছেন বা আতঙ্কিত হয়েছেন?",
+  "Little interest or pleasure in doing things":
+    "স্বাভাবিক কাজে আগ্রহ বা আনন্দ কমে গেছে?",
+  "Feeling tired or having little energy":
+    "ক্লান্ত অনুভব করেছেন বা শক্তি কম থেকেছে?",
+  "Thoughts that you would be better off dead, or of hurting yourself":
+    "মৃত্যু হলে ভালো হতো বা নিজেকে আঘাত করার চিন্তা এসেছে?",
+  "The thought of harming yourself has occurred":
+    "নিজেকে আঘাত করার চিন্তা মাথায় এসেছে?",
+  "Trouble falling or staying asleep, or sleeping too much":
+    "ঘুমাতে সমস্যা হয়েছে, বা অতিরিক্ত ঘুমিয়েছেন?"
+};
+
+// ── Bengali short names for SHAP result cards ────────────────────────────────
+const BANGLA_SHORT = {
+  "Feeling down, depressed, or hopeless":          "হতাশা / বিষণ্নতা",
+  "You have felt sad or miserable":                "দুঃখ / কষ্ট",
+  "You have been anxious or worried for no good reason": "উদ্বেগ / দুশ্চিন্তা",
+  "Trouble concentrating on things":               "মনোযোগের সমস্যা",
+  "Things have been getting to you":               "সামলাতে না পারা",
+  "Feeling bad about yourself or that you are a failure or have let yourself or your family down": "অপরাধবোধ / ব্যর্থতার অনুভূতি",
+  "You have blamed myself unnecessarily when things went wrong": "অকারণে নিজেকে দোষ দেওয়া",
+  "You have been so unhappy that you have been crying": "অত্যন্ত দুঃখ / কান্না",
+  "You have been able to laugh and see the funny side of things": "হাসার ক্ষমতা 🛡",
+  "You have looked forward with enjoyment to things": "আনন্দের প্রত্যাশা 🛡",
+  "You have felt scared or panicky for no good reason": "ভয় / আতঙ্ক",
+  "Little interest or pleasure in doing things":   "আগ্রহ হারিয়ে যাওয়া",
+  "Feeling tired or having little energy":         "ক্লান্তি / শক্তিহীনতা",
+  "Thoughts that you would be better off dead, or of hurting yourself": "মৃত্যু কামনা ⚠",
+  "The thought of harming yourself has occurred":  "আত্মঘাতী চিন্তা ⚠",
+  "Trouble falling or staying asleep, or sleeping too much": "ঘুমের সমস্যা"
+};
+
+// ── Bengali SHAP explanations (why this feature matters for the prediction) ──
+const BANGLA_MEANING = {
+  "Feeling down, depressed, or hopeless":
+    "হতাশার অনুভূতি PPD-র প্রধান লক্ষণ। এটি মডেলকে উচ্চ ঝুঁকির দিকে ঠেলে দেয়।",
+  "You have felt sad or miserable":
+    "দীর্ঘস্থায়ী দুঃখ প্রসবোত্তর বিষণ্নতার কেন্দ্রীয় লক্ষণ।",
+  "You have been anxious or worried for no good reason":
+    "কারণ ছাড়া উদ্বেগ PPD-এর সাথে ৬০%+ ক্ষেত্রে দেখা যায়।",
+  "Trouble concentrating on things":
+    "মনোযোগের সমস্যা বিষণ্নতার একটি জ্ঞানীয় লক্ষণ — মা সিদ্ধান্ত নিতে পারেন না।",
+  "Things have been getting to you":
+    "সামলাতে না পারার অনুভূতি PPD-র তীব্রতার সূচক।",
+  "Feeling bad about yourself or that you are a failure or have let yourself or your family down":
+    "অতিরিক্ত অপরাধবোধ ক্লিনিক্যাল বিষণ্নতার একটি গুরুত্বপূর্ণ বৈশিষ্ট্য।",
+  "You have blamed myself unnecessarily when things went wrong":
+    "অকারণে দোষ নেওয়া একটি বিষণ্ন চিন্তার ধরন — PPD-এর শক্তিশালী সংকেত।",
+  "You have been so unhappy that you have been crying":
+    "ক্রমাগত কান্না PPD-এর সবচেয়ে স্পষ্ট বাহ্যিক লক্ষণ। এটি ঝুঁকি উল্লেখযোগ্যভাবে বাড়ায়।",
+  "You have been able to laugh and see the funny side of things":
+    "🛡 এটি একটি সুরক্ষামূলক প্রশ্ন। 'প্রায় প্রতিদিন' মানে মা হাসতে পারছেন — এটি ঝুঁকি কমায়। হাসতে না পারা বিষণ্নতার প্রথম লক্ষণ।",
+  "You have looked forward with enjoyment to things":
+    "🛡 এটি একটি সুরক্ষামূলক প্রশ্ন। ভবিষ্যতের প্রতি আগ্রহ থাকলে ঝুঁকি কমে। না থাকলে High ঝুঁকির ইঙ্গিত।",
+  "You have felt scared or panicky for no good reason":
+    "কারণ ছাড়া ভয় বা আতঙ্ক PPD-এর উদ্বেগ উপাদান দেখায়।",
+  "Little interest or pleasure in doing things":
+    "আনন্দ না পাওয়া (অ্যানহেডোনিয়া) PPD-এর মূল ডায়াগনস্টিক মার্কার।",
+  "Feeling tired or having little energy":
+    "শিশু যত্নের স্বাভাবিক ক্লান্তির বাইরে অতিরিক্ত ক্লান্তি বিষণ্নতার শারীরিক লক্ষণ।",
+  "Thoughts that you would be better off dead, or of hurting yourself":
+    "⚠ এই চিন্তা অত্যন্ত গুরুতর। যেকোনো মাত্রায় হলেও তাৎক্ষণিক পেশাদার সহায়তা নিন।",
+  "The thought of harming yourself has occurred":
+    "⚠ নিজেকে আঘাতের যেকোনো চিন্তা জরুরি ক্লিনিক্যাল রেফারেলের প্রয়োজন নির্দেশ করে।",
+  "Trouble falling or staying asleep, or sleeping too much":
+    "ঘুমের সমস্যা এই মডেলের সবচেয়ে শক্তিশালী ভবিষ্যদ্বক্তা। এটি উচ্চ ঝুঁকির দিকে সবচেয়ে জোরালো প্রভাব ফেলে।"
+};
+
+// ── Reversed items: higher score = more of the item = LESS High risk ─────────
+const REVERSED = new Set([
+  "You have been able to laugh and see the funny side of things",
+  "You have looked forward with enjoyment to things"
+]);
 
 // ── Answer options (English + Bengali) ────────────────────────────────────────
 const OPTIONS = ["Not at all", "Several days", "Around half the days", "Nearly every day"];
@@ -617,24 +722,20 @@ const OPTIONS_BN = {
 // Which features belong to EPDS vs PHQ-9
 const EPDS_SET = new Set([
   "You have been so unhappy that you have been crying",
-  "You have felt scared or panicky for no good reason",
-  "You have felt sad or miserable",
+  "You have been able to laugh and see the funny side of things",
+  "You have looked forward with enjoyment to things",
   "You have been anxious or worried for no good reason",
+  "You have felt scared or panicky for no good reason",
   "Things have been getting to you",
   "You have blamed myself unnecessarily when things went wrong",
-  "You have been so unhappy that you have had difficulty sleeping",
-  "You have looked forward with enjoyment to things",
-  "You have been able to laugh and see the funny side of things",
-  "The thought of harming yourself has occurred "   // trailing space
+  "You have felt sad or miserable",
+  "The thought of harming yourself has occurred"
 ]);
 
 const WARN_SET = new Set([
   "Thoughts that you would be better off dead, or of hurting yourself",
-  "The thought of harming yourself has occurred "   // trailing space
+  "The thought of harming yourself has occurred"
 ]);
-
-// Map for SHAP importance bar max (use mean of top feature = 0.0585)
-const SHAP_MAX = 0.065;
 
 // ── Build questions ───────────────────────────────────────────────────────────
 const answers = {};
@@ -661,18 +762,29 @@ function appendSection(container, badge, title, feats, type) {
   label.innerHTML = `<span class="badge badge-${type}">${badge}</span><h2>${title} Items</h2>`;
   container.appendChild(label);
 
-  feats.forEach((feat, idx) => {
+  // 7-day instruction banner
+  const instr = document.createElement('div');
+  instr.className = 'instr-banner';
+  instr.innerHTML = `📅 <strong>গত ৭ দিনের মধ্যে</strong> আপনি কতটা সময় এই অনুভূতিগুলি অনুভব করেছেন?<br>
+    <span style="color:var(--muted)">In the <strong>past 7 days</strong>, how often have you experienced the following?</span>`;
+  container.appendChild(instr);
+
+  feats.forEach((feat) => {
     const globalIdx = FEATURES.indexOf(feat) + 1;
-    const warn = WARN_SET.has(feat);
-    const bn   = BANGLA[feat] || '';
+    const warn      = WARN_SET.has(feat);
+    const display   = DISPLAY[feat] || feat;   // patient-friendly English
+    const bn        = BANGLA[feat]  || '';     // Bengali translation
+    const bn_nums   = ['০','১','২','৩','৪','৫','৬','৭','৮','৯','১০','১১','১২','১৩','১৪','১৫','১৬','১৭'];
+
     const card = document.createElement('div');
     card.className = 'q-card';
     card.id = `card-${globalIdx}`;
     card.innerHTML = `
-      <div class="q-num">প্রশ্ন ${globalIdx} &nbsp;/&nbsp; Question ${globalIdx}</div>
-      <div class="q-text">${feat}</div>
+      <div class="q-num">প্রশ্ন ${bn_nums[globalIdx] || globalIdx} &nbsp;/&nbsp; Question ${globalIdx}</div>
+      <div class="q-text">${display}</div>
       ${bn ? `<div class="q-text-bn">${bn}</div>` : ''}
-      ${warn ? '<div class="q-warn">⚠ এই ধরনের চিন্তা থাকলে অনুগ্রহ করে অবিলম্বে সাহায্য নিন। / If you have these thoughts, please seek support immediately.</div>' : ''}
+      ${warn ? `<div class="q-warn">⚠ এই ধরনের চিন্তা থাকলে অনুগ্রহ করে এখনই সাহায্য নিন।
+        If you are having these thoughts, please seek professional support immediately.</div>` : ''}
       <div class="options" data-feat="${feat}">
         ${OPTIONS.map(opt => `
           <button type="button" class="opt-btn" data-val="${opt}" onclick="selectOpt(this)">
@@ -707,9 +819,9 @@ function selectOpt(btn) {
 function updateProgress() {
   const pct = (answered / FEATURES.length) * 100;
   document.getElementById('progressBar').style.width = pct + '%';
-  const bn_nums = ['০','১','২','৩','৪','৫','৬','৭','৮','৯','১০','১১','১২','১৩','১৪','১৫','১৬','১৭'];
+  const bn_nums = ['০','১','২','৩','৪','৫','৬','৭','৮','৯','১০','১১','১২','১৩','১৪','১৫','১৬'];
   document.getElementById('progressText').textContent =
-    `${bn_nums[answered] || answered} / ১৭ টি প্রশ্নের উত্তর দেওয়া হয়েছে  |  ${answered} / ${FEATURES.length} answered`;
+    `${bn_nums[answered] || answered} / ১৬ টি প্রশ্নের উত্তর দেওয়া হয়েছে  |  ${answered} / ${FEATURES.length} answered`;
   document.getElementById('submitBtn').disabled = (answered < FEATURES.length);
 }
 
@@ -746,29 +858,33 @@ function renderResults(data) {
   const top3  = data.top3_features;
   const classes = data.classes;
 
-  // ── colours
   const colorMap = { High: 'var(--high)', Medium: 'var(--medium)', Low: 'var(--low)' };
   const glowMap  = { High: 'var(--high-glow)', Medium: 'var(--medium-glow)', Low: 'var(--low-glow)' };
-  const gradMap  = {
-    High:   'url(#gaugeGradHigh)',
-    Medium: 'url(#gaugeGradMed)',
-    Low:    'url(#gaugeGradLow)'
+  const gradMap  = { High: 'url(#gaugeGradHigh)', Medium: 'url(#gaugeGradMed)', Low: 'url(#gaugeGradLow)' };
+  const angleMap = { Low: -90, Medium: 0, High: 90 };
+  const fillMap  = { Low: 47, Medium: 141, High: 236 };
+  const riskBn   = { High: 'উচ্চ ঝুঁকি', Medium: 'মাঝারি ঝুঁকি', Low: 'কম ঝুঁকি' };
+  const subBn    = {
+    High:   'EPDS স্কোর সম্ভবত ১৩–৩০ · তাৎক্ষণিক ক্লিনিক্যাল রেফারেল প্রয়োজন',
+    Medium: 'EPDS স্কোর সম্ভবত ১০–১২ · নিয়মিত পর্যবেক্ষণ পরামর্শদায়ক',
+    Low:    'EPDS স্কোর সম্ভবত ০–৯ · স্বাভাবিক সীমার মধ্যে'
   };
-  const angleMap = { Low: -90, Medium: 0, High: 90 };   // -90=far left, 0=top, 90=far right
-  const fillMap  = { Low: 47, Medium: 141, High: 236 };  // dashoffset for 1/6, 3/6, 5/6 fill
+  const subEn = {
+    High:   'EPDS Score likely 13–30 — clinical referral recommended',
+    Medium: 'EPDS Score likely 10–12 — monitoring advised',
+    Low:    'EPDS Score likely 0–9 — within normal range'
+  };
 
-  // ── gauge
-  document.getElementById('gaugeLabel').textContent = pred + ' Risk';
+  // Gauge
+  document.getElementById('gaugeLabel').innerHTML =
+    `${pred} Risk<br><span style="font-size:1rem;font-family:'Noto Sans Bengali',sans-serif;">${riskBn[pred]}</span>`;
   document.getElementById('gaugeLabel').style.color = colorMap[pred];
-  document.getElementById('gaugeSub').textContent =
-    pred === 'High'   ? 'EPDS Score likely 13–30 — clinical referral recommended' :
-    pred === 'Medium' ? 'EPDS Score likely 10–12 — monitoring advised' :
-                        'EPDS Score likely 0–9 — within normal range';
-
+  document.getElementById('gaugeSub').innerHTML =
+    `<span style="font-family:'Noto Sans Bengali',sans-serif">${subBn[pred]}</span><br>
+     <span style="opacity:.7;font-size:.82rem">${subEn[pred]}</span>`;
   document.getElementById('gaugeFill').setAttribute('stroke', gradMap[pred]);
   document.getElementById('gaugeFill').style.strokeDashoffset = fillMap[pred];
-  document.getElementById('gaugeNeedle').style.transform =
-    `rotate(${angleMap[pred]}deg)`;
+  document.getElementById('gaugeNeedle').style.transform = `rotate(${angleMap[pred]}deg)`;
   document.getElementById('gaugeWrap').style.setProperty('--risk-glow', glowMap[pred]);
 
   // ── prob bars
@@ -786,14 +902,28 @@ function renderResults(data) {
   grid.innerHTML = '';
   const maxShap = Math.max(...top3.map(f => Math.abs(f.shap_value)));
 
-  top3.forEach((feat, i) => {
-    const scale = feat.scale.toUpperCase();
-    const scaleClass = scale === 'EPDS' ? 'scale-epds' : 'scale-phq';
-    const shapPct  = Math.min(100, (Math.abs(feat.shap_value) / SHAP_MAX) * 100).toFixed(1);
-    const rankCls  = ['rank-1','rank-2','rank-3'][i];
-    const barColor = ['#ffd700','#c0c0c0','#cd7f32'][i];
+  const maxAbsShap = Math.max(...top3.map(f => Math.abs(f.shap_value)));
 
-    // per-class bars
+  top3.forEach((feat, i) => {
+    const shapPos   = feat.shap_value > 0;
+    const dirIcon   = shapPos ? '⬆' : '⬇';
+    const dirColor  = shapPos ? 'var(--high)' : 'var(--low)';
+    const dirTextEn = shapPos
+      ? `Pushes toward <b style="color:var(--high)">High risk</b>`
+      : `Pushes toward <b style="color:var(--low)">Low risk</b> <em>(protective)</em>`;
+    const dirTextBn = shapPos
+      ? `<span style="color:var(--high)">উচ্চ ঝুঁকির</span> দিকে ঠেলে দেয়`
+      : `<span style="color:var(--low)">কম ঝুঁকির</span> দিকে টানে (সুরক্ষামূলক)`;
+
+    const scale     = feat.scale.toUpperCase();
+    const scaleClass = scale === 'EPDS' ? 'scale-epds' : 'scale-phq';
+    const shapPct   = Math.min(100, (Math.abs(feat.shap_value) / (maxAbsShap || 1)) * 100).toFixed(1);
+    const rankCls   = ['rank-1','rank-2','rank-3'][i];
+    const barColor  = shapPos ? '#ff6b81' : '#2ed573';
+    const bnShort   = BANGLA_SHORT[feat.feature]   || '';
+    const bnMeaning = BANGLA_MEANING[feat.feature] || '';
+    const bnAnswer  = OPTIONS_BN[feat.answer]       || feat.answer;
+
     let clsBarsHTML = '';
     if (feat.shap_all_cls) {
       const allMax = Math.max(...Object.values(feat.shap_all_cls).map(Math.abs));
@@ -806,7 +936,7 @@ function renderResults(data) {
           <div class="cls-row">
             <span class="cls-name">${cls}</span>
             <div class="cls-track"><div class="cls-fill" style="background:${col};width:${pct}%"></div></div>
-            <span class="cls-val">${v.toFixed(4)}</span>
+            <span class="cls-val">${v >= 0 ? '+' : ''}${v.toFixed(3)}</span>
           </div>`;
       });
     }
@@ -818,14 +948,24 @@ function renderResults(data) {
     card.innerHTML = `
       <div class="rank-badge ${rankCls}">#${i+1}</div>
       <div class="top3-short">${feat.short}</div>
+      ${bnShort ? `<div style="font-size:.8rem;color:var(--muted);font-family:'Noto Sans Bengali',sans-serif;margin-bottom:.35rem">${bnShort}</div>` : ''}
       <span class="top3-scale ${scaleClass}">${scale}</span>
-      <div class="top3-answer">Patient answered: <span>${feat.answer}</span></div>
+      <div class="top3-answer" style="margin-top:.5rem">
+        উত্তর / Answer: <span>${feat.answer}</span>
+        <span style="color:var(--muted);font-family:'Noto Sans Bengali',sans-serif;font-size:.78rem"> · ${bnAnswer}</span>
+      </div>
+      <div style="font-size:.78rem;margin:.45rem 0;display:flex;align-items:center;gap:.35rem">
+        <span style="font-size:1rem;color:${dirColor}">${dirIcon}</span>
+        <span>${dirTextEn}</span>
+      </div>
+      <div style="font-size:.78rem;margin-bottom:.6rem;font-family:'Noto Sans Bengali',sans-serif;color:var(--muted)">${dirTextBn}</div>
       <div class="shap-bar-wrap">
         <div class="shap-bar" style="background:${barColor};width:${shapPct}%"></div>
       </div>
-      <div class="shap-val">SHAP impact: <b>${Math.abs(feat.shap_value).toFixed(5)}</b></div>
-      <div class="cls-bars">${clsBarsHTML}</div>
-      <div class="top3-meaning">${feat.meaning}</div>`;
+      <div class="shap-val" style="margin-bottom:.5rem">SHAP: <b>${feat.shap_value >= 0 ? '+' : ''}${feat.shap_value.toFixed(4)}</b></div>
+      <div class="cls-bars" style="margin-bottom:.6rem">${clsBarsHTML}</div>
+      <div class="top3-meaning">${feat.meaning}</div>
+      ${bnMeaning ? `<div style="font-size:.8rem;color:var(--muted);line-height:1.65;border-top:1px solid var(--card-border);padding-top:.6rem;margin-top:.5rem;font-family:'Noto Sans Bengali',sans-serif">${bnMeaning}</div>` : ''}`;
     grid.appendChild(card);
   });
 
@@ -839,31 +979,49 @@ function renderResults(data) {
 }
 
 function buildInsight(pred, top3, proba) {
-  const f1 = top3[0] ? top3[0].short : '—';
-  const f2 = top3[1] ? top3[1].short : '—';
-  const f3 = top3[2] ? top3[2].short : '—';
-  const a1 = top3[0] ? top3[0].answer : '';
-  const byLine = pred === 'High'
-    ? `The model classifies this patient as <strong>High risk</strong> (EPDS Score likely 13–30). This is the most serious PPD risk category.`
+  const f1  = top3[0] ? top3[0].short : '—';
+  const f2  = top3[1] ? top3[1].short : '—';
+  const f3  = top3[2] ? top3[2].short : '—';
+  const bn1 = top3[0] ? (BANGLA_SHORT[top3[0].feature] || f1) : '—';
+  const bn2 = top3[1] ? (BANGLA_SHORT[top3[1].feature] || f2) : '—';
+  const bn3 = top3[2] ? (BANGLA_SHORT[top3[2].feature] || f3) : '—';
+  const a1  = top3[0] ? top3[0].answer : '';
+  const bna1 = OPTIONS_BN[a1] || a1;
+  const highPct = Math.round((proba['High'] || 0) * 100);
+
+  const byLineEn = pred === 'High'
+    ? `This patient is classified as <strong style="color:var(--high)">High Risk</strong> (EPDS ≈ 13–30). This is the most serious PPD category — immediate clinical referral is recommended.`
     : pred === 'Medium'
-    ? `The model classifies this patient as <strong>Medium risk</strong> (EPDS Score likely 10–12). Clinical monitoring is recommended.`
-    : `The model classifies this patient as <strong>Low risk</strong> (EPDS Score likely 0–9). Routine follow-up is still advised.`;
+    ? `This patient is classified as <strong style="color:var(--medium)">Medium Risk</strong> (EPDS ≈ 10–12). Regular monitoring and professional follow-up is advised.`
+    : `This patient is classified as <strong style="color:var(--low)">Low Risk</strong> (EPDS ≈ 0–9). Routine maternal health follow-up is still recommended.`;
+
+  const byLineBn = pred === 'High'
+    ? `এই মা <strong style="color:var(--high)">উচ্চ ঝুঁকি</strong>-তে আছেন (EPDS ≈ ১৩–৩০)। এটি সবচেয়ে গুরুতর PPD বিভাগ — তাৎক্ষণিক ক্লিনিক্যাল রেফারেল প্রয়োজন।`
+    : pred === 'Medium'
+    ? `এই মা <strong style="color:var(--medium)">মাঝারি ঝুঁকি</strong>-তে আছেন (EPDS ≈ ১০–১২)। নিয়মিত পর্যবেক্ষণ এবং পেশাদার ফলো-আপ পরামর্শদায়ক।`
+    : `এই মা <strong style="color:var(--low)">কম ঝুঁকি</strong>-তে আছেন (EPDS ≈ ০–৯)। তবুও নিয়মিত মাতৃস্বাস্থ্য ফলো-আপ প্রয়োজন।`;
 
   return `
-    <h3>🩺 Clinical Interpretation</h3>
-    <p>${byLine}</p>
-    <p style="margin-top:.75rem">
-      The three features that drove this prediction most strongly were
+    <h3>🩺 Clinical Interpretation &nbsp;/&nbsp; <span style="font-family:'Noto Sans Bengali',sans-serif;font-size:.9rem">ক্লিনিক্যাল ব্যাখ্যা</span></h3>
+    <p>${byLineEn}</p>
+    <p style="margin-top:.5rem;font-family:'Noto Sans Bengali',sans-serif;font-size:.9rem;color:var(--muted)">${byLineBn}</p>
+    <p style="margin-top:.85rem">
+      The three features that most strongly drove this prediction were
       <strong>${f1}</strong>, <strong>${f2}</strong>, and <strong>${f3}</strong>.
-      The patient answered <em>"${a1}"</em> to the top-ranked item, which carries the highest SHAP contribution
-      toward the predicted class. EPDS questionnaire items collectively outweigh PHQ-9 items in
-      this model's feature importance, consistent with the Edinburgh scale being specifically
-      validated for postnatal populations.
+      The patient answered <em>"${a1}"</em> to the top-ranked item
+      (model confidence: ${highPct}% toward ${pred} risk).
     </p>
-    ${pred !== 'Low' ? `<p style="margin-top:.75rem;color:#ffbd59">
-      ⚠ Based on these responses, referral to a mental health professional is strongly advised
-      for a full clinical assessment before any diagnosis or treatment decision is made.
-    </p>` : ''}`;
+    <p style="margin-top:.55rem;font-family:'Noto Sans Bengali',sans-serif;font-size:.88rem;color:var(--muted)">
+      এই পূর্বাভাসকে সবচেয়ে বেশি প্রভাবিত করা তিনটি বিষয়: <strong>${bn1}</strong>, <strong>${bn2}</strong>, এবং <strong>${bn3}</strong>।
+      শীর্ষ বিষয়ে উত্তর ছিল "<em>${bna1}</em>"।
+    </p>
+    ${pred !== 'Low' ? `<p style="margin-top:.85rem;color:#ffbd59;font-size:.88rem">
+      ⚠ <span style="font-family:'Noto Sans Bengali',sans-serif">এই উত্তরের ভিত্তিতে, কোনো রোগ নির্ণয় বা চিকিৎসার আগে একজন মানসিক স্বাস্থ্য বিশেষজ্ঞের কাছে সম্পূর্ণ মূল্যায়নের জন্য পাঠানো উচিত।</span><br>
+      <span style="color:rgba(255,189,89,.75)">Based on these responses, referral to a qualified mental health professional is strongly advised before any diagnosis or treatment decision.</span>
+    </p>` : `<p style="margin-top:.85rem;color:var(--low);font-size:.88rem">
+      ✅ <span style="font-family:'Noto Sans Bengali',sans-serif">বর্তমানে কম ঝুঁকি নির্দেশিত হলেও নিয়মিত মাতৃস্বাস্থ্য পরিদর্শনে স্ক্রিনিং অব্যাহত রাখুন।</span><br>
+      <span style="color:rgba(46,213,115,.75)">Low risk indicated. Continue routine maternal health screening at all follow-up visits.</span>
+    </p>`}`;
 }
 
 // ── Reset ─────────────────────────────────────────────────────────────────────

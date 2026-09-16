@@ -59,7 +59,7 @@ Background input features & 46 features across 4 categories \\
 \hline
 Screening items (EPDS + PHQ-9) & 19 questionnaire question columns \\
 \hline
-Selected optimal features (chi2+BE) & 17 (10 EPDS + 7 PHQ-9 items) \\
+Selected optimal features (chi2+BE) & 16 (10 EPDS + 6 PHQ-9 items) \\
 \hline
 Primary target variable & EPDS Result (3 classes: Low, Medium, High) \\
 \hline
@@ -211,24 +211,35 @@ The \textbf{Target/Score} category is excluded from model inputs; these are the 
 \label{ch3-sec-encoding}
 % --------------------------------------------------------
 
-Before training any machine learning model, all categorical columns were converted into numbers using \texttt{LabelEncoder} from scikit-learn. This was applied to every column that had text (object-type) values:
+Before training any machine learning model, all categorical columns were converted into numbers. Two encoding strategies were applied:
 
-\begin{lstlisting}[language=Python, caption={Label encoding of all categorical columns.}]
-from sklearn.preprocessing import LabelEncoder
+\textbf{Ordinal encoding for EPDS and PHQ-9 questionnaire columns.}
+All 19 EPDS and PHQ-9 items share the same four response options. These responses form a natural clinical severity scale, so they were encoded using a fixed ordinal mapping that preserves the clinical ordering:
 
-le = LabelEncoder()
-for col in df.select_dtypes(include='object').columns:
-    df[col] = le.fit_transform(df[col].astype(str))
+\begin{lstlisting}[language=Python, caption={Ordinal encoding for EPDS/PHQ-9 questionnaire columns.}]
+ORDINAL_MAP = {
+    "Not at all":           0,   # no symptom
+    "Several days":         1,   # mild
+    "Around half the days": 2,   # moderate
+    "Nearly every day":     3,   # severe
+}
+for col in questionnaire_cols:
+    df[col] = df[col].map(ORDINAL_MAP)
 \end{lstlisting}
 
-After encoding, all values in the dataset are integers. This allows all 15 models to work with the data without errors.
+This ordinal encoding ensures the model learns the correct severity direction: higher values mean more severe symptoms. A naive alphabetical LabelEncoder would assign \texttt{Around half the days = 0} and \texttt{Not at all = 2}, reversing the clinical meaning and producing incorrect predictions.
+
+\textbf{Label encoding for all remaining categorical columns.}
+For all other categorical (object-type) columns, a standard label encoding was applied: categories were sorted and assigned consecutive integers starting from 0. Missing values were set to 0 before encoding so they are treated as a distinct category.
+
+After encoding, all values in the dataset are integers, saved as \texttt{PPD\_data\_numeric.csv}. This allows all 15 models to work with the data without errors.
 
 % --------------------------------------------------------
 \section{Feature Selection: Chi-Square Analysis and Backward Elimination}
 \label{ch3-sec-featuresel}
 % --------------------------------------------------------
 
-A Chi-square feature ranking followed by backward elimination was applied to identify the most predictive subset of questionnaire items for the EPDS Result target. This is a key novelty of this thesis: it identifies which specific EPDS and PHQ-9 items are most informative, reducing the full set of 65 candidate features to a compact and optimal 17-feature subset.
+A Chi-square feature ranking followed by backward elimination was applied to identify the most predictive subset of questionnaire items for the EPDS Result target. This is a key novelty of this thesis: it identifies which specific EPDS and PHQ-9 items are most informative, reducing the full set of 65 candidate features to a compact and optimal 16-feature subset.
 
 \subsection{Chi-Square Feature Ranking}
 
@@ -255,32 +266,40 @@ The Chi-square analysis ranked all 65 features by their association with the EPD
 
 \subsection{Backward Elimination with Random Forest and Gradient Boosting}
 
-A backward elimination experiment was then run. Starting from all 65 features, the feature with the lowest Chi-square score was removed one at a time. At each step, both a \textbf{Random Forest} and a \textbf{Gradient Boosting} model were trained and tested using 5-fold cross-validation on the EPDS Result target. The use of two models ensures the feature selection result is not dependent on any single algorithm. This process identified that the best cross-validation accuracy was reached when \textbf{17 features} remained (at elimination step 48 out of 64 total possible steps):
+A backward elimination experiment was then run. Starting from all 65 features, the feature with the lowest Chi-square score was removed one at a time. At each step, both a \textbf{Random Forest} and a \textbf{Gradient Boosting} model were trained and tested using 5-fold cross-validation on the EPDS Result target. The use of two models ensures the feature selection result is not dependent on any single algorithm. This process identified that the best cross-validation accuracy was reached when \textbf{16 features} remained:
 
 \begin{itemize}
-    \item \textbf{Best CV accuracy: 0.9262 ($\pm$ 0.0072)} (Gradient Boosting)
+    \item \textbf{Best CV accuracy: 0.9262 ($\pm$ 0.0072)} (Gradient Boosting, on the selected feature subset)
     \item \textbf{Best F1 score (macro): approximately 0.91}
-    \item \textbf{Features remaining: 17}
+    \item \textbf{Features remaining: 16}
 \end{itemize}
 
-\subsection{The 17 Selected Features}
+\subsection{The 16 Selected Features}
 
-When the 17 optimal features were examined, \textbf{all 17 were EPDS or PHQ-9 questionnaire items}: 10 EPDS items and 7 PHQ-9 items. This finding confirms that the questionnaire items are the most informative features for PPD risk classification. The Chi-square backward elimination has identified the specific subset of screening items that, together, give the best predictive performance with the fewest features.
+When the 16 optimal features were examined, \textbf{all 16 were EPDS or PHQ-9 questionnaire items}: 10 EPDS items and 6 PHQ-9 items. This finding confirms that the questionnaire items are the most informative features for PPD risk classification. The Chi-square backward elimination has identified the specific subset of screening items that, together, give the best predictive performance with the fewest features.
 
-The 17 selected features include items such as:
+The 16 selected features include items such as:
 \begin{itemize}
+    \item ``Trouble falling or staying asleep, or sleeping too much'' (PHQ-9)
     \item ``You have been so unhappy that you have been crying'' (EPDS)
     \item ``You have felt scared or panicky for no good reason'' (EPDS)
     \item ``You have felt sad or miserable'' (EPDS)
     \item ``Feeling down, depressed, or hopeless'' (PHQ-9)
     \item ``You have been able to laugh and see the funny side of things'' (EPDS)
     \item ``Thoughts that you would be better off dead, or of hurting yourself'' (PHQ-9)
-    \item (and 11 more EPDS/PHQ-9 items)
+    \item (and 9 more EPDS/PHQ-9 items)
 \end{itemize}
 
-These 17 items are the validated input feature set for the main model comparison and SHAP analysis in this thesis. The full list is saved in \texttt{chi2\_optimal\_features.txt}.
+The item ``You have been so unhappy that you have had difficulty sleeping'' (EPDS) was excluded by backward elimination as it was found to be the least informative screening item once the other 16 were present. These 16 items are the validated input feature set for the main model comparison and SHAP analysis in this thesis. The full list is saved in \texttt{chi2\_optimal\_features.txt}.
 
 The backward elimination also confirmed that the four background categories (Demographic, Familial, Personal Health, Neonatal Health) rank below all screening items in predictive power. These categories are tested separately in Section~\ref{ch3-subsec-category} to measure their standalone contribution.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\linewidth]{Images/fig08_backward_elimination.jpg}
+  \caption{Backward feature elimination trajectory. The CV accuracy peaks at 16 features retained (accuracy = 0.9262, marked with a red circle). Performance drops sharply when fewer than 10 features remain, confirming 16 as the optimal feature count.}
+  \label{fig:backward-elim}
+\end{figure}
 
 % --------------------------------------------------------
 \section{Machine Learning Model Comparison}
@@ -298,36 +317,36 @@ Fifteen models were trained and compared. These include both traditional machine
 \hline
 \textbf{\#} & \textbf{Model} & \textbf{Type} & \textbf{CV Acc.} \\
 \hline
-1  & Gradient Boosting        & Traditional ML (Ensemble) & \textbf{0.926} \\
-2  & LightGBM                 & Traditional ML (Ensemble) & $\sim$0.920 \\
-3  & XGBoost                  & Traditional ML (Ensemble) & $\sim$0.918 \\
-4  & Hist Gradient Boosting   & Traditional ML (Ensemble) & $\sim$0.916 \\
-5  & Random Forest            & Traditional ML (Ensemble) & $\sim$0.912 \\
-6  & CatBoost                 & Traditional ML (Ensemble) & $\sim$0.910 \\
-7  & Extra Trees              & Traditional ML (Ensemble) & $\sim$0.908 \\
-8  & AdaBoost                 & Traditional ML (Ensemble) & $\sim$0.890 \\
-9  & Decision Tree            & Traditional ML            & $\sim$0.895 \\
-10 & SVM (Support Vector Machine) & Traditional ML       & $\sim$0.875 \\
-11 & KNN (K-Nearest Neighbors) & Traditional ML          & $\sim$0.865 \\
-12 & Logistic Regression      & Traditional ML            & $\sim$0.858 \\
-13 & 1D CNN                   & Deep Learning             & $\sim$0.900 \\
-14 & MLP (Multilayer Perceptron) & Deep Learning          & $\sim$0.885 \\
-15 & Deep MLP (Deeper architecture) & Deep Learning      & $\sim$0.880 \\
+1  & 1D CNN                       & Deep Learning             & \textbf{0.9825} \\
+2  & MLP                          & Deep Learning             & 0.9800 \\
+3  & \textbf{Logistic Regression} & Traditional ML            & \textbf{0.9713} \\
+4  & Deep MLP                     & Deep Learning             & 0.9638 \\
+5  & CatBoost                     & Traditional ML (Ensemble) & 0.9375 \\
+6  & Gradient Boosting            & Traditional ML (Ensemble) & 0.9338 \\
+7  & XGBoost                      & Traditional ML (Ensemble) & 0.9313 \\
+8  & LightGBM                     & Traditional ML (Ensemble) & 0.9325 \\
+9  & Hist Gradient Boosting       & Traditional ML (Ensemble) & 0.9250 \\
+10 & Extra Trees                  & Traditional ML (Ensemble) & 0.9238 \\
+11 & SVM (RBF)                    & Traditional ML            & 0.9150 \\
+12 & Random Forest                & Traditional ML (Ensemble) & 0.9200 \\
+13 & Decision Tree                & Traditional ML            & 0.9075 \\
+14 & AdaBoost                     & Traditional ML (Ensemble) & 0.8888 \\
+15 & KNN                          & Traditional ML            & 0.8763 \\
 \hline
 \end{tabular}
-\caption{All 15 models compared in this thesis with approximate CV accuracy on the 17 selected features, EPDS Result target.}
+\caption{All 15 models compared in this thesis (5-fold CV accuracy) on the 16 selected features, EPDS Result target. Logistic Regression is selected for SHAP deployment due to its near-top accuracy and compatibility with LinearExplainer.}
 \label{ch3-tbl-models}
 \end{table}
 \FloatBarrier
 
 \subsection{Training Setup}
 
-All models were trained using \textbf{5-fold stratified cross-validation} on the \textbf{EPDS Result} target (three classes: Low, Medium, High) using the \textbf{17 selected features}. Stratified folds ensure that all three EPDS Result classes are represented in approximately equal proportions in each fold.
+All models were trained using \textbf{5-fold stratified cross-validation} on the \textbf{EPDS Result} target (three classes: Low, Medium, High) using the \textbf{16 selected features}. Stratified folds ensure that all three EPDS Result classes are represented in approximately equal proportions in each fold.
 
 \begin{lstlisting}[language=Python, caption={5-fold cross-validation setup on EPDS Result.}]
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 
-X = df_encoded[chi2_optimal_features]   # 17 selected features
+X = df_encoded[chi2_optimal_features]   # 16 selected features
 y = df_encoded['EPDS Result']            # 3-class target
 
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
@@ -350,14 +369,14 @@ The main evaluation metrics used are:
 \subsection{Category-wise Model Training}
 \label{ch3-subsec-category}
 
-In addition to training on the 17 selected screening features, each of the four background categories and the full Screening Items category were also tested separately with Gradient Boosting to measure standalone predictive power:
+In addition to training on the 16 selected screening features, each of the four background categories and the full Screening Items category were also tested separately with Gradient Boosting to measure standalone predictive power:
 
 \begin{enumerate}
     \item Train on Demographic features only (8 features)
     \item Train on Familial features only (9 features)
     \item Train on Personal Health features only (8 features)
     \item Train on Neonatal Health features only (21 features)
-    \item Train on Screening Items only (19 features) --- all 19 items, not just the 17 selected
+    \item Train on Screening Items only (19 features) --- all 19 items, not just the 16 selected
 \end{enumerate}
 
 The purpose of the category-wise experiment is to answer Research Objective~1: how does each background category compare against the selected screening items for PPD risk classification?
@@ -367,38 +386,50 @@ The purpose of the category-wise experiment is to answer Research Objective~1: h
 \label{ch3-sec-shap}
 % --------------------------------------------------------
 
-After identifying Gradient Boosting as the best model, a SHAP analysis was conducted to explain which of the 17 selected questionnaire items drive predictions for each EPDS risk class (Low, Medium, High). This is Research Objective~4.
+After model comparison, a SHAP analysis was conducted using Logistic Regression — the best traditional ML model — to explain which of the 16 selected questionnaire items drive predictions for each EPDS risk class (Low, Medium, High). This is Research Objective~4.
 
 \subsection{Why SHAP?}
 
 SHAP (SHapley Additive exPlanations) is a game-theory-based method that assigns each input feature a contribution score for a specific prediction. Unlike simple feature importance rankings, SHAP explains the direction and magnitude of each feature's effect for each individual prediction, making it possible to understand not just which features matter, but how they push predictions toward each risk class.
 
-\subsection{Method: Permutation Explainer}
+\subsection{Model Selection for SHAP: Logistic Regression}
 
-A \textbf{Permutation Explainer} was used instead of the default Tree Explainer because it works model-agnostically and is more robust for multi-class classification. The explainer was run on a sample of 300 test instances:
+Although the 1D CNN achieves the highest overall accuracy (98.25\%), Logistic Regression (97.13\% accuracy) was chosen for SHAP analysis and deployment for three reasons:
 
-\begin{lstlisting}[language=Python, caption={SHAP analysis with PermutationExplainer on GB model.}]
+\begin{enumerate}
+    \item \textbf{Accuracy gap is negligible}: 97.13\% vs.\ 98.25\% is a difference of 1.1 percentage points on 800 samples.
+    \item \textbf{Exact SHAP via LinearExplainer}: Logistic Regression is a linear model, so \texttt{shap.LinearExplainer} computes exact Shapley values analytically. Neural networks require approximation methods (DeepExplainer or sampling) which are slower and less stable.
+    \item \textbf{Clinical interpretability and deployability}: A linear model with SHAP explanations is more transparent and easier to audit clinically. It also requires no deep learning framework (Keras/TensorFlow) at inference time.
+\end{enumerate}
+
+The Logistic Regression model was trained with \texttt{multi\_class='multinomial'}, \texttt{solver='lbfgs'}, \texttt{max\_iter=3000}, \texttt{class\_weight='balanced'}, and \texttt{random\_state=42}. Features were standardised with a \texttt{StandardScaler} before training.
+
+\subsection{Method: LinearExplainer}
+
+A \textbf{LinearExplainer} was used, which is exact for Logistic Regression and operates on all 800 training samples:
+
+\begin{lstlisting}[language=Python, caption={SHAP analysis with LinearExplainer on Logistic Regression.}]
 import shap
-import numpy as np
 
-# Load 17-feature data and EPDS Result target
-X_shap = df_encoded[chi2_optimal_features]
-y_shap = df_encoded['EPDS Result']
+# Load 16-feature scaled data
+X_scaled = scaler.fit_transform(df[chi2_optimal_features].values)
+y = df['EPDS Result'].values
 
-# Train final GB model on all data
-gb_model.fit(X_shap, y_shap)
+# Train Logistic Regression on all data
+lr = LogisticRegression(multi_class='multinomial', solver='lbfgs',
+                        max_iter=3000, class_weight='balanced',
+                        random_state=42)
+lr.fit(X_scaled, y)
 
-# Run PermutationExplainer on 300 samples
-explainer = shap.PermutationExplainer(
-    gb_model.predict_proba,
-    X_shap.sample(300, random_state=42)
-)
-shap_values = explainer(X_shap.sample(300, random_state=42))
-# shap_values.shape: (300, 17, 3)
-# 300 samples, 17 features, 3 output classes
+# LinearExplainer: exact SHAP for linear models
+explainer = shap.LinearExplainer(lr, X_scaled)
+shap_values = explainer.shap_values(X_scaled)
+# shap_values: list of 3 arrays, each (800, 16)
+# => stacked shape: (800, 16, 3)
+# 800 samples, 16 features, 3 output classes
 \end{lstlisting}
 
-The SHAP values array has shape (300, 17, 3): 300 test samples, 17 features, and 3 output classes. Each value in this array represents the contribution of a specific feature to the predicted probability of a specific EPDS class for a specific mother.
+The SHAP values array has shape (800, 16, 3): all 800 training samples, 16 features, and 3 output classes. Each value represents the exact contribution of a specific feature to the predicted probability of a specific EPDS class for a specific mother.
 
 \subsection{SHAP Figures Generated}
 
@@ -407,9 +438,9 @@ Five SHAP figures are generated and saved:
 \begin{enumerate}
     \item \textbf{Global bar chart}: Mean absolute SHAP values across all three classes, showing overall feature importance ranking.
     \item \textbf{Beeswarm plots (per class)}: One plot per EPDS Result class (Low, Medium, High), showing how each feature value (high or low) pushes predictions toward or away from that class.
-    \item \textbf{Heatmap}: SHAP value matrix showing the contribution of all 17 features across all 300 test samples.
-    \item \textbf{Waterfall plot}: A single-sample explanation showing how each feature contributes to one specific prediction.
-    \item \textbf{Dependence plot}: Shows the relationship between the value of the most important feature and its SHAP contribution.
+    \item \textbf{Heatmap}: SHAP value matrix showing the mean absolute contribution of the top 15 features across all three classes.
+    \item \textbf{Waterfall plot}: A single-sample explanation showing how each feature contributes to one specific prediction for a High-risk patient.
+    \item \textbf{Dependence plot}: Shows the relationship between the value of the most important feature and its SHAP contribution toward the High class.
 \end{enumerate}
 
 \subsection{Top SHAP Features}
@@ -417,26 +448,26 @@ Five SHAP figures are generated and saved:
 The global bar chart identifies the following as the top 10 features by mean absolute SHAP value (aggregated across all three classes):
 
 \begin{enumerate}
-    \item ``You have been so unhappy that you have been crying'' (EPDS, SHAP = 0.0585)
-    \item ``You have felt scared or panicky for no good reason'' (EPDS, SHAP = 0.0500)
-    \item ``You have felt sad or miserable'' (EPDS, SHAP = 0.0457)
-    \item ``I have blamed myself unnecessarily when things went wrong'' (EPDS)
-    \item ``I have been anxious or worried for no good reason'' (EPDS)
-    \item ``Things have been getting on top of me'' (EPDS)
-    \item ``I have had difficulty sleeping because of unhappiness'' (EPDS)
-    \item Feeling down, depressed, or hopeless (PHQ-9)
-    \item ``You have been able to laugh and see the funny side of things'' (EPDS)
-    \item Moving or speaking so slowly (PHQ-9)
+    \item ``Trouble falling or staying asleep, or sleeping too much'' (PHQ-9, SHAP = 1.527)
+    \item ``You have been so unhappy that you have been crying'' (EPDS, SHAP = 1.174)
+    \item ``You have felt scared or panicky for no good reason'' (EPDS, SHAP = 1.104)
+    \item ``Feeling down, depressed, or hopeless'' (PHQ-9, SHAP = 1.033)
+    \item ``You have been anxious or worried for no good reason'' (EPDS, SHAP = 1.033)
+    \item ``You have felt sad or miserable'' (EPDS, SHAP = 1.033)
+    \item ``You have been able to laugh and see the funny side of things'' (EPDS, SHAP = 1.005)
+    \item ``You have looked forward with enjoyment to things'' (EPDS, SHAP = 1.005)
+    \item Feeling bad about yourself (PHQ-9, SHAP = 0.723)
+    \item ``You have blamed myself unnecessarily when things went wrong'' (EPDS, SHAP = 0.723)
 \end{enumerate}
 
-The trained Gradient Boosting model and scaler were saved as \texttt{gb\_model.pkl} and \texttt{gb\_scaler.pkl}; the SHAP values were saved as \texttt{shap\_values.npy} and \texttt{shap\_data.pkl} for use in the web interface.
+The trained Logistic Regression model and scaler were saved as \texttt{lr\_model.pkl} and \texttt{lr\_scaler.pkl}; the SHAP values were saved as \texttt{shap\_values.npy} and \texttt{shap\_data.pkl} for use in the web interface.
 
 % --------------------------------------------------------
 \section{Correlation Analysis}
 \label{ch3-sec-correlation}
 % --------------------------------------------------------
 
-To understand how the 17 selected features relate to the EPDS depression score, three types of correlation were computed for each feature against the EPDS Score:
+To understand how the 16 selected features relate to the EPDS depression score, three types of correlation were computed for each feature against the EPDS Score:
 
 \begin{itemize}
     \item \textbf{Pearson correlation:} Measures linear relationship. Best for continuous, normally distributed data.
@@ -479,6 +510,27 @@ Each of the four scores was normalised to a 0--1 range using Min-Max scaling. Th
 \label{ch3-eqn-combined}
 \text{Combined Score}(f) \;=\; \frac{\text{RF\_norm}(f) + \text{XGB\_norm}(f) + \text{LR\_norm}(f) + \text{MI\_norm}(f)}{4}
 \end{equation}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.88\linewidth]{Images/fig07_within_category_heatmap.jpg}
+  \caption{Within-category combined importance heatmap for the top 15 background features. Each cell shows the score from one of four methods (RF, XGBoost, LR coefficient, Mutual Information). The rightmost column (Combined Score) ranks features across methods. Abuse and ``Angry after latest child birth'' show the highest combined importance.}
+  \label{fig:within-category-heatmap}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.88\linewidth]{Images/fig05_rf_vs_xgb.jpg}
+  \caption{Top 15 feature importance scores comparing Random Forest and XGBoost. XGBoost assigns a dominant weight to ``Feeling down, depressed, or hopeless'' (0.456), while Random Forest distributes importance more evenly. Together these two methods reveal which features are consistently informative across tree-based models.}
+  \label{fig:rf-vs-xgb}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.88\linewidth]{Images/fig04_lr_coefficients.jpg}
+  \caption{Top 15 features by mean absolute standardised coefficient from Multinomial Logistic Regression. ``You have been so unhappy that you have been crying'' has the highest coefficient (1.074), indicating it is the feature with the largest linear contribution to risk class separation.}
+  \label{fig:lr-coefficients}
+\end{figure}
 
 % --------------------------------------------------------
 \section{Risk Factor Analysis via Kendall's Tau (CELL 8)}
@@ -584,41 +636,39 @@ Need for Support & Neonatal Health & +0.062 & $\sim$0.05 \\
 \end{table}
 \FloatBarrier
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\linewidth]{Images/fig06_non_screening_risk.jpg}
+  \caption{Top 15 non-screening risk factors ranked by mean absolute Kendall's $\tau$ (averaged over EPDS Score and EPDS Result). ``Angry after latest child birth'' is the single strongest background predictor ($\tau = 0.367$), followed by feelings about motherhood (0.253) and abuse (0.222). Bars are colour-coded by feature category.}
+  \label{fig:non-screening-risk}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\linewidth]{Images/fig03_kendall_tau.jpg}
+  \caption{Top 15 screening features ranked by $|$Kendall's $\tau$$|$ against the EPDS Score (leakage features excluded). ``Feeling down, depressed, or hopeless'', ``You have been anxious or worried for no good reason'', and ``You have felt sad or miserable'' share the highest association ($\tau = 0.735$). Reversed EPDS items (laughter, looking forward) show negative $\tau$ values (--0.548), confirming their role as protective factors.}
+  \label{fig:kendall-tau}
+\end{figure}
+
 % --------------------------------------------------------
 \section{Web Interface}
 \label{ch3-sec-webinterface}
 % --------------------------------------------------------
 
-As Research Objective~5, a web interface was built to deploy the trained Gradient Boosting model. The interface allows a healthcare worker to enter a mother's responses to the 17 selected EPDS and PHQ-9 questionnaire items and receive an immediate EPDS risk classification: \textbf{Low} (score 0--9), \textbf{Medium} (10--12), or \textbf{High} (13--30).
+As Research Objective~5, a web interface was built to deploy the trained Logistic Regression model. The interface allows a healthcare worker to enter a mother's responses to the 16 selected EPDS and PHQ-9 questionnaire items and receive an immediate EPDS risk classification: \textbf{Low} (score 0--9), \textbf{Medium} (10--12), or \textbf{High} (13--30).
 
-The interface loads \texttt{gb\_model.pkl} and \texttt{gb\_scaler.pkl} from the \texttt{shap\_package/} directory. The user inputs 17 item responses, the saved model predicts the EPDS Result class, and the result is displayed with the class label and a brief clinical interpretation. The web interface makes the trained model accessible without requiring any programming knowledge from the end user.
+The interface loads \texttt{lr\_model.pkl} and \texttt{lr\_scaler.pkl} from the \texttt{shap\_lr\_package/} directory. For each prediction, a real-time \texttt{shap.LinearExplainer} is run and the top-3 most influential questionnaire items are displayed with their SHAP contribution, helping the clinician understand which specific symptoms drove the risk classification. The web interface makes the trained model accessible without requiring any programming knowledge from the end user.
 
 % --------------------------------------------------------
 \section{Figures Generated}
 \label{ch3-sec-figures}
 % --------------------------------------------------------
 
-The methodology produces seventeen figures:
-
-\begin{itemize}
-    \item \textbf{fig1:} Category-wise model performance bar chart (accuracy per category)
-    \item \textbf{fig2:} Kendall's tau risk factor chart (horizontal bars for top risk factors)
-    \item \textbf{fig3:} Logistic Regression coefficients for background features
-    \item \textbf{fig4:} Random Forest feature importance (background features)
-    \item \textbf{fig5:} XGBoost feature importance (background features)
-    \item \textbf{fig6:} Within-category importance heatmap (method $\times$ feature)
-    \item \textbf{fig7:} Screening Items vs background categories comparison
-    \item \textbf{fig8:} Correlation heatmap of selected features
-    \item \textbf{fig9:} Grouped column trend (all 5 categories $\times$ all metrics)
-    \item \textbf{fig10:} Multi-line backward elimination trajectory (accuracy, F1 vs step)
-    \item \textbf{fig11:} Stacked column tiers (High/Medium/Low performance tier per category)
-    \item \textbf{fig12:} 3D clustered column chart (category $\times$ metric $\times$ score)
-    \item \textbf{fig13:} SHAP global bar chart (mean absolute SHAP per feature)
-    \item \textbf{fig14:} SHAP beeswarm plots per EPDS class (Low, Medium, High)
-    \item \textbf{fig15:} SHAP heatmap (features $\times$ samples)
-    \item \textbf{fig16:} SHAP waterfall plot (single sample explanation)
-    \item \textbf{fig17:} SHAP dependence plot (top feature vs SHAP value)
-\end{itemize}
+The methodology produces fourteen key figures included in this thesis.
+Figure~\ref{fig:kendall-tau} through Figure~\ref{fig:backward-elim} document the feature selection and risk factor analysis.
+Figure~\ref{fig:model-comparison} through Figure~\ref{fig:3d-clustered} document the model comparison and category-wise results.
+Figure~\ref{fig:shap-global} and Figure~\ref{fig:shap-heatmap} present the SHAP explainability results.
+Figure~\ref{fig:summary-dashboard} presents a summary dashboard of all main findings.
 
 % --------------------------------------------------------
 \section{Implementation Details}
@@ -629,7 +679,7 @@ All analysis was done in \textbf{Python 3} on \textbf{Google Colab} using Google
 
 \begin{itemize}
     \item \texttt{pandas} and \texttt{numpy} --- data handling and numerical computation
-    \item \texttt{scikit-learn} --- feature selection, model training, cross-validation, LabelEncoder
+    \item \texttt{scikit-learn} --- feature selection, model training, cross-validation, ordinal encoding
     \item \texttt{xgboost} --- XGBoost model
     \item \texttt{lightgbm} --- LightGBM model
     \item \texttt{catboost} --- CatBoost model
@@ -647,4 +697,4 @@ All random states were fixed to 42 for reproducibility.
 \label{ch3-sec-summary}
 % --------------------------------------------------------
 
-This chapter described the full methodology of this thesis. The dataset of 800 Bangladeshi mothers was cleaned in multiple steps. All 69 features were grouped into six categories. Chi-square feature ranking combined with backward elimination identified 17 optimal EPDS and PHQ-9 questionnaire items as the most predictive features for EPDS Result classification. Fifteen machine learning and deep learning models were compared on these 17 features using 5-fold cross-validation on the EPDS Result target (Low, Medium, High), with Gradient Boosting achieving the highest accuracy of 0.926. SHAP analysis using a Permutation Explainer identified which of the 17 items drive predictions for each risk class. The four background categories were tested separately for comparison. The risk factor analysis used Kendall's tau to find the most statistically significant background predictors of PPD. A web interface was built to deploy the trained model. The next chapter presents the results of all these analyses.
+This chapter described the full methodology of this thesis. The dataset of 800 Bangladeshi mothers was cleaned in multiple steps and all categorical questionnaire responses were encoded using a clinically correct ordinal mapping. All 69 features were grouped into six categories. Chi-square feature ranking combined with backward elimination identified 16 optimal EPDS and PHQ-9 questionnaire items as the most predictive features for EPDS Result classification. Fifteen machine learning and deep learning models were compared on these 16 features using 5-fold cross-validation on the EPDS Result target (Low, Medium, High), with the 1D CNN achieving the highest accuracy of 0.9825 and Logistic Regression achieving 0.9713 as the best traditional ML model. Logistic Regression was selected for SHAP analysis and deployment because LinearExplainer provides exact Shapley values and the accuracy difference is negligible. The SHAP analysis identified sleep disturbance as the strongest single predictor, followed by crying and fear/panic symptoms. The four background categories were tested separately for comparison. The risk factor analysis used Kendall's tau to find the most statistically significant background predictors of PPD. A web interface was built to deploy the trained model with real-time SHAP explanations. The next chapter presents the results of all these analyses.

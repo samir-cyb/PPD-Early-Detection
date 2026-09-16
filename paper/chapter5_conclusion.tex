@@ -21,12 +21,12 @@ The primary target variable is \textbf{EPDS Result}, a three-class categorical l
 The work proceeded through seven main stages.
 First, the raw data was cleaned through specific steps including fixing spelling inconsistencies, correcting entry errors, standardising category labels, and correcting 43 mislabelled EPDS Result entries.
 Second, all 70 columns were mapped to one of six feature categories.
-Third, all categorical columns were encoded using LabelEncoder.
-Fourth, a Chi-square feature ranking and backward elimination experiment, using both Random Forest and Gradient Boosting as validation models, identified the \textbf{17 most predictive features} from 65 candidates --- all EPDS or PHQ-9 questionnaire items.
-Fifth, all 15 machine learning and deep learning models were trained on these 17 features to compare their performance, with Gradient Boosting achieving the highest accuracy of 0.926.
+Third, all categorical questionnaire response columns were encoded using a \textbf{clinically correct ordinal mapping}: Not at all = 0, Several days = 1, Around half the days = 2, Nearly every day = 3. This preserves clinical severity direction and replaced an earlier alphabetical LabelEncoder that was producing incorrect predictions.
+Fourth, a Chi-square feature ranking and backward elimination experiment, using both Random Forest and Gradient Boosting as validation models, identified the \textbf{16 most predictive features} from 65 candidates --- all EPDS or PHQ-9 questionnaire items.
+Fifth, all 15 machine learning and deep learning models were trained on these 16 features to compare their performance, with the \textbf{1D CNN achieving the highest accuracy of 0.9825} and \textbf{Logistic Regression (LR) at 0.9713} as the best traditional ML model. Logistic Regression was selected for SHAP analysis and deployment because it supports an exact LinearExplainer.
 Sixth, each of the four background feature categories was tested separately to measure its predictive power: Neonatal Health (61\%), Personal Health (52\%), Familial (47\%), and Demographic (40\%).
-Seventh, SHAP analysis using a Permutation Explainer identified the top questionnaire items driving predictions for each EPDS risk class.
-Eighth, Pearson, Spearman, and Kendall correlation coefficients were computed for the 17 selected features against the EPDS Score.
+Seventh, SHAP analysis using a \textbf{LinearExplainer} on the trained Logistic Regression model computed exact Shapley values for all 800 samples, identifying the top questionnaire items driving predictions for each EPDS risk class.
+Eighth, Pearson, Spearman, and Kendall correlation coefficients were computed for the 16 selected features against the EPDS Score.
 Ninth, within-category feature importance was computed by combining Random Forest, XGBoost, Logistic Regression, and Mutual Information scores.
 Tenth, Kendall's tau was computed for all background features to identify the strongest statistical risk factors for PPD.
 
@@ -40,20 +40,19 @@ This section reports how each one was answered.
 
 \textbf{Objective 1: Feature selection for PPD classification.}
 
-Chi-square ranking combined with backward elimination identified 17 optimal EPDS and PHQ-9 questionnaire items as the most predictive subset from 65 candidate features.
-These 17 items --- 10 EPDS questions and 7 PHQ-9 questions --- give 0.926 accuracy on the three-class EPDS Result target, which is higher than using all 19 questionnaire items without selection.
+Chi-square ranking combined with backward elimination identified 16 optimal EPDS and PHQ-9 questionnaire items as the most predictive subset from 65 candidate features.
+These 16 items --- 10 EPDS questions and 6 PHQ-9 questions --- give 0.9713 accuracy under Logistic Regression on the three-class EPDS Result target, which is higher than using all 19 questionnaire items without selection.
 The four background categories, tested separately for comparison, achieve 40--61\% accuracy, far below the selected features.
 This answers Objective~1 clearly: systematic feature selection improves over indiscriminate use of all items, and the selected EPDS and PHQ-9 items are far more predictive than background information alone.
 
 \textbf{Objective 2: Machine learning vs.\ deep learning comparison.}
 
-Traditional machine learning ensemble methods consistently outperform deep learning models.
-Gradient Boosting achieves the highest accuracy (0.926) and the best performance in every experiment.
-LightGBM, XGBoost, and Hist Gradient Boosting follow closely in the top four, all achieving accuracy above 0.916.
-The three deep learning models (1D CNN, MLP, Deep MLP) rank 8th, 11th, and 15th respectively.
-The performance gap between the best ensemble model and the best deep learning model is approximately 2.6\% in accuracy.
-This result is consistent with other small-sample survey studies: with $n = 800$ and mostly categorical features, tree-based ensembles are a better structural fit than neural networks.
-This answers Objective~2 clearly: deep learning does not offer a practical advantage over traditional ML for this Bangladeshi PPD survey dataset.
+With the correct ordinal encoding in place, deep learning models achieve the highest raw performance.
+The \textbf{1D CNN} achieves the highest accuracy (0.9825), and \textbf{MLP} ranks second (0.9800).
+\textbf{Logistic Regression} ranks third at 0.9713, the best traditional machine learning model.
+This result shows that the correct encoding produces a dramatic accuracy improvement across all models (the previous alphabetical encoding gave Gradient Boosting at 92.6\% as the best).
+However, Logistic Regression was selected for deployment because it supports an exact and fast LinearExplainer, while deep learning requires approximate, slower SHAP methods.
+This answers Objective~2: with correct encoding, 1D CNN leads, but Logistic Regression is the best model for interpretable clinical deployment.
 
 \textbf{Objective 3: Risk factor analysis and feature importance.}
 
@@ -71,20 +70,20 @@ The dominant finding is that \textbf{emotional and familial factors matter far m
 
 \textbf{Objective 4: SHAP explainability analysis.}
 
-SHAP analysis using a Permutation Explainer on the trained Gradient Boosting model identified the following as the three most important questionnaire items by mean absolute SHAP value:
+SHAP analysis using a \textbf{LinearExplainer} on the trained Logistic Regression model identified the following as the three most important questionnaire items by mean absolute SHAP value:
 \begin{enumerate}
-    \item ``You have been so unhappy that you have been crying'' (EPDS, SHAP = 0.0585)
-    \item ``You have felt scared or panicky for no good reason'' (EPDS, SHAP = 0.0500)
-    \item ``You have felt sad or miserable'' (EPDS, SHAP = 0.0457)
+    \item ``Trouble falling or staying asleep, or sleeping too much'' (PHQ-9, mean SHAP = 1.527)
+    \item ``You have been so unhappy that you have been crying'' (EPDS, mean SHAP = 1.174)
+    \item ``You have felt scared or panicky for no good reason'' (EPDS, mean SHAP = 1.104)
 \end{enumerate}
-EPDS items overall outrank PHQ-9 items in importance.
-Class-specific beeswarm plots show that high values on emotional symptom items push strongly toward the High EPDS risk class, while high values on the laughter item push toward the Low class.
-This answers Objective~4: SHAP analysis provides an item-level, class-specific explanation of the model's predictions.
+PHQ-9 items and EPDS items are comparably important, with the PHQ-9 sleep item leading overall.
+Class-specific analysis shows that high values on emotional symptom items push strongly toward the High EPDS risk class, while high values on the reversed EPDS items (laughter, anticipatory enjoyment) push toward the Low class.
+This answers Objective~4: LinearExplainer SHAP analysis provides an exact, item-level, class-specific explanation of the model's predictions.
 
 \textbf{Objective 5: Web interface for practical deployment.}
 
-A web interface was built and deployed using the saved Gradient Boosting model (\texttt{gb\_model.pkl}) and scaler (\texttt{gb\_scaler.pkl}).
-The interface accepts responses to the 17 selected EPDS and PHQ-9 questionnaire items and outputs an EPDS Result classification (Low, Medium, or High) with a brief clinical interpretation.
+A web interface was built and deployed using the saved Logistic Regression model (\texttt{lr\_model.pkl}) and scaler (\texttt{lr\_scaler.pkl}).
+The interface accepts responses to the 16 selected EPDS and PHQ-9 questionnaire items and outputs an EPDS Result classification (Low, Medium, or High) with real-time SHAP explanations and a brief clinical interpretation.
 This answers Objective~5: the trained model is accessible to healthcare workers without requiring any programming knowledge.
 
 % --------------------------------------------------------
@@ -96,24 +95,24 @@ This thesis makes five contributions to the PPD prediction literature.
 
 \textbf{Contribution 1: First systematic feature selection study on this 800-mother Bangladeshi PPD dataset.}
 Previous studies on Bangladeshi PPD data used all questionnaire items as input without selection.
-This thesis applies Chi-square ranking combined with backward elimination to identify the 17 most predictive items, reducing the questionnaire burden from 19 to 17 items and improving accuracy over the unselected baseline.
+This thesis applies Chi-square ranking combined with backward elimination to identify the 16 most predictive items, reducing the questionnaire burden from 19 to 16 items and improving accuracy over the unselected baseline.
 
-\textbf{Contribution 2: Systematic comparison of 15 ML and deep learning models.}
+\textbf{Contribution 2: Systematic comparison of 15 ML and deep learning models with correct ordinal encoding.}
 No prior Bangladeshi PPD study compared 15 models including both traditional ML and three different deep learning architectures on the same dataset under the same cross-validation conditions.
-This comparison produces a clear answer: Gradient Boosting is the best model, and deep learning does not outperform traditional tree ensembles for this type of data.
+Critically, this thesis identifies that \textbf{correct ordinal encoding} is the key factor: with alphabetical encoding, Gradient Boosting led at 92.6\%; with correct ordinal encoding, 1D CNN reaches 98.25\% and Logistic Regression reaches 97.13\%.
 
 \textbf{Contribution 3: Statistically grounded risk factor analysis using Kendall's tau.}
 This thesis uses Kendall's tau, a rank-based statistical test, to measure the association between each background feature and the EPDS Score independently of any specific model.
 This gives a model-agnostic picture of which background risk factors matter most in the Bangladeshi population.
 Anger after childbirth ($\tau = +0.418$) emerges as the single strongest background predictor, a finding that is robust across all methods used in this thesis.
 
-\textbf{Contribution 4: SHAP explainability at the questionnaire-item level.}
-This thesis applies a SHAP Permutation Explainer to the trained Gradient Boosting model to identify which of the 17 selected questionnaire items drive predictions for each EPDS risk class.
-The top three items (crying, panic, sadness) provide an immediately actionable triage signal.
-The item-level SHAP explanation makes the model interpretable for clinical use.
+\textbf{Contribution 4: Exact SHAP explainability using LinearExplainer on Logistic Regression.}
+This thesis applies a SHAP LinearExplainer to the trained Logistic Regression model to compute exact Shapley values for all 800 samples, identifying which of the 16 selected questionnaire items drive predictions for each EPDS risk class.
+The top three items (sleep disturbance, crying, panic) provide an immediately actionable triage signal.
+The choice of LinearExplainer over approximate sampling-based SHAP ensures the explanations are exact and reproducible.
 
 \textbf{Contribution 5: Web interface for practical deployment.}
-The trained Gradient Boosting model is deployed as a web interface that accepts responses to the 17 selected questionnaire items and outputs an EPDS risk classification.
+The trained Logistic Regression model is deployed as a bilingual web interface that accepts responses to the 16 selected questionnaire items and outputs an EPDS risk classification with real-time SHAP explanations.
 This is the first deployable PPD prediction tool built from this 800-mother Bangladeshi dataset.
 
 % --------------------------------------------------------
@@ -136,9 +135,10 @@ A longitudinal study following mothers over time would address this limitation.
 All features are self-reported through a structured questionnaire.
 The abuse direction paradox discussed in Chapter~\ref{ch:results} shows how self-report can diverge from clinical reality when the question covers a stigmatised topic.
 
-\textbf{Limitation 4: SHAP computed on a sample.}
-The SHAP Permutation Explainer was run on a sample of 300 instances for computational feasibility.
-Running on the full 800-mother dataset would give a more precise feature ranking, though the top features are unlikely to change substantially.
+\textbf{Limitation 4: Model accuracy vs.\ explainability trade-off.}
+The 1D CNN achieves the highest accuracy (98.25\%) but does not support exact SHAP analysis; deep learning SHAP requires approximate sampling-based methods that are slower and less precise.
+Logistic Regression was chosen for deployment at 97.13\% accuracy because LinearExplainer provides mathematically exact Shapley values across all 800 training samples.
+Future work could explore approximate deep learning SHAP methods to close this gap.
 
 % --------------------------------------------------------
 \section{Future Work}
@@ -154,15 +154,14 @@ Recruiting mothers from multiple hospitals and community health centres across d
 Collecting data from the same mothers at multiple time points would allow the study of how PPD risk changes over time and whether early risk factor measurements can predict later PPD onset more accurately.
 
 \textbf{Shortened screener from SHAP findings.}
-The SHAP analysis suggests that the top 5--7 EPDS items carry most of the predictive power.
-A future study could test whether a shortened screener using only the top SHAP-ranked items achieves comparable accuracy to the full 17-item version, reducing the clinical burden further.
+The SHAP analysis suggests that the top 5--7 items (sleep disturbance, crying, panic, depressive symptoms) carry most of the predictive power.
+A future study could test whether a shortened screener using only the top SHAP-ranked items achieves comparable accuracy to the full 16-item version, reducing the clinical burden further.
 
-\textbf{Multi-class SHAP deployment.}
-The web interface currently outputs the overall EPDS class prediction.
-A future version could display the class-specific SHAP waterfall chart for each individual prediction, helping clinicians understand which items drove the classification for that specific mother.
+\textbf{Deep learning SHAP deployment.}
+A future version of the web interface could deploy the 1D CNN with approximate SHAP explanations (e.g., DeepExplainer or GradientExplainer), accepting a small accuracy trade-off in the explanation quality in exchange for the raw performance advantage of the CNN model.
 
 \textbf{Bengali-language mobile screening tool.}
-The findings of this thesis, especially the five key background risk factors identified by Kendall's tau and the 17-item screener from feature selection, could power a Bengali-language mobile application for community health workers in Bangladesh.
+The findings of this thesis, especially the five key background risk factors identified by Kendall's tau and the 16-item screener from feature selection, could power a Bengali-language mobile application for community health workers in Bangladesh.
 
 \textbf{Validation in similar South Asian populations.}
 Bangladesh shares many social, cultural, and economic characteristics with India, Pakistan, and Nepal.
@@ -174,11 +173,11 @@ Testing whether the risk factor findings and feature selection results replicate
 % --------------------------------------------------------
 
 Postpartum depression affects nearly half of all new mothers in some Bangladeshi healthcare settings, yet most cases go undetected because of stigma, lack of awareness, and a shortage of trained mental health professionals.
-Machine learning can help bridge this gap --- but only when it is applied carefully, with principled feature selection and meaningful explainability.
+Machine learning can help bridge this gap --- but only when it is applied carefully, with correct data encoding, principled feature selection, and meaningful explainability.
 
-This thesis demonstrates that systematic Chi-square feature selection combined with backward elimination can identify a compact, high-accuracy screener from EPDS and PHQ-9 questionnaire data.
-The 17 selected items achieve 0.926 accuracy for three-class EPDS Result classification.
-The SHAP analysis reveals that crying, fear or panic, and sadness are the three most important items --- a finding that is immediately actionable for clinicians.
+This thesis demonstrates that a clinically correct ordinal encoding, combined with Chi-square feature selection and backward elimination, can identify a compact, high-accuracy 16-item screener from EPDS and PHQ-9 questionnaire data.
+With this encoding in place, 1D CNN reaches 98.25\% accuracy and Logistic Regression reaches 97.13\% --- far above the 92.6\% Gradient Boosting baseline achieved under incorrect alphabetical encoding.
+The LinearExplainer SHAP analysis reveals that sleep disturbance, crying, and fear/panic are the three most important items --- a finding that is immediately actionable for clinicians.
 The Kendall's tau analysis further reveals that anger after childbirth is the single strongest background predictor of PPD, a simple observable signal that a community health worker can ask about without any formal questionnaire.
 
 A mother who reports strong anger, negative feelings about motherhood, and lack of a trusted support person in her family is at high statistical risk of developing PPD and should be referred for early professional assessment.

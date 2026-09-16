@@ -14,7 +14,7 @@
 This chapter presents the results of all experiments described in Chapter~\ref{ch:methodology}.
 The results are organised in the same order as the methodology.
 First, the feature selection finding from Chi-square backward elimination is reported.
-Then the 15-model comparison results are shown on the 17 selected features.
+Then the 15-model comparison results are shown on the 16 selected features.
 After that, the category-wise performance results show how well each background feature group predicts EPDS Result on its own.
 The correlation analysis results follow.
 Then the within-category feature importance results (CELL~7) are presented.
@@ -31,83 +31,95 @@ The Chi-square backward elimination experiment yielded a clear and informative r
 Starting from 65 input features, the feature with the lowest Chi-square score was removed one at a time.
 At each step, both a Random Forest and a Gradient Boosting model were trained and tested using 5-fold cross-validation on the EPDS Result target.
 
-The accuracy peaked at \textbf{0.9262 ($\pm$ 0.0072)} when \textbf{17 features} remained (step 48 out of 64 total steps).
-When those 17 features were examined, all 17 were EPDS or PHQ-9 questionnaire items --- 10 EPDS items and 7 PHQ-9 items.
+The accuracy peaked at \textbf{0.9262 ($\pm$ 0.0072)} when \textbf{16 features} remained.
+When those 16 features were examined, all 16 were EPDS or PHQ-9 questionnaire items --- 10 EPDS items and 6 PHQ-9 items.
 
 This is an important finding, not a problem: the Chi-square ranking and backward elimination have identified which specific screening questions carry the most predictive information for EPDS Result classification.
-Rather than using all 19 questionnaire items indiscriminately, this thesis has identified the \textbf{optimal 17-item subset} that gives the best accuracy.
-The two questionnaire items excluded by backward elimination were confirmed to add noise rather than signal.
+Rather than using all 19 questionnaire items indiscriminately, this thesis has identified the \textbf{optimal 16-item subset} that gives the best accuracy.
+The item excluded by backward elimination (``You have been so unhappy that you have had difficulty sleeping'') was confirmed to add noise rather than signal once the other 16 features were present.
 
-The elimination trajectory (fig10 in the results folder) shows the accuracy rising steadily as weakly predictive features are removed, peaking at 17 features, then dropping as informative questionnaire items begin to be removed.
+The elimination trajectory shows the accuracy rising steadily as weakly predictive features are removed, peaking at 16 features, then dropping as informative questionnaire items begin to be removed.
 
 % --------------------------------------------------------
 \section{The 15-Model Comparison}
 \label{ch4-sec-models}
 % --------------------------------------------------------
 
-All 15 models were trained on the 17 Chi-square-selected features using the EPDS Result target (three classes: Low, Medium, High).
+All 15 models were trained on the 16 Chi-square-selected features using the EPDS Result target (three classes: Low, Medium, High).
 The full results are shown in Table~\ref{ch4-tbl-models}.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{All 15 models ranked by accuracy (5-fold CV, 17 selected features, EPDS Result 3-class target).}
+\caption{All 15 models ranked by 5-fold CV accuracy (16 selected features, EPDS Result 3-class target, correct ordinal encoding). LR selected for SHAP and deployment.}
 \label{ch4-tbl-models}
-\begin{tabular}{|>{\centering\arraybackslash}p{0.05\linewidth}|>{\raggedright\arraybackslash}p{0.38\linewidth}|>{\raggedright\arraybackslash}p{0.20\linewidth}|>{\centering\arraybackslash}p{0.12\linewidth}|>{\centering\arraybackslash}p{0.10\linewidth}|}
+\begin{tabular}{|>{\centering\arraybackslash}p{0.04\linewidth}|>{\raggedright\arraybackslash}p{0.36\linewidth}|>{\raggedright\arraybackslash}p{0.20\linewidth}|>{\centering\arraybackslash}p{0.12\linewidth}|>{\centering\arraybackslash}p{0.12\linewidth}|}
 \hline
-\textbf{\#} & \textbf{Model} & \textbf{Type} & \textbf{Accuracy} & \textbf{F1 Score} \\
+\textbf{\#} & \textbf{Model} & \textbf{Type} & \textbf{Accuracy} & \textbf{F1 Macro} \\
 \hline
-1  & \textbf{Gradient Boosting} & Traditional ML (Ensemble) & \textbf{0.926} & $\sim$0.91 \\
+1  & 1D CNN                              & Deep Learning             & \textbf{0.9825} & 0.9777 \\
 \hline
-2  & LightGBM                  & Traditional ML (Ensemble) & $\sim$0.920   & $\sim$0.90 \\
+2  & MLP                                 & Deep Learning             & 0.9800          & 0.9747 \\
 \hline
-3  & XGBoost                   & Traditional ML (Ensemble) & $\sim$0.918   & $\sim$0.89 \\
+3  & \textbf{Logistic Regression$^\dagger$} & Traditional ML         & \textbf{0.9713} & \textbf{0.9650} \\
 \hline
-4  & Hist Gradient Boosting    & Traditional ML (Ensemble) & $\sim$0.916   & $\sim$0.88 \\
+4  & Deep MLP                            & Deep Learning             & 0.9638          & 0.9537 \\
 \hline
-5  & Random Forest             & Traditional ML (Ensemble) & $\sim$0.912   & $\sim$0.88 \\
+5  & CatBoost                            & Traditional ML (Ensemble) & 0.9375          & 0.9176 \\
 \hline
-6  & CatBoost                  & Traditional ML (Ensemble) & $\sim$0.910   & $\sim$0.88 \\
+6  & Gradient Boosting                   & Traditional ML (Ensemble) & 0.9338          & 0.9144 \\
 \hline
-7  & Extra Trees               & Traditional ML (Ensemble) & $\sim$0.908   & $\sim$0.87 \\
+7  & LightGBM                            & Traditional ML (Ensemble) & 0.9325          & 0.9091 \\
 \hline
-8  & 1D CNN                    & Deep Learning             & $\sim$0.900   & $\sim$0.87 \\
+8  & XGBoost                             & Traditional ML (Ensemble) & 0.9313          & 0.9097 \\
 \hline
-9  & Decision Tree             & Traditional ML            & $\sim$0.895   & $\sim$0.86 \\
+9  & Hist Gradient Boosting              & Traditional ML (Ensemble) & 0.9250          & 0.9017 \\
 \hline
-10 & AdaBoost                  & Traditional ML (Ensemble) & $\sim$0.890   & $\sim$0.85 \\
+10 & Extra Trees                         & Traditional ML (Ensemble) & 0.9238          & 0.9007 \\
 \hline
-11 & MLP                       & Deep Learning             & $\sim$0.885   & $\sim$0.85 \\
+11 & Random Forest                       & Traditional ML (Ensemble) & 0.9200          & 0.8943 \\
 \hline
-12 & Deep MLP                  & Deep Learning             & $\sim$0.880   & $\sim$0.84 \\
+12 & SVM (RBF)                           & Traditional ML            & 0.9150          & 0.9003 \\
 \hline
-13 & SVM                       & Traditional ML            & $\sim$0.875   & $\sim$0.84 \\
+13 & Decision Tree                       & Traditional ML            & 0.9075          & 0.8841 \\
 \hline
-14 & KNN                       & Traditional ML            & $\sim$0.865   & $\sim$0.83 \\
+14 & AdaBoost                            & Traditional ML (Ensemble) & 0.8888          & 0.8707 \\
 \hline
-15 & Logistic Regression       & Traditional ML            & $\sim$0.858   & $\sim$0.82 \\
+15 & KNN                                 & Traditional ML            & 0.8763          & 0.8409 \\
 \hline
+\multicolumn{5}{l}{$^\dagger$ Selected for SHAP analysis and web deployment.} \\
 \end{tabular}
 \end{table}
 \FloatBarrier
 
-Three findings stand out from Table~\ref{ch4-tbl-models}.
+Four findings stand out from Table~\ref{ch4-tbl-models}.
 
-\textbf{Finding 1: Gradient Boosting is the best model.}
-Gradient Boosting achieves the highest accuracy of 0.926 and an F1 score of approximately 0.91 on the three-class EPDS Result target.
-The other ensemble methods (LightGBM, XGBoost, Hist GB) follow closely behind.
-Tree-based ensemble methods consistently outperform both linear models and deep learning models on this dataset.
+\textbf{Finding 1: Deep learning models achieve the highest accuracy with correct ordinal encoding.}
+The 1D CNN achieves 98.25\% accuracy and the MLP achieves 98.00\%, both outperforming all traditional ML models on this dataset with correct encoding.
+Logistic Regression is the highest-scoring traditional ML model at 97.13\%.
+This is a dramatic improvement from the earlier alphabetical LabelEncoder encoding (where Gradient Boosting led at 92.6\% and Logistic Regression was last at 85.8\%), confirming that the ordinal encoding fix had a major positive effect across all models.
 
-\textbf{Finding 2: Traditional ML outperforms deep learning.}
-All deep learning models (1D CNN, MLP, Deep MLP) score below 0.905 accuracy.
-The three ensemble methods in the top four are all traditional gradient boosting variants.
-With only 800 samples and mostly categorical features, tree ensembles are a better structural fit than neural networks, which typically require larger datasets to realise their advantage.
+\textbf{Finding 2: Logistic Regression is selected for SHAP and deployment.}
+Despite the 1D CNN having the highest accuracy, the accuracy gap to Logistic Regression is only 1.1 percentage points (98.25\% vs.\ 97.13\%).
+Logistic Regression was chosen for SHAP analysis and the web interface because \texttt{shap.LinearExplainer} computes exact Shapley values for linear models, whereas neural networks require approximation methods.
+Clinical deployability, interpretability, and the absence of a Keras/TensorFlow dependency at inference also favour Logistic Regression for this use case.
 
-\textbf{Finding 3: The 17-feature selection gives a strong, compact model.}
-Despite reducing from 65 candidate features to only 17, the Gradient Boosting model achieves 0.926 accuracy.
-This shows that the Chi-square backward elimination has successfully identified the most informative subset: adding more features does not improve performance and may actually hurt it by introducing noise from less relevant items.
+\textbf{Finding 3: Traditional ML ensemble methods now cluster in the 92--94\% range.}
+Gradient Boosting (93.38\%), XGBoost (93.13\%), LightGBM (93.25\%), and CatBoost (93.75\%) all perform closely.
+With correct ordinal encoding, these models are no longer the top performers --- the deep learning models surpass them.
 
-These results fully answer \textbf{Research Objective~2}: Gradient Boosting is the best model, and deep learning does not offer a practical advantage over tree ensembles for this small-sample survey dataset.
+\textbf{Finding 4: The 16-feature selection gives a strong, compact model.}
+Despite reducing from 65 candidate features to only 16, all models achieve high accuracy.
+The Chi-square backward elimination has successfully identified the most informative subset.
+
+These results fully answer \textbf{Research Objective~2}: deep learning (1D CNN, MLP) achieves the highest accuracy, but Logistic Regression is selected for deployment due to near-identical performance and exact SHAP compatibility.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{Images/fig01_model_comparison.jpg}
+  \caption{Comparison of 15 machine learning and deep learning models by accuracy and macro F1 score (5-fold CV on 16 selected features). The 1D CNN ranks first (accuracy = 0.983, F1 = 0.978), followed by MLP and Logistic Regression.}
+  \label{fig:model-comparison}
+\end{figure}
 
 % --------------------------------------------------------
 \section{Category-wise Performance Results}
@@ -126,9 +138,9 @@ Table~\ref{ch4-tbl-category} shows the results.
 \hline
 \textbf{Category} & \textbf{Accuracy} & \textbf{Interpretation} \\
 \hline
-\textbf{Screening Items (19 items)} & \textbf{91\%+} & Best; uses all 19 EPDS+PHQ-9 items without selection. \\
+\textbf{Screening Items (19 items)} & \textbf{91\%+} & Strong; uses all 19 EPDS+PHQ-9 items without selection. \\
 \hline
-\textbf{Selected Features (17 items)} & \textbf{92.6\%} & \textbf{Best overall; chi2+BE selected optimal 17.} \\
+\textbf{Selected Features (16 items)} & \textbf{97.1\% (LR)} & \textbf{Best overall; chi2+BE selected optimal 16.} \\
 \hline
 Neonatal Health      & 61\% & Best real-world background predictor. \\
 \hline
@@ -142,9 +154,9 @@ Demographic          & 40\% & Low --- close to random baseline. \\
 \end{table}
 \FloatBarrier
 
-\textbf{Selected Features (92.6\%).}
-The 17 Chi-square-selected features achieve the highest accuracy of 0.926 across all experiments.
-This is higher even than using all 19 Screening Items (which achieves slightly lower accuracy because the two excluded items add noise).
+\textbf{Selected Features (97.1\% LR / 98.3\% CNN).}
+The 16 Chi-square-selected features achieve the highest accuracy across all experiments when used with the best models.
+This is higher even than using all 19 Screening Items (which achieves slightly lower accuracy because the three excluded items add noise).
 Feature selection improves the model compared to using all questionnaire items indiscriminately.
 
 \textbf{Neonatal Health (61\%).}
@@ -164,20 +176,34 @@ Despite relatively modest category-level accuracy, the Familial category contain
 Demographic features are close to the baseline.
 Age, education level, income, and residence alone are not sufficient to predict EPDS risk reliably.
 
-These results answer \textbf{Research Objective~1}: the 17 selected EPDS and PHQ-9 items are far more informative than any background category. Among background categories alone, Neonatal Health is the strongest predictor at 61\%.
+These results answer \textbf{Research Objective~1}: the 16 selected EPDS and PHQ-9 items are far more informative than any background category. Among background categories alone, Neonatal Health is the strongest predictor at 61\%.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\linewidth]{Images/fig02_category_performance.jpg}
+  \caption{Category-wise model performance (5-fold CV). Screening Items achieve 92.4\% accuracy and 89.9\% macro F1, far above all background categories. Demographic features are least predictive at 40\% accuracy.}
+  \label{fig:category-performance}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\linewidth]{Images/fig09_category_trend.jpg}
+  \caption{Category-wise performance with trend line, showing a consistent decline from Screening Items (0.924 accuracy) to Demographic features (0.400 accuracy). The downward trend confirms that clinical symptom scores carry far more predictive signal than background information.}
+  \label{fig:category-trend}
+\end{figure}
 
 % --------------------------------------------------------
 \section{Correlation Analysis Results}
 \label{ch4-sec-correlation}
 % --------------------------------------------------------
 
-Three types of correlation (Pearson, Spearman, Kendall's tau) were computed for the 17 selected features against the EPDS Score.
+Three types of correlation (Pearson, Spearman, Kendall's tau) were computed for the 16 selected features against the EPDS Score.
 
-The key finding is that \textbf{all 17 selected features show strong positive correlation with the EPDS Score}, consistent with their selection by Chi-square analysis.
+The key finding is that \textbf{all 16 selected features show strong positive correlation with the EPDS Score}, consistent with their selection by Chi-square analysis.
 Crying-related EPDS items show the highest correlations (Pearson above 0.6), while PHQ-9 items related to physical symptoms show moderate correlations (Pearson 0.3--0.5).
 
 For comparison, safe background features such as ``Occupation before latest pregnancy'' have near-zero correlations (Pearson $\approx -0.011$, $p = 0.194$), which explains their lower predictive performance.
-This large correlation gap is the fundamental statistical reason why the selected 17 features outperform background categories by such a wide margin.
+This large correlation gap is the fundamental statistical reason why the selected 16 features outperform background categories by such a wide margin.
 
 % --------------------------------------------------------
 \section{Within-Category Feature Importance Results (CELL 7)}
@@ -221,6 +247,13 @@ Table~\ref{ch4-tbl-within} shows the top findings.
 \end{table}
 \FloatBarrier
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.88\linewidth]{Images/fig10_stacked_tiers.jpg}
+  \caption{Feature count per category by importance tier (High, Medium, Low). Neonatal Health has the most features (21 total) but only 2 in the high-importance tier. Screening Items (19 total) contribute 3 high-importance features --- the densest high-importance category relative to total count.}
+  \label{fig:stacked-tiers}
+\end{figure}
+
 \textbf{Familial category.}
 ``Anger after latest child birth'' is the single most important background feature by a wide margin across all four methods.
 ``Feeling about motherhood'' is the second most important feature.
@@ -242,64 +275,118 @@ A mother who has experienced depression before pregnancy is significantly more l
 \label{ch4-sec-shap}
 % --------------------------------------------------------
 
-The SHAP analysis using a Permutation Explainer on the trained Gradient Boosting model explains which of the 17 selected questionnaire items drive predictions for each EPDS risk class (Low, Medium, High).
+The SHAP analysis using a \textbf{LinearExplainer} on the trained \textbf{Logistic Regression} model explains which of the 16 selected questionnaire items drive predictions for each EPDS risk class (Low, Medium, High).
+LinearExplainer computes exact Shapley values for linear models across all 800 training samples, giving a complete and precise picture of feature contributions.
 
 \subsection{Global Feature Importance from SHAP}
 
-The SHAP global bar chart (fig13) ranks all 17 features by their mean absolute SHAP value across all three output classes.
-The top 10 features, in order of importance, are:
+The SHAP global bar chart ranks all 16 features by their mean absolute SHAP value across all three output classes.
+The full ranked list is shown in Table~\ref{ch4-tbl-shap}.
 
-\begin{enumerate}
-    \item \textbf{``You have been so unhappy that you have been crying''} (EPDS) --- mean SHAP = 0.0585
-    \item \textbf{``You have felt scared or panicky for no good reason''} (EPDS) --- mean SHAP = 0.0500
-    \item \textbf{``You have felt sad or miserable''} (EPDS) --- mean SHAP = 0.0457
-    \item ``I have blamed myself unnecessarily when things went wrong'' (EPDS)
-    \item ``I have been anxious or worried for no good reason'' (EPDS)
-    \item ``Things have been getting on top of me'' (EPDS)
-    \item ``I have had difficulty sleeping because of unhappiness'' (EPDS)
-    \item Feeling down, depressed, or hopeless (PHQ-9)
-    \item ``You have been able to laugh and see the funny side of things'' (EPDS)
-    \item Moving or speaking so slowly (PHQ-9)
-\end{enumerate}
+\begin{table}[htbp]
+\centering
+\small
+\caption{All 16 features ranked by mean absolute SHAP value (Logistic Regression, LinearExplainer, 800 samples).}
+\label{ch4-tbl-shap}
+\begin{tabular}{|>{\centering\arraybackslash}p{0.04\linewidth}|>{\raggedright\arraybackslash}p{0.55\linewidth}|>{\centering\arraybackslash}p{0.07\linewidth}|>{\centering\arraybackslash}p{0.16\linewidth}|}
+\hline
+\textbf{\#} & \textbf{Feature} & \textbf{Scale} & \textbf{Mean $|$SHAP$|$} \\
+\hline
+1  & Trouble falling or staying asleep, or sleeping too much          & PHQ-9 & 1.527 \\
+\hline
+2  & You have been so unhappy that you have been crying               & EPDS  & 1.174 \\
+\hline
+3  & You have felt scared or panicky for no good reason               & EPDS  & 1.104 \\
+\hline
+4  & Feeling down, depressed, or hopeless                             & PHQ-9 & 1.033 \\
+\hline
+5  & You have been anxious or worried for no good reason              & EPDS  & 1.033 \\
+\hline
+6  & You have felt sad or miserable                                   & EPDS  & 1.033 \\
+\hline
+7  & You have been able to laugh and see the funny side of things     & EPDS  & 1.005 \\
+\hline
+8  & You have looked forward with enjoyment to things                 & EPDS  & 1.005 \\
+\hline
+9  & Feeling bad about yourself / failure / let family down           & PHQ-9 & 0.723 \\
+\hline
+10 & You have blamed myself unnecessarily when things went wrong      & EPDS  & 0.723 \\
+\hline
+11 & Little interest or pleasure in doing things                      & PHQ-9 & 0.693 \\
+\hline
+12 & Trouble concentrating on things                                  & PHQ-9 & 0.636 \\
+\hline
+13 & Things have been getting to you                                  & EPDS  & 0.636 \\
+\hline
+14 & Thoughts that you would be better off dead / hurting yourself    & PHQ-9 & 0.407 \\
+\hline
+15 & The thought of harming yourself has occurred                     & EPDS  & 0.407 \\
+\hline
+16 & Feeling tired or having little energy                            & PHQ-9 & 0.081 \\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
 
-The three most important SHAP features are all core emotional symptoms: crying, fear or panic, and sadness.
-EPDS items dominate the top of the ranking, with PHQ-9 items appearing primarily in positions 8--12.
-This confirms that the EPDS questionnaire items are more individually informative for EPDS Result classification than the PHQ-9 items, which is consistent with the fact that EPDS Result is derived from the EPDS Score.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{Images/fig12_shap_global.jpg}
+  \caption{SHAP global feature importance for the Logistic Regression model (LinearExplainer, all 800 samples). Sleep disturbance ranks first (mean $|$SHAP$|$ = 1.527), followed by crying (1.174) and unexplained panic (1.104). Fatigue ranks last (0.081).}
+  \label{fig:shap-global}
+\end{figure}
+
+\textbf{Sleep disturbance is the single most important feature} (mean SHAP = 1.527), followed by crying (1.174) and unexplained fear/panic (1.104).
+This is a notable finding: with the correct ordinal encoding in place, the PHQ-9 sleep item emerges as the strongest predictor, outranking the EPDS crying and sadness items.
+Sleep disruption beyond normal infant care demands is now recognised as a key early marker of PPD severity.
+
+EPDS items occupy six of the top ten positions, but three PHQ-9 items (sleep disturbance, hopelessness, feeling bad about oneself) appear in the top ten.
+The two reversed EPDS items --- laughter (rank 7) and looking forward to things (rank 8) --- both have SHAP values of 1.005, confirming their strong protective signal when present.
 
 \subsection{Class-Specific SHAP Explanations (Beeswarm Plots)}
 
-The beeswarm plots (fig14) reveal how each feature pushes predictions toward or away from each class:
+The beeswarm plots reveal how each feature pushes predictions toward or away from each class:
 
 \textbf{High class (EPDS Score 13--30):}
-High feature values for crying, sadness, and panic items all push the model strongly toward the High class.
-The laughter item (``You have been able to laugh and see the funny side of things'') shows a negative SHAP contribution for the High class: mothers who report more ability to laugh are pushed away from the High class.
+High feature values (severe symptoms, ordinal code = 3) for sleep disturbance, crying, and panic all push the model strongly toward the High class.
+The laughter item and the anticipatory enjoyment item show negative SHAP contributions for High risk: mothers who retain their ability to laugh and look forward to things are strongly pushed away from the High class.
 
 \textbf{Low class (EPDS Score 0--9):}
-The pattern is reversed for the Low class.
-Low feature values for emotional symptoms push toward the Low class.
-High values for the laughter item push toward the Low class.
+The pattern is the mirror image of the High class.
+Low symptom values (ordinal code = 0) push toward Low risk.
+High values for the two reversed items (laughter, anticipatory enjoyment) push toward Low risk.
 
 \textbf{Medium class (EPDS Score 10--12):}
-The Medium class shows more mixed contributions, with several features contributing both positively and negatively depending on the specific feature value.
-This reflects the clinical reality that Medium-class mothers are in a transition zone between Low and High risk.
+The Medium class shows more mixed and smaller SHAP contributions, reflecting the clinical reality that Medium-class mothers occupy a transition zone.
+No single feature dominates: several items contribute small positive or negative values depending on the exact response.
 
 \subsection{SHAP Heatmap and Waterfall Plots}
 
-The SHAP heatmap (fig15) shows the contribution of all 17 features across all 300 test samples.
-Rows represent features; columns represent samples.
-The heatmap reveals that most samples are clearly pushed toward one class by a consistent pattern of high or low feature values.
+The SHAP heatmap shows the mean absolute SHAP contribution of the top 15 features across all three classes.
+The visual confirms that sleep disturbance and crying are consistently the two highest-contributing features across Low, Medium, and High classes.
 
-The waterfall plot (fig16) shows a single-sample explanation: for one specific mother, each feature either increases (red, pushing toward High risk) or decreases (blue, pushing toward Low or Medium risk) the predicted probability.
-This type of explanation can be used in the web interface to help clinicians understand why a particular prediction was made.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\linewidth]{Images/fig13_shap_heatmap.jpg}
+  \caption{SHAP heatmap of top 15 features $\times$ class (High, Low, Medium). Sleep disturbance and crying show the darkest cells for both High (2.151, 1.688) and Low (2.291, 1.762) risk classes, while Medium class values are consistently low, reflecting the transition-zone nature of medium-risk cases.}
+  \label{fig:shap-heatmap}
+\end{figure}
+
+The waterfall plot shows a single-sample explanation for one confirmed High-risk patient: sleep disturbance and crying jointly push the probability upward by a large margin, while the retained ability to sometimes laugh provides a small downward correction.
+This patient-level explanation is surfaced in real-time by the web interface for every prediction.
 
 \subsection{Implications of SHAP Analysis}
 
-The SHAP analysis provides three practical insights.
-First, the three most important items (crying, panic, sadness) can serve as a rapid three-question triage within the EPDS administration.
-Second, the laughter item is the most important \textit{reversed} item: high ability to laugh is a strong protective signal.
-Third, the PHQ-9 items contribute meaningfully but are less individually decisive than the EPDS items, suggesting that a shortened version of the screening using only the top EPDS items could be worth exploring in future work.
+The SHAP analysis provides four practical insights.
 
-These results answer \textbf{Research Objective~4}: SHAP analysis identifies crying, fear/panic, and sadness as the three most important questionnaire items for EPDS Result classification, with EPDS items overall outranking PHQ-9 items.
+First, \textbf{sleep disturbance is the most actionable rapid-screening item}: it is the single strongest SHAP predictor and can be asked as a standalone question at the bedside before administering the full EPDS.
+
+Second, \textbf{the top three items} (sleep disturbance, crying, unexplained fear/panic) together span both PHQ-9 and EPDS scales, suggesting that a hybrid three-question rapid screen combining items from both instruments may be effective for early triage.
+
+Third, \textbf{the two reversed EPDS items} (laughter, looking forward to things) are highly informative protective signals. Mothers who score low on these items (i.e., cannot laugh or anticipate enjoyment) should be flagged even if their symptom scores are moderate.
+
+Fourth, the Logistic Regression SHAP values are exact (no sampling approximation), making them reliable for the individual-patient explanations displayed in the web interface.
+
+These results answer \textbf{Research Objective~4}: SHAP analysis identifies sleep disturbance, crying, and fear/panic as the three most important questionnaire items for EPDS Result classification. PHQ-9 and EPDS items are comparably important, with the PHQ-9 sleep item leading overall.
 
 % --------------------------------------------------------
 \section{Kendall's Tau Risk Factor Analysis Results (CELL 8)}
@@ -395,13 +482,14 @@ A future study using clinician-assessed abuse records rather than self-report wo
 \subsection{Comparison with the Literature}
 \label{ch4-subsec-litcomp}
 
-The model achieves 0.926 accuracy on the three-class EPDS Result using 17 carefully selected features.
-This compares favourably with the reference study by Chowdhury and Sultana~\cite{chowdhury2026assessing}, which used all questionnaire items without feature selection and did not compare multiple models or apply SHAP.
+The best traditional ML model (Logistic Regression) achieves 97.13\% accuracy on the three-class EPDS Result using 16 carefully selected features with correct ordinal encoding.
+The deep learning models (1D CNN, MLP) reach 98.25\% and 98.00\% respectively.
+These results compare favourably with the reference study by Chowdhury and Sultana~\cite{chowdhury2026assessing}, which used all questionnaire items without feature selection and did not compare multiple models or apply SHAP.
 The Chi-square backward elimination adds a principled selection step that the reference paper lacked.
 
 Other Bangladeshi studies reporting above 97\% accuracy (Nasim et al., Zohora, Sreeji and Shirley) all use features without selection and often predict labels derived from those same items~\cite{nasim2024novel, zohora2024machine, sreeji2026predicting}.
 Without feature selection and with circular label construction, those numbers cannot be taken at face value.
-This thesis improves upon the reference work by applying principled selection, comparing 15 models, and adding SHAP explainability.
+This thesis improves upon the reference work by applying principled selection with correct ordinal encoding, comparing 15 models, and adding exact SHAP explainability via LinearExplainer.
 
 Compared to leakage-free international studies that use only background data, the background-only accuracy of 40--61\% in this thesis is consistent with what other studies report in similar contexts: Andersson et al.\ achieved 0.81 AUC and Sibbald et al.\ achieved 0.81 AUC using background and social data without screening items~\cite{andersson2021predicting, sibbald2025identifying}.
 
@@ -410,12 +498,12 @@ Compared to leakage-free international studies that use only background data, th
 
 The results have four direct implications for PPD screening in Bangladesh.
 
-\textbf{Implication 1: 17 selected items give a compact, high-accuracy screening tool.}
-Rather than administering all 19 EPDS and PHQ-9 items, a clinician can focus on the 17 selected items identified by Chi-square backward elimination.
+\textbf{Implication 1: 16 selected items give a compact, high-accuracy screening tool.}
+Rather than administering all 19 EPDS and PHQ-9 items, a clinician can focus on the 16 selected items identified by Chi-square backward elimination.
 The web interface deploys this reduced screener for practical use.
 
-\textbf{Implication 2: Crying, panic, and sadness are the three most actionable SHAP items.}
-The SHAP analysis shows that the top three items are crying, feeling scared or panicky, and feeling sad.
+\textbf{Implication 2: Sleep disturbance, crying, and panic are the three most actionable SHAP items.}
+The SHAP analysis shows that the top three items are trouble sleeping, crying, and feeling scared or panicky.
 A rapid three-question screening at the bedside using these items can quickly triage mothers into risk groups.
 
 \textbf{Implication 3: Anger after childbirth is the most actionable background warning sign.}
@@ -443,9 +531,10 @@ The study confirms associations but cannot establish causal direction.
 All features are self-reported.
 The abuse direction paradox (Section~\ref{ch4-subsec-abuse}) illustrates how self-report can diverge from clinical reality due to social desirability bias.
 
-\textbf{Limitation 4: SHAP on a sample of 300.}
-The SHAP Permutation Explainer was run on a sample of 300 instances (from 800 total) for computational feasibility.
-While 300 samples give a reliable estimate of feature importance, running on the full dataset would give a more precise ranking.
+\textbf{Limitation 4: SHAP computed on Logistic Regression, not the top neural network model.}
+The exact LinearExplainer was applied to Logistic Regression rather than the 1D CNN (the highest-accuracy model).
+SHAP explanations for neural networks require approximation methods (DeepExplainer or sampling), which are less stable and harder to audit clinically.
+The 1.1\% accuracy gap between the two models is negligible for clinical practice.
 
 % --------------------------------------------------------
 \section{Summary}
@@ -453,16 +542,24 @@ While 300 samples give a reliable estimate of feature importance, running on the
 % --------------------------------------------------------
 
 This chapter reported all results from the experiments in this thesis.
-The Chi-square backward elimination identified 17 optimal EPDS and PHQ-9 questionnaire items as the most predictive features for EPDS Result classification.
-The 15-model comparison showed Gradient Boosting achieving 0.926 accuracy on these 17 features on the three-class EPDS Result target, outperforming all deep learning models.
-The category-wise experiment answered Research Objective~1: the 17 selected features outperform all background categories; among background categories alone, Neonatal Health (61\%) is the best standalone predictor.
+The Chi-square backward elimination identified 16 optimal EPDS and PHQ-9 questionnaire items as the most predictive features for EPDS Result classification.
+The 15-model comparison showed that with correct ordinal encoding, the 1D CNN achieves the highest accuracy (98.25\%) and Logistic Regression is the best traditional ML model (97.13\%) on the three-class EPDS Result target.
+Logistic Regression was selected for SHAP analysis and deployment because it supports exact LinearExplainer SHAP values.
+The category-wise experiment answered Research Objective~1: the 16 selected features outperform all background categories; among background categories alone, Neonatal Health (61\%) is the best standalone predictor.
 
-The SHAP analysis answered Research Objective~4: crying, fear/panic, and sadness are the three most important questionnaire items by SHAP value; EPDS items overall outrank PHQ-9 items.
+The SHAP analysis answered Research Objective~4: sleep disturbance (PHQ-9) is the single most important questionnaire item by SHAP value (mean SHAP = 1.527), followed by crying (EPDS, 1.174) and unexplained fear/panic (EPDS, 1.104). PHQ-9 and EPDS items are comparably important, with the PHQ-9 sleep item leading overall.
 
 The within-category importance analysis answered part of Research Objective~3: inside the Familial category, anger after childbirth is the most important background feature; inside Neonatal Health, depression during pregnancy (PHQ2) leads; inside Personal Health, history of depression leads.
 
 The Kendall's tau analysis answered Research Objective~3 fully: the strongest background risk factor is anger after childbirth ($\tau = +0.418$), followed by feelings about motherhood ($\tau = +0.280$).
 
-The model comparison answered Research Objective~2: traditional ML ensemble methods, especially Gradient Boosting, consistently outperform deep learning models on this dataset.
+The model comparison answered Research Objective~2: deep learning models (1D CNN, MLP) achieve the highest accuracy on this dataset with correct ordinal encoding. For SHAP-driven clinical deployment, Logistic Regression offers near-identical performance with exact explainability.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{Images/fig14_summary_dashboard.jpg}
+  \caption{Summary dashboard of all main results: (A) category-wise performance, (B) top 10 SHAP features by mean $|$SHAP$|$, (C) top 8 models by macro F1, (D) backward feature elimination trajectory showing the peak at 16 features.}
+  \label{fig:summary-dashboard}
+\end{figure}
 
 The next chapter concludes the thesis.

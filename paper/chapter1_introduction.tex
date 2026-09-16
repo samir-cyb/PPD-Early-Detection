@@ -13,7 +13,7 @@ Because of this, researchers have turned to machine learning (ML) to build predi
 
 A 2026 study by Chowdhury and Sultana demonstrated that questionnaire-based ML can work in Bangladesh \cite{chowdhury2026assessing}, but it did not apply systematic feature selection, did not compare ML and deep learning models side by side, and did not include an explainability analysis or a deployable tool. This thesis is built to fill those gaps.
 
-The central contribution of this thesis is a principled feature selection framework: Chi-square ranking combined with backward elimination is applied to identify the most predictive subset of EPDS and PHQ-9 questionnaire items for classifying PPD risk. The selected 17 features are then used to train and compare 15 machine learning and deep learning models. SHAP analysis explains which items drive predictions for each risk class. Background feature categories (demographic, familial, personal health, and neonatal data) are also tested to understand what can be predicted without any questionnaire. Finally, a web interface is built to deploy the trained model for practical use.
+The central contribution of this thesis is a principled feature selection framework: Chi-square ranking combined with backward elimination is applied to identify the most predictive subset of EPDS and PHQ-9 questionnaire items for classifying PPD risk. The selected 16 features are then used to train and compare 15 machine learning and deep learning models. SHAP analysis explains which items drive predictions for each risk class. Background feature categories (demographic, familial, personal health, and neonatal data) are also tested to understand what can be predicted without any questionnaire. Finally, a web interface is built to deploy the trained model for practical use.
 
 \section{Problem Statement}
 
@@ -51,10 +51,10 @@ To compare fifteen different models --- including traditional machine learning a
 To identify which specific features are the most important predictors of PPD using three complementary methods: (a) Pearson, Spearman, and Kendall correlation coefficients to measure how each selected feature relates to the EPDS Score; (b) Kendall's tau test to rank background features by their statistical association with PPD, identifying the strongest risk and protective factors; and (c) within-category feature importance using a combination of Random Forest, XGBoost, Logistic Regression, and Mutual Information, to rank features inside each background category.
 
 \item \textbf{Objective 4 --- SHAP Explainability Analysis.}
-To apply SHAP (SHapley Additive exPlanations) using a Permutation Explainer on the trained Gradient Boosting model to identify which of the 17 selected questionnaire items drive predictions for each EPDS risk class (Low, Medium, High). This provides an interpretable, item-level explanation of the model's decisions.
+To apply SHAP (SHapley Additive exPlanations) using a LinearExplainer on the trained Logistic Regression model to identify which of the 16 selected questionnaire items drive predictions for each EPDS risk class (Low, Medium, High). This provides an exact, item-level explanation of the model's decisions. Logistic Regression is used for SHAP over the top-performing 1D CNN because LinearExplainer computes mathematically exact Shapley values, whereas deep learning SHAP requires approximate sampling methods.
 
 \item \textbf{Objective 5 --- Web Interface for Practical Deployment.}
-To build and deploy a web-based tool that takes the 17 selected EPDS and PHQ-9 questionnaire item responses as input and outputs an EPDS risk classification (Low, Medium, or High), making the trained model accessible to healthcare workers in practical clinical settings.
+To build and deploy a web-based tool that takes the 16 selected EPDS and PHQ-9 questionnaire item responses as input and outputs an EPDS risk classification (Low, Medium, or High) with real-time SHAP explanations, making the trained model accessible to healthcare workers in practical clinical settings.
 
 \end{enumerate}
 

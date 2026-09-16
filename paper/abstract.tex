@@ -5,29 +5,29 @@
 \vspace{3\baselineskip}
 \noindent
 %----------------------------------------------------------
-Postpartum depression (PPD) is a serious mental health condition affecting up to 47.78\% of new mothers in some Bangladeshi healthcare settings, yet most cases go undetected because of social stigma, a shortage of trained professionals, and the absence of community-level screening tools.
-Existing machine learning studies on Bangladeshi datasets report accuracy figures of 97\%--99\%, but these studies apply models to raw EPDS or PHQ-9 questionnaire items without any feature selection, and many predict labels derived from those same items.
-A 2026 reference study by Chowdhury and Sultana demonstrated that questionnaire-based ML for PPD is viable in Bangladesh, yet that work did not apply systematic feature selection, did not compare ML and deep learning models side by side, and did not include explainability analysis.
+Postpartum depression (PPD) is a serious mental health condition affecting up to 47.78\% of new mothers in some Bangladeshi healthcare settings, yet most cases go undetected because of social stigma, a shortage of trained professionals, and the absence of practical community-level screening tools.
+Existing machine learning studies on Bangladeshi PPD datasets report inflated accuracy figures by training models on raw questionnaire items without feature selection or correct ordinal encoding.
+A 2026 study by Chowdhury and Sultana confirmed that questionnaire-based machine learning is viable for PPD prediction in Bangladesh, but did not apply systematic feature selection, did not compare machine learning and deep learning models side by side, and provided no explainability analysis or deployable tool.
 
-This thesis addresses these gaps.
-The dataset contains responses from \textbf{800 Bangladeshi postpartum mothers} across 70 columns.
-A systematic \textbf{Chi-square ranking combined with backward elimination} was applied to all 65 candidate features, identifying \textbf{17 optimal features} --- 10 EPDS questionnaire items and 7 PHQ-9 items --- as the most predictive subset for classifying \textbf{EPDS Result}, the three-class target variable defined as Low (score 0--9), Medium (10--12), and High (13--30).
+This thesis addresses all three gaps through a five-stage pipeline applied to responses from \textbf{800 Bangladeshi postpartum mothers} (70 columns).
+First, all categorical questionnaire responses were encoded using a \textbf{clinically correct ordinal mapping} (Not at all = 0, Several days = 1, Around half the days = 2, Nearly every day = 3) to preserve clinical severity direction.
+Second, \textbf{Chi-square ranking combined with backward elimination} was applied across all 65 candidate features, identifying \textbf{16 optimal EPDS and PHQ-9 questionnaire items} --- 10 from the Edinburgh Postnatal Depression Scale and 6 from the PHQ-9 --- as the most predictive subset for classifying \textbf{EPDS Result}, the three-class target defined as Low (score 0--9), Medium (10--12), and High (13--30).
 
-\textbf{Fifteen machine learning and deep learning models} were trained and compared using 5-fold stratified cross-validation on these 17 selected features.
-\textbf{Gradient Boosting} achieved the highest cross-validation accuracy of \textbf{0.926}, outperforming all deep learning models (MLP, Deep MLP, 1D CNN), confirming that tree-based ensemble methods are the best fit for this small-sample survey dataset.
+Third, \textbf{fifteen machine learning and deep learning models} were trained and compared under 5-fold stratified cross-validation on these 16 features.
+\textbf{1D CNN} achieved the highest accuracy of \textbf{0.9825} and \textbf{Logistic Regression} ranked third at \textbf{0.9713}, both dramatically outperforming the previous Gradient Boosting baseline of 92.6\% (which was trained with incorrect alphabetical encoding).
 
-\textbf{SHAP analysis} using a Permutation Explainer on the trained Gradient Boosting model identified the specific items that drive predictions for each risk class.
-The top features by mean absolute SHAP value are EPDS items related to crying, feeling scared or panicky, and feeling sad or miserable, followed by items about self-blame, anxiety, inability to cope, and difficulty concentrating.
-This provides an interpretable, item-level explanation of which screening questions are most informative for each risk category.
+Fourth, \textbf{SHAP analysis} using a \textbf{LinearExplainer} on the trained Logistic Regression model quantified the exact contribution of each questionnaire item to predictions for every EPDS risk class across all 800 samples.
+Logistic Regression was chosen over the 1D CNN for SHAP analysis and deployment because LinearExplainer provides mathematically exact Shapley values for linear models, whereas deep learning SHAP requires approximate sampling-based methods that are slower and less precise.
+The three most important items by mean absolute SHAP value are \textbf{sleep disturbance (1.527)}, \textbf{persistent crying (1.174)}, and \textbf{unexplained fear or panic (1.104)} --- providing an item-level, class-specific explanation of model behaviour.
 
-For comparison, each of the four background feature categories was also tested independently:
-Neonatal Health achieves the highest background-only accuracy at 61\%, followed by Personal Health (52\%), Familial (47\%), and Demographic (40\%).
-Risk factor analysis using Kendall's tau identified \textit{anger after latest child birth} as the strongest background predictor ($\tau = +0.418$, $p = 1.4 \times 10^{-45}$), followed by feelings about motherhood ($\tau = +0.280$) and depression during pregnancy ($\tau = +0.195$).
+Fifth, \textbf{Kendall's tau correlation analysis} of all background features identified \textit{anger after latest child birth} as the single strongest background predictor of PPD ($\tau = +0.418$, $p = 1.4 \times 10^{-45}$), followed by negative feelings about motherhood ($\tau = +0.280$) and depression during pregnancy ($\tau = +0.195$).
+For reference, the four background feature categories tested independently achieve 40\%--61\% accuracy, far below the 16-item screener.
 
-A \textbf{web interface} was developed to deploy the trained Gradient Boosting model, allowing healthcare workers to input the 17 selected screening items and receive an immediate EPDS risk classification (Low, Medium, or High).
+Sixth, a \textbf{bilingual web interface} (English and Bengali) was developed to deploy the trained Logistic Regression model.
+Healthcare workers enter responses to the 16 selected items and receive an immediate EPDS risk classification (Low, Medium, or High) together with real-time SHAP-based explanations identifying the top questionnaire items that drove that specific prediction, their per-class impact values, and clinical interpretation --- making the model interpretable and actionable at the point of care without requiring any programming knowledge.
 %----------------------------------------------------------
 \vspace{\baselineskip}
 \noindent
 %----------------------------------------------------------
-\textbf{Keywords}: postpartum depression, feature selection, SHAP explainability, machine learning, EPDS Result, Kendall's tau, Gradient Boosting, Bangladesh
+\textbf{Keywords}: postpartum depression, ordinal encoding, feature selection, SHAP explainability, machine learning, EPDS Result, Kendall's tau, Logistic Regression, LinearExplainer, web interface, Bangladesh
 %----------------------------------------------------------
